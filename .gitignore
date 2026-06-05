@@ -8,3 +8,6 @@ coverage/
 # Local soul data must never be committed
 .saulene/
 *.soul.json
+
+# Local working context (not shared)
+CLAUDE.md
