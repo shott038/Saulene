@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/core" },
+    { "path": "packages/renderer" },
+    { "path": "packages/perception" },
+    { "path": "packages/storage" },
+    { "path": "packages/plugin" },
+    { "path": "tools/simulator" },
+    { "path": "tools/harness" }
+  ]
+}

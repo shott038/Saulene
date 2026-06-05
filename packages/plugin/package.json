@@ -1,0 +1,18 @@
+{
+  "name": "@saulene/plugin",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@saulene/core": "workspace:*",
+    "@saulene/renderer": "workspace:*",
+    "@saulene/perception": "workspace:*",
+    "@saulene/storage": "workspace:*"
+  }
+}
