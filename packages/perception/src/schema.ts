@@ -11,6 +11,9 @@
  *   corpus), generated AFTER the ledger so it can't contaminate the extract.
  */
 
-// TODO(perception): Observation, Ledger, SessionJudgment types + JSON Schema for the LLM.
+// TODO(perception): Observation, Ledger, SessionJudgment as zod schemas — zod is the source
+// of truth for these types (z.infer), and we validate the LLM output at this boundary (the LLM
+// is an untrusted input). Derive the LLM's JSON Schema from the same zod definitions. Add zod
+// as a dependency when this is implemented (not before — no other case needs it yet).
 
 export {};

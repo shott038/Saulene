@@ -12,7 +12,7 @@
  * imports resolve anyway), so we check it ourselves — deterministically, no resolver.
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -74,7 +74,7 @@ for (const [name, rel] of PKG_DIRS) {
     for (const m of src.matchAll(IMPORT_RE)) {
       const dep = short(m[1]);
       if (dep === name) continue;
-      const where = file.replace(ROOT + "/", "");
+      const where = file.replace(`${ROOT}/`, "");
       if (!allowed.has(dep)) {
         violations.push(`${where}: imports @saulene/${dep} — FORBIDDEN by the graph`);
       } else if (!declaredSet.has(dep)) {
@@ -86,7 +86,7 @@ for (const [name, rel] of PKG_DIRS) {
 
 if (violations.length) {
   console.error("✗ boundary violations (see docs/ARCHITECTURE.md):\n");
-  for (const v of violations) console.error("  - " + v);
+  for (const v of violations) console.error(`  - ${v}`);
   console.error(`\n${violations.length} violation(s).`);
   process.exit(1);
 }

@@ -19,6 +19,9 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [x] `SPEC.md`, `docs/ARCHITECTURE.md`, `README.md`, local `CLAUDE.md`
 - [x] `Soul` type in `packages/core/src/state` (10 floats, set points, accumulators, tension,
       disuseAnchor, stubbornness, sex, mp, lastUsedAt)
+- [x] Biome (lint+format), GitHub Actions CI (`pnpm check`), `LICENSE` (MIT) — per the
+      Code Architecture Playbook (formatter + CI from commit one)
+- [ ] Add `zod` when perception/storage land (boundary validation of LLM output + soul.json)
 
 ## Phase 1 — The pure engine (`packages/core`) — build bottom-up
 - [ ] **Brick 1 — Birth seeding** (`src/birth`)

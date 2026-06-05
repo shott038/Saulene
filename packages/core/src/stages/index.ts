@@ -10,9 +10,3 @@
  */
 
 export type Stage = "childhood" | "adolescence" | "early_adulthood" | "old_adulthood";
-
-// TODO(core): per-stage table (plasticity / stageSign / volatility).
-// TODO(core): stageForMp(mp, perUlJitter) — MP → Stage.
-// TODO(core): accrueMp(...) — rate-capped maturation.
-
-export {};

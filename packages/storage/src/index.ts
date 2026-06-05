@@ -13,5 +13,7 @@
 
 // TODO(storage): loadSoul / saveSoul; appendLedger / appendDiary / appendVoiceSample;
 // TODO(storage): the two-shelf separation + retrieval by state-distance.
+// TODO(storage): validate soul.json with a zod schema on load — a hand-edited or
+//   version-skewed file is an untrusted boundary; fail loud rather than load a malformed soul.
 
 export {};
