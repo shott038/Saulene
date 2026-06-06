@@ -32,9 +32,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [ ] **Brick 2 — MBTI projection** (`src/state` or `src/mbti`)
       `aspects → 16-label readout` at the SPEC percentile thresholds. Pure, display-only.
       (Needed to score Brick 1's rarities, so it lands with birth.)
-- [ ] **Brick 3 — Stages + aging** (`src/stages`)
+- [x] **Brick 3 — Stages + aging** (`src/stages`)
       `mp → Stage`, per-stage plasticity/stage_sign/volatility table, rate-capped MP accrual,
-      transition bands + per-ul jitter. Pure.
+      transition bands + per-ul jitter. Pure. Shape locked (ordering, signs, adolescent bump);
+      magnitudes are placeholders flagged `TUNABLE (Phase 3)`. 15 deterministic tests green.
 - [ ] **Brick 4 — Consolidation update rule** (`src/engine`) — the heart
       nurture spring (room-bounded) + linear set-point pull + sticky decay-floor atrophy.
       `(soul, knobs, stage) → soul`. **Test:** positive drive → toward bound; idle aspect →
@@ -72,4 +73,6 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 ---
 
 ### Right now
-**Next brick: Phase 1 · Brick 1 — Birth seeding**, shipped with its 10k-birth population test.
+**Next brick: Phase 1 · Brick 4 — Consolidation update rule** (`src/engine`) — the heart.
+It imports the Brick 3 stage table (`plasticity`/`stageSign`/`volatility`) and Brick 1's birth
+seeding. Build the nurture spring (room-bounded) + linear set-point pull + sticky decay-floor atrophy.
