@@ -28,6 +28,9 @@ importers:
       '@saulene/core':
         specifier: workspace:*
         version: link:../core
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
 
   packages/plugin:
     dependencies:

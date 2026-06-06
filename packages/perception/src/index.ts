@@ -10,11 +10,8 @@
  * at the plugin edge), so perception stays testable with a scripted fake.
  */
 
+export * from "./port.js";
 export * from "./schema.js";
 export * from "./validate.js";
 export * from "./rubric/index.js";
-
-/** Port the plugin implements with a real model; the simulator/tests fake it. */
-export interface LlmClient {
-  complete(prompt: string): Promise<string>;
-}
+export * from "./perceive.js";

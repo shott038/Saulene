@@ -125,7 +125,12 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
   crises instead of compounding to 1e4+.
 
 ## Phase 4 — The shippable plugin (LLM + IO edge)
-- [ ] `perception`: ledger schema + rubric + evidence-quote hard validation; `LlmClient` port.
+- [x] `perception`: zod-source-of-truth ledger schema (sparse Observation, practice ⊥ fit) + LLM
+      JSON Schema derived from the same zod defs (no drift); behaviorally-anchored `RUBRIC` +
+      `SCHEMA_VERSION`; `validateLedger` two-gate guard (verbatim-quote anti-hallucination +
+      first-person no-mirror lock); `perceive()` single-call extract-first pipeline over an injected
+      `LlmClient` port (fails loud on malformed output, strips hallucinated/mirror rows). Imports
+      only `core`. 17 tests.
 - [x] `storage`: soul.json (atomic save, zod fail-loud load, missing≠malformed) + append-only full
       history (ledger/diary/voice JSONL); two-shelf (diary | voice-samples) with physical label wall;
       retrieval-by-state-distance (`nearestVoiceSamples`, L2 over 10 aspects); quality-gate +
