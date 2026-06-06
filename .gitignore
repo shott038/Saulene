@@ -9,6 +9,10 @@ coverage/
 .saulene/
 *.soul.json
 
+# Live harness-run artifacts (real LLM judge) — non-deterministic, paid; never committed
+.judge-cache.json
+.live-run.json
+
 # Local working context (not shared)
 CLAUDE.md
 

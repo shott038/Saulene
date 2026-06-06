@@ -7,9 +7,12 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "live": "node dist/live.js",
+    "calibrate": "node dist/calibrate.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.102.0",
     "@saulene/core": "workspace:*",
     "@saulene/renderer": "workspace:*",
     "@saulene/perception": "workspace:*",

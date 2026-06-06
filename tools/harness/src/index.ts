@@ -36,7 +36,21 @@ import {
 import type { RenderFn } from "./render.js";
 
 export type { RenderFn, RenderedInjection } from "./render.js";
-export { type Judge, fakeJudge, BASELINE, encodeInjectionText } from "./judge.js";
+export {
+  type Judge,
+  fakeJudge,
+  realJudge,
+  type RealJudgeOpts,
+  JUDGE_DIMENSIONS,
+  EMBED_AXES,
+  BASELINE,
+  encodeInjectionText,
+} from "./judge.js";
+export {
+  AnthropicJudgeClient,
+  type AnthropicJudgeClientOpts,
+  DEFAULT_JUDGE_MODEL,
+} from "./llm.js";
 export { type PromptBattery, PROMPT_BATTERY } from "./battery.js";
 export {
   // metric fns
