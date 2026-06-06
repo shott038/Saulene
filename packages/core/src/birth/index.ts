@@ -11,7 +11,14 @@
  * Math.random / new Date anywhere — the clock (`now`) is injected too.
  */
 
-import { ASPECTS, type Aspect, type AspectVector, type Sex, type Soul } from "../state/index.js";
+import {
+  ASPECTS,
+  type Aspect,
+  type AspectVector,
+  MIGRATION_BUDGET_INIT,
+  type Sex,
+  type Soul,
+} from "../state/index.js";
 
 /**
  * Per-aspect seeding parameters (SPEC §"Birth seeding distribution", tables 2 & 3).
@@ -207,8 +214,9 @@ const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
  *                     Cholesky factor, scaled by σ, shifted by the sex-signed mean, clamped to [0,1]
  *   3. stubbornness — one uniform in [0,1] (0 = clay, 1 = stubborn)
  *
- * At birth: v = s (set points), a = 0, tension = 0, disuseAnchor = v, mp = 0,
- * lastUsedAt = now. Sex affects ONLY these seeding means — never voice/behavior.
+ * At birth: v = s (set points), a = 0, tension = 0, disuseAnchor = v, refractory = 0,
+ * betaGain = 1.0 (no resentment yet), migrationBudget = full, mp = 0, lastUsedAt = now.
+ * Sex affects ONLY these seeding means — never voice/behavior.
  */
 export function seedFromEntropy(entropy: Uint8Array, now: number): Soul {
   const rng = makeRng(entropy);
@@ -232,17 +240,35 @@ export function seedFromEntropy(entropy: Uint8Array, now: number): Soul {
 
   const stubbornness = rng.uniform();
 
-  // v, disuseAnchor copy the set points; a and tension start at zero.
+  // v, disuseAnchor copy the set points; a and tension start at zero; refractory ready (0),
+  // betaGain neutral (1.0 — no resentment yet).
   const v = {} as AspectVector;
   const a = {} as AspectVector;
   const tension = {} as AspectVector;
   const disuseAnchor = {} as AspectVector;
+  const refractory = {} as AspectVector;
+  const betaGain = {} as AspectVector;
   for (const aspect of ASPECTS) {
     v[aspect] = s[aspect];
     disuseAnchor[aspect] = s[aspect];
     a[aspect] = 0;
     tension[aspect] = 0;
+    refractory[aspect] = 0;
+    betaGain[aspect] = 1;
   }
 
-  return { v, s, a, tension, disuseAnchor, stubbornness, sex, mp: 0, lastUsedAt: now };
+  return {
+    v,
+    s,
+    a,
+    tension,
+    disuseAnchor,
+    refractory,
+    betaGain,
+    migrationBudget: MIGRATION_BUDGET_INIT,
+    stubbornness,
+    sex,
+    mp: 0,
+    lastUsedAt: now,
+  };
 }

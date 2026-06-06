@@ -38,6 +38,25 @@ export interface Soul {
   tension: AspectVector;
   /** Disuse anchor per aspect: value at the start of the current disuse spell (atrophy floor). */
   disuseAnchor: AspectVector;
+  /**
+   * Per-aspect breaking-point refractory countdown, in consolidations. 0 = ready to break;
+   * a fresh break sets it to `knobs.refractory` and each consolidation decrements it. While
+   * > 0 the aspect cannot break again (dual-threshold/refractory → no chatter).
+   */
+  refractory: AspectVector;
+  /**
+   * Per-aspect homeward-pull multiplier on `β_eff`, default 1.0. A break on a STUBBORN ul
+   * raises this for that aspect (resentment: nature pulls home harder afterward). At 1.0 the
+   * consolidation spring is identical to pre-Brick-5 — the no-regression anchor.
+   */
+  betaGain: AspectVector;
+  /**
+   * Remaining lifetime set-point (`s`) displacement budget, summed across all aspects/breaks.
+   * The ONLY thing that lets `s` move is a breaking point, and only while this is > 0. Once
+   * spent, breaks still reconfigure `v` but `s` freezes — caps + rarity enforce the no-mirror
+   * rule (nature never slowly becomes a reflection of how the ul is used).
+   */
+  migrationBudget: number;
   /** Per-ul position on the stubborn↔clay spectrum, [0,1] (0 = clay, 1 = stubborn). */
   stubbornness: number;
   /** Birth attribute; affects seeding only, never voice/behavior. */
@@ -47,5 +66,13 @@ export interface Soul {
   /** Last-use timestamp (epoch ms). Drives the flat 90-day neglect-death clock. */
   lastUsedAt: number;
 }
+
+/**
+ * Initial lifetime set-point migration budget seeded at birth — the total `s` displacement
+ * (summed |Δs| across every aspect and every break) a single ul may ever accrue. Deliberately
+ * tiny + conservative: rarity (breaks are earned) plus this hard ceiling together prevent
+ * runaway drift / usage-convergence. The per-break and per-step caps live in `GlobalKnobs`.
+ */
+export const MIGRATION_BUDGET_INIT = 0.1; // TUNABLE (Phase 3) — lifetime |Δs| ceiling per ul
 
 // TODO(core): Soul constructors/validators. Implemented alongside the engine.
