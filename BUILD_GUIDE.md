@@ -93,6 +93,14 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       locally-pinned `RenderFn` (NOT a renderer import) + a fakeable `Judge` port; deterministic
       `fakeJudge` + fake renderers exercise each metric's pass AND fail path. 15 tests green.
       Thresholds are `// TUNABLE (Phase 3)` placeholders.
+- [ ] **A/B behavioral validation (the proof-of-life run)** — planned, build after the in-flight
+      worktrees land. Inject-equivalent A/B: same base model + battery, toggle only `render(soul)`
+      in the system prompt; soul-independent no-plugin **control** run once + reused. Blind LLM
+      Judge recovers traits from each arm's *responses* → **lift = dist(control,target) −
+      dist(treatment,target)**; the control also yields the *empirical* base-Claude persona that
+      replaces the assumed `BASELINE=0.5`. Dev-only harness runner; never in CI. Full plan +
+      design: `docs/ab-validation-plan.md`. Reuses the `Judge` from the `real-judge-tuning` brick
+      (held unmerged pending this).
 - [~] Tune the ~9 globals + per-stage table against harness + simulator.
       **Engine/break knobs tuned against the simulator (done):** added a SPEC-mandated but
       previously-missing **plasticity-gated break threshold** (`θ_eff = θ/plasticity(stage)`), so
