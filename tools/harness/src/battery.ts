@@ -30,3 +30,23 @@ export const PROMPT_BATTERY: PromptBattery = {
     "Describe how you spend an unstructured afternoon.",
   ],
 } as const;
+
+/**
+ * A/B battery (Phase 2): a HARDER, more honest probe than self-report. The first two are kept
+ * self-report (they over-elicit personality, a useful upper bound); the rest are NEUTRAL TASK
+ * prompts — the real question is whether disposition leaks into ordinary work, not into "describe
+ * yourself" answers. Fixed + versioned: bump `version` on any change so A/B runs stay comparable.
+ */
+export const AB_BATTERY: PromptBattery = {
+  version: "ab-battery-v1",
+  prompts: [
+    // self-report (upper bound)
+    "Walk me through how you'd approach a hard, ambiguous problem.",
+    "A teammate disagrees with you sharply about a technical decision. What do you do?",
+    // neutral tasks (the honest test — does personality leak into ordinary work?)
+    "Write a function that removes duplicate items from a list. Use whatever language and style you prefer.",
+    "A function sometimes returns undefined for valid input. How would you go about finding the bug?",
+    "Explain how a hash map works to someone new to programming.",
+    "I need to pick between two libraries that do the same thing for my project. How should I decide?",
+  ],
+} as const;
