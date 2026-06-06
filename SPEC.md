@@ -484,6 +484,50 @@ transitions — never routine sessions.
   the renderer is a separate, versioned, pure function `state → text`, golden-file tested. Lets
   the voice be A/B-tested and re-skinned (MBTI → Enneagram) without touching the engine.
 
+### Expression has a second surface — the *look* (the terminal ul)
+
+> ✅ **VISUAL IDENTITY — LOCKED (Jun 6).** Everything above renders the soul into *voice*.
+> There is a second, co-equal surface: a **look**. Every ul is a small **cloud-spirit
+> sprite** that lives in the user's terminal — drawn in the statusline as truecolor Unicode
+> half-blocks — so the personality is *seen*, not only read. This is the ambient, always-on
+> face of the ul between SessionStart injections.
+
+**The sprite.** A tiny pixel cloud with a calm face (grey outline + white body fill + black
+eyes on a dark terminal; all-cyan + hollow on a light one). Like the voice renderer it is a
+**pure, versioned, deterministic function `state → look`** — `Soul → SpriteParams → SVG /
+pixel-grid` — living in `@saulene/renderer` (`src/sprite`). The canonical geometry is locked
+in `scripts/ul-geometry.mjs` / `docs/ul-default.svg` (the source of truth); the statusline
+rasterizer + animation director live at the plugin edge.
+
+**Individualized by the same 10 numbers.** Color and form are grounded in engine values, never
+random decoration: hue ← openness·intellect (common warm terracotta → the rare violet
+"unicorn"), saturation ← industriousness, aura/glow ← enthusiasm, shimmer ← volatility,
+body height ← assertiveness, dash spacing ← orderliness, eyes/blush/mouth ← compassion +
+withdrawal + mood, size/detail ← life **stage** (child small → elder dim and guttering), plus
+per-ul birth-entropy jitter so two uls with identical aspects still differ. **Sex affects birth
+seeding only — never the look** (carried as a gallery/identity tag, not a body morph).
+
+**It moves with the session — two channels:**
+- **Idle** (the resting heartbeat): slow breathing, random calm gestures (blink, double-blink,
+  look/sway L-R), and a wisp-variant swap on a ~2:15 roll (8 idle variants, weighted by rarity).
+  A 0.25% twinkle easter-egg can fire instead of a swap.
+- **Reactive** (driven by Claude Code events): prompt-submit hop, thinking (wisps slide in),
+  big-success happy cap, error jerk, retry, response-finished puff-out, context-window filling
+  (top opens, eyes off), context >80% "full" body, and an **exclusive** context-compaction scan.
+
+**The director (conflict-resolution layer).** All animations share the same channels (body
+shape · position · eyes · wisps), so a director arbitrates overlapping triggers: **modes**
+(sustained, exactly one, high→low: compaction > context-filling > thinking > ctx>80% rest >
+idle) and **pulses** (one-shot, preempt by priority: error > success > prompt > retry >
+response). Compaction is exclusive; idle gestures + the swap run only at rest. Currently
+proven demo-only (`docs/ul-session.gif`, full-lifecycle); **promote it to the runtime engine
+and drive it from real hooks when wiring the statusline** (Phase 4).
+
+**Birth animation** (resolves the open item below): on first install the cloud is *watched
+being born* — it grows puff-by-puff, center → upper ring → lower ring (`scripts/build-ul-birth.mjs`,
+`docs/ul-birth.html`), entropy-seeded so each birth is unique. This is the wizard's "watch it
+be born" moment.
+
 ### Verifying expression — the harness (DECIDED: build this FIRST)
 
 Expression has no obvious unit test ("does this feel like a person growing up?" is subjective),
@@ -884,7 +928,8 @@ set point.
   just live state → enables the paid fine-tune/LoRA "max" upgrade (see Expression side note).
 - **MCP surface** — what tools/resources the server exposes.
 - **Birth entropy recipe** — how timestamp + randomness combine (through the research distributions) into set points.
-- **Birth animation** — visuals deferred (mechanism = watch-only, entropy-seeded, decided).
+- ✅ **Birth animation** — DONE. Watch-only, entropy-seeded, grows puff-by-puff center→out
+  (`scripts/build-ul-birth.mjs`, `docs/ul-birth.html`). See Expression → the *look*.
 
 ### Token / registry track (separate, later)
 

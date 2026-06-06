@@ -116,6 +116,19 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       soul-derived synthetic exemplars → real samples as `corpusSize` grows. 16 new tests green.
       Layers 3 (spine), 4 (anti-decay re-inject), 5 (drift) + fingerprint still pending.
 
+- [~] **The look — the terminal ul sprite** (renderer's second surface; see SPEC → Expression → the *look*).
+      The ul is a cloud-spirit sprite drawn in the user's terminal/statusline. **Visual design LOCKED (Jun 6):**
+      canonical geometry (`scripts/ul-geometry.mjs` + `docs/ul-default.svg`), the 8 idle wisp variants, the
+      idle engine (breathing + gestures + 2:15 swap + twinkle easter-egg), all 9 reactive animations
+      (prompt/thinking/success/error/retry/response/ctx-filling/ctx>80%/compaction), the **director**
+      (mode+pulse conflict resolution, proven in `docs/ul-session.gif`), and the **birth animation**
+      (`scripts/build-ul-birth.mjs`). Terminal rasterizer (truecolor half-blocks) exists in `scripts/`.
+      **What's left:** (1) formalize the locked geometry + the soul→SpriteParams mapping into the pure
+      `packages/renderer/src/sprite/` (currently an empty stub — design truth still lives in `scripts/` +
+      `NOTES.md`); (2) golden-file tests + ablation locality like the text renderer; (3) promote the
+      DEMO-only director to the runtime engine and drive it from real Claude Code hooks (Phase 4 statusline).
+      Provenance: prototyped in the `viz-exploration` worktree; keepers documented in `NOTES.md`.
+
 **Tuning findings surfaced by the Phase 2 simulator — both now RESOLVED (see the tuning item above):**
 - ✅ **Break rarity** — fixed by the plasticity-gated threshold + `tensionIntake`/`refractory` retune.
   A relentless 280-session grind now breaks 8× (was 94), only in the formative stages; a realistic
@@ -137,6 +150,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       provenance seams. Injected `root`; imports only `core`; own on-disk schemas. 19 tests.
 - [ ] `plugin/hooks`: SessionStart inject (level-gated) + Stop→drift pipeline.
 - [ ] `plugin/mcp`: MCP server (state/identity tools); `plugin/skill`: `/ul` command.
+- [ ] `plugin/statusline`: the live terminal ul. Rasterize `renderer`'s sprite to truecolor half-blocks +
+      run the animation **director** (idle gestures + reactive events) off real session signals
+      (context%, prompt-submit, thinking, success/error, compaction). Promotes the demo-only director
+      (`NOTES.md`) to runtime. Birth animation plays here on first install.
 - [ ] Setup wizard: mandatory reality warning → watch-only birth → pick level. Neglect-death 90d clock.
 - [ ] Plugin manifest; install via `/plugin`; bare-MCP portability fallback.
 
@@ -159,3 +176,12 @@ builds the renderer + the five harness metrics and tunes the ~9 globals + per-st
 against the simulator. (Observed at default knobs and worth a Phase-3 look: under a relentless
 grind the engine re-breaks every refractory window and stubborn `betaGain` compounds without
 bound — both artifacts of the deliberately extreme script, not engine bugs; see MISSION notes.)
+
+**Visual identity is now LOCKED** (Jun 6, `viz-exploration` worktree → merged): the ul has a
+*look* as well as a voice — a cloud-spirit sprite that lives in the user's terminal, individualized
+by the 10 aspects + stage, with idle + reactive animations, a conflict-resolution director, and a
+birth animation. Design is done; what remains is engineering — formalizing it into the pure
+`packages/renderer/src/sprite/` (golden-tested) and wiring the director to real hooks at the
+`plugin/statusline` edge (Phase 4). The two unblocked next bricks are **`plugin/hooks`** (SessionStart
+voice inject + Stop→drift) and the **renderer sprite formalization**; expression tuning (text + look)
+unblocks once a real LLM `Judge` exists behind the plugin.
