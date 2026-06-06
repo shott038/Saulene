@@ -81,8 +81,11 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Phase 3 — Verification harness + renderer (tune the felt arc)
 - [ ] `renderer` stub: `state → text`, per-aspect fragments, no literal trait names, soul-hash stamp.
-- [ ] Harness metrics: trait-recovery anti-sticker · cross-soul confusion · longitudinal
-      trajectory · stage silhouette · per-aspect ablation.
+- [x] Harness metrics: trait-recovery anti-sticker · cross-soul confusion · longitudinal
+      trajectory · stage silhouette · per-aspect ablation. `tools/harness` parameterized over a
+      locally-pinned `RenderFn` (NOT a renderer import) + a fakeable `Judge` port; deterministic
+      `fakeJudge` + fake renderers exercise each metric's pass AND fail path. 15 tests green.
+      Thresholds are `// TUNABLE (Phase 3)` placeholders.
 - [ ] Tune the ~9 globals + per-stage table against harness + simulator.
 - [ ] Build out the 5 renderer layers (rulebook → fewshot → spine → framing → drift) + fingerprint.
 
