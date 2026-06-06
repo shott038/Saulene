@@ -165,7 +165,11 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       `AnthropicLlmClient` (`llm.ts`, haiku, temp=0) behind the `perception` port; all deps injected
       (`storageRoot`, `llm`, `now`) so the 29 tests use zero real IO. Imports everything; `core` stays
       pure. 212/212 workspace tests green, boundaries clean.
-- [ ] `plugin/mcp`: MCP server (state/identity tools); `plugin/skill`: `/ul` command.
+- [x] `plugin/mcp`: MCP server (read-only state/identity tools — `ul_snapshot`, `ul_drift`,
+      `ul_countdown`) + `plugin/skill`: `/ul` command. Both share one read path (`mcp/snapshot.ts`)
+      over the existing `storage` loaders + `core` projections (MBTI/stage/age); zero soul mutation
+      (drift stays in the Stop hook). Server is a factory (`bin.ts` = stdio entry, not auto-started,
+      not on the public surface). 14 new tests; 281/281 workspace green.
 - [x] `plugin/statusline`: the live terminal ul. Truecolor half-block rasterizer
       (`rasterizer.ts`: `compose() → PixelGrid` + `pixelGridToAnsi()` + HSL→RGB from the renderer's
       `SpriteParams`) + the runtime **director** (`director.ts`: `AnimDirector.signal()`/`tick()` with
@@ -192,12 +196,18 @@ is done** — SessionStart injects the ul's level-gated voice from live soul sta
 the full `perceive → core-consolidate → persist` drift pipeline behind a real `AnthropicLlmClient`.
 212/212 workspace tests green, boundaries clean, `core` still pure.
 
-As of Jun 6 the **`plugin/statusline` brick is done** — the live terminal ul (truecolor half-block
-rasterizer + runtime director promoted from the demo + birth animation), driven by real session
-signals. The remaining bricks, in rough dependency order:
-1. **`plugin/mcp` + `plugin/skill`** (`/ul` command) — state/identity tools + the user-facing command.
-2. **Setup wizard** (reality warning → watch-only birth → pick level) + the 90d neglect-death clock.
-3. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback.
+As of Jun 6 the **`plugin/statusline`** (live terminal ul) and **`plugin/mcp` + `/ul` skill**
+(read-only inspection) bricks are done. The remaining bricks, in rough dependency order:
+1. **Setup wizard** (reality warning → watch-only birth → pick level) + the 90d neglect-death clock.
+2. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback.
+
+In flight / parked:
+- **`real-judge-tuning`** (worktree, opus) — builds the real LLM `Judge`. **Held unmerged** pending
+  the A/B validation plan (`docs/ab-validation-plan.md`) so its judge is reconciled into the A/B
+  runner deliberately rather than landed as the weaker injection-prose design.
+- **A/B behavioral validation** — planned next (see the Phase-3 item + `docs/ab-validation-plan.md`):
+  the proof-of-life run that measures whether the injection causally shifts model behavior vs a
+  no-plugin control.
 
 **Also now unblocked:** the two `[~]` Phase-3 tuning items (expression-side knob tuning + text
 Layers 3–5) — a real LLM `Judge` can be built on the `AnthropicLlmClient` that just landed, so the
