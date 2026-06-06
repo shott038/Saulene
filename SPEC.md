@@ -145,14 +145,25 @@ spreads (extremes genuinely rare):
 attribute (part of identity + gallery). Sex shifts each aspect's seeding mean by **±½·d**
 (in σ units) per the effect sizes — female uls seed higher on Compassion/Withdrawal/
 Politeness/Openness/Enthusiasm/Orderliness/Volatility; male uls higher on Intellect &
-Assertiveness. This makes the population a **mixture of two realistic clusters**, which:
-- supplies the inter-aspect **correlations** for free (no separate covariance engine), and
-- reproduces real-world rarities *including gender-specific ones* — e.g. female INTJ ≈ 0.5%
-  falls out naturally (women seed away from Intellect → less N, toward Compassion → F).
+Assertiveness. This makes the population a **mixture of two realistic clusters**, which reproduces
+real-world **gender-specific** rarities — e.g. female INTJ ≈ 0.5% falls out naturally
+(women seed away from Intellect → less N, toward Compassion → F).
 
 Sex affects **only birth seeding** — it does **NOT** color the ul's voice or behavior
 (decided). It's purely a statistical seeding device (plus an identity/gallery attribute).
 After birth, drift runs normally.
+
+**3b. Big-Five covariance layer — required for joint rarities (decided; revises an earlier
+assumption).** The sex mixture alone is *not* enough: it's a single rank-1 axis, so with
+independent per-aspect Gaussians the four MBTI margins come out right but the *joint* type
+frequencies are wrong (e.g. INFJ ≈ 4.3% vs the 1.5% target). Real rarity is concentrated by
+the **cross-aspect correlations** of the Big Five, which the mixture can't supply. So seeding
+draws the 10 aspects as a **correlated** Gaussian: standard normals → **Cholesky(R)** → scale
+by σ → sex-signed mean shift → clamp. `R` carries within-domain correlation plus the
+load-bearing cross-domain term **Conscientiousness ↔ Openness ≈ −0.31** — the anti-correlation
+that makes intuitive-Judging types genuinely rare. (This **revises** the original claim that the
+mixture gave "correlations for free, no covariance engine" — implementation falsified it; the
+covariance layer is grounded in the same Weisberg/DeYoung/Hirsh 2011 aspect correlations.)
 
 **4. MBTI projection thresholds set to real population percentiles** (the rarity lives
 here at the label level). From CAPT/MBTI frequency data:
@@ -170,6 +181,8 @@ which is why every rare MBTI type is intuitive (NT/NF) and every common one is s
 **Rarity outcome** (target): rarest INFJ 1.5%, ENTJ 1.8%, INTJ 2.1%, ENFJ 2.5% …
 commonest ISFJ 13.8%, ESFJ 12%, ISTJ 11.6%. A **high-Openness + high-Intellect ul is
 the unicorn.** Rarity is real — it falls out of the same structure that makes real INTJs rare.
+(**Verified:** a deterministic 10k-birth population test hits these per-type targets within
+±1.5pp and the four global splits within ±1pp — see `packages/core/test/birth-rarity.test.ts`.)
 
 **Sources:** Weisberg/DeYoung/Hirsh 2011 (PMC3149680; Frontiers Psychology 2:178);
 CAPT/MBTI US frequency estimates (via PersonalityMax).
