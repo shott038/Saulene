@@ -33,4 +33,15 @@ the Stop hook). plugin imports everything; `core`/`renderer`/`storage` stay pure
 - Do NOT add IO/LLM/clock/entropy to `core`/`renderer`/`storage`
 
 ## Status
-Status: in-progress
+Status: ready-to-merge
+
+## Verification
+- Build: pass (plugin dist emits cleanly; pre-existing type errors in renderer/tools are unrelated to this diff)
+- Tests: pass (281 passed — 14 new tests for snapshot/skill, all existing suites green; vitest aliases added to fix worktree resolution)
+- Scope kept: yes — read-only throughout; no soul mutations; core/renderer/storage untouched
+- Summary: MCP server with 3 tools (ul_snapshot, ul_drift, ul_countdown) + /ul skill formatter + shared snapshot reader, all wired to the existing storage loaders and core projections
+
+## Final notes
+- The vitest.config.ts alias change is additive (fixes worktree test resolution) and harmless on main where pnpm symlinks exist natively.
+- The MCP server is a factory (not auto-started); bin.ts is the stdio entry point for standalone use — it is NOT exported from the package public surface.
+- Skill and MCP share one read path (mcp/snapshot.ts); zero logic duplication.
