@@ -4,9 +4,15 @@ import {
   type GlobalKnobs,
   accumulatorDecay,
   charge,
+  chargeTension,
   consolidate,
 } from "../src/engine/index.js";
-import { ASPECTS, type AspectVector, type Soul } from "../src/state/index.js";
+import {
+  ASPECTS,
+  type AspectVector,
+  MIGRATION_BUDGET_INIT,
+  type Soul,
+} from "../src/state/index.js";
 
 const A: keyof AspectVector = "openness"; // the one aspect every test drives
 
@@ -25,22 +31,49 @@ function soulWith(opts: {
   a0?: number;
   anchor0?: number;
   stubbornness?: number;
+  /** Brick 5: tension on the tested aspect (default 0 — below θ, no break). */
+  t0?: number;
+  /** Brick 5: refractory countdown on the tested aspect (default 0 — ready). */
+  ref0?: number;
+  /** Brick 5: betaGain (resentment multiplier) on the tested aspect (default 1.0). */
+  betaGain0?: number;
+  /** Brick 5: lifetime set-point migration budget (default full). */
+  budget?: number;
 }): Soul {
-  const { v0, s0, a0 = 0, anchor0 = v0, stubbornness = 0.5 } = opts;
+  const {
+    v0,
+    s0,
+    a0 = 0,
+    anchor0 = v0,
+    stubbornness = 0.5,
+    t0 = 0,
+    ref0 = 0,
+    betaGain0 = 1,
+    budget = MIGRATION_BUDGET_INIT,
+  } = opts;
   const v = vec(0.5);
   const s = vec(0.5);
   const a = vec(0);
   const anchor = vec(0.5);
+  const tension = vec(0);
+  const refractory = vec(0);
+  const betaGain = vec(1);
   v[A] = v0;
   s[A] = s0;
   a[A] = a0;
   anchor[A] = anchor0;
+  tension[A] = t0;
+  refractory[A] = ref0;
+  betaGain[A] = betaGain0;
   return {
     v,
     s,
     a,
-    tension: vec(0),
+    tension,
     disuseAnchor: anchor,
+    refractory,
+    betaGain,
+    migrationBudget: budget,
     stubbornness,
     sex: "female",
     mp: 0,
@@ -216,5 +249,204 @@ describe("determinism & purity", () => {
     const floorWide = run(soul, "childhood", 400, wide).v[A];
     expect(floorWide).toBeLessThan(floorDefault); // bigger κ → erodes more → lower floor
     expect(floorWide).toBeGreaterThan(soul.s[A]); // still above s
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Brick 5 — tension fast loop.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("tension charge (chargeTension)", () => {
+  it("charges only on hated practice (negative fit AND real practice)", () => {
+    const soul = soulWith({ v0: 0.5, s0: 0.5 }); // tension starts at 0
+    // Did a lot (practice 1) AND hated it (fit −1) → tension rises.
+    const hated = chargeTension(soul, { practice: { [A]: 1 }, fit: { [A]: -1 } });
+    expect(hated.tension[A]).toBeGreaterThan(0);
+    // Did a lot but LIKED it (fit +1) → no intake; only the leak acts (starts at 0 → stays 0).
+    const liked = chargeTension(soul, { practice: { [A]: 1 }, fit: { [A]: 1 } });
+    expect(liked.tension[A]).toBe(0);
+    // Hated it but didn't actually do it (practice 0) → no intake.
+    const idle = chargeTension(soul, { practice: { [A]: 0 }, fit: { [A]: -1 } });
+    expect(idle.tension[A]).toBe(0);
+  });
+
+  it("leaks (ρ<1): a one-off bad session bleeds off and never accumulates alone", () => {
+    let soul = soulWith({ v0: 0.5, s0: 0.5, t0: 1 });
+    // No further hated practice → tension decays geometrically by ρ each step.
+    const oneStep = chargeTension(soul, { practice: {}, fit: {} });
+    expect(oneStep.tension[A]).toBeCloseTo(K.rho, 10); // 0.9 * 1
+    for (let i = 0; i < 100; i++) soul = chargeTension(soul, { practice: {}, fit: {} });
+    expect(soul.tension[A]).toBeLessThan(1e-3); // bled off toward 0
+  });
+
+  it("positive fit leaves tension leaking down, never up", () => {
+    let soul = soulWith({ v0: 0.5, s0: 0.5, t0: 1 });
+    for (let i = 0; i < 20; i++) {
+      soul = chargeTension(soul, { practice: { [A]: 1 }, fit: { [A]: 1 } });
+    }
+    expect(soul.tension[A]).toBeLessThan(1); // strictly decreased — liked work can't charge
+  });
+
+  it("sustained hated practice climbs past θ (earned, not one-off)", () => {
+    let soul = soulWith({ v0: 0.5, s0: 0.5 });
+    let stepsToThreshold = -1;
+    for (let i = 0; i < 100; i++) {
+      soul = chargeTension(soul, { practice: { [A]: 1 }, fit: { [A]: -1 } });
+      if (stepsToThreshold < 0 && soul.tension[A] > K.theta) stepsToThreshold = i;
+    }
+    expect(stepsToThreshold).toBeGreaterThan(0); // took repeated sessions, not a single one
+    // Steady state of a leaky integrator under constant intake = intake/(1−ρ).
+    expect(soul.tension[A]).toBeCloseTo((K.tensionIntake * 1 * 1) / (1 - K.rho), 3);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Brick 5 — breaking points (rare, earned), routing, refractory, migration.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("breaking points: rare + earned", () => {
+  it("fires only above θ; sub-threshold tension never breaks", () => {
+    const base = { v0: 0.8, s0: 0.3, a0: 0, anchor0: 0.8, stubbornness: 0.9 };
+    const calm = consolidate(soulWith({ ...base, t0: 0.9 }), K, "childhood"); // below θ=1
+    const broke = consolidate(soulWith({ ...base, t0: 1.5 }), K, "childhood"); // above θ
+
+    // Sub-threshold: nothing Brick-5 fired — s, betaGain, refractory, tension all untouched.
+    expect(calm.s[A]).toBe(0.3);
+    expect(calm.betaGain[A]).toBe(1);
+    expect(calm.refractory[A]).toBe(0);
+    expect(calm.tension[A]).toBe(0.9); // carried through unchanged (no discharge)
+    expect(calm.migrationBudget).toBe(MIGRATION_BUDGET_INIT);
+
+    // Over-threshold: a break fired — tension discharged, refractory armed, v moved off calm.
+    expect(broke.tension[A]).toBe(0);
+    expect(broke.refractory[A]).toBe(K.refractory);
+    expect(broke.v[A]).not.toBeCloseTo(calm.v[A]);
+  });
+
+  it("break is deterministic (same soul → identical next soul)", () => {
+    const soul = soulWith({ v0: 0.8, s0: 0.3, anchor0: 0.8, t0: 1.5, stubbornness: 0.9 });
+    expect(consolidate(soul, K, "childhood")).toEqual(consolidate(soul, K, "childhood"));
+  });
+});
+
+describe("breaking points: stubborn vs clay routing", () => {
+  const setup = { v0: 0.8, s0: 0.3, a0: 0, anchor0: 0.8, t0: 1.5 }; // v above s (lived-up deviation)
+
+  it("stubborn (high) snaps v back toward s AND raises betaGain (resentment)", () => {
+    const calm = consolidate(soulWith({ ...setup, t0: 0.9, stubbornness: 0.95 }), K, "childhood");
+    const broke = consolidate(soulWith({ ...setup, stubbornness: 0.95 }), K, "childhood");
+    expect(broke.v[A]).toBeLessThan(calm.v[A]); // snapped HOME (toward the lower set point)
+    expect(broke.v[A]).toBeGreaterThanOrEqual(broke.s[A]); // didn't overshoot past s
+    expect(broke.betaGain[A]).toBeGreaterThan(1); // resentment deepened the homeward pull
+  });
+
+  it("clay (low) jumps v toward the lived/escape direction (reconfigure)", () => {
+    const calm = consolidate(soulWith({ ...setup, t0: 0.9, stubbornness: 0.05 }), K, "childhood");
+    const broke = consolidate(soulWith({ ...setup, stubbornness: 0.05 }), K, "childhood");
+    expect(broke.v[A]).toBeGreaterThan(calm.v[A]); // escaped FURTHER in the lived direction (up)
+  });
+
+  it("stubborn resents harder than clay", () => {
+    const stubborn = consolidate(soulWith({ ...setup, stubbornness: 0.95 }), K, "childhood");
+    const clay = consolidate(soulWith({ ...setup, stubbornness: 0.05 }), K, "childhood");
+    expect(stubborn.betaGain[A]).toBeGreaterThan(clay.betaGain[A]);
+  });
+
+  it("raised betaGain actually deepens the consolidation homeward pull (1.0 ⇒ no change)", () => {
+    // Same displacement; the only difference is betaGain. Higher betaGain pulls home more.
+    const plain = soulWith({ v0: 0.6, s0: 0.3, a0: 1e-4, stubbornness: 0.5 });
+    const resentful = soulWith({ v0: 0.6, s0: 0.3, a0: 1e-4, stubbornness: 0.5, betaGain0: 2 });
+    const dPlain = plain.v[A] - consolidate(plain, K, "childhood").v[A];
+    const dResent = resentful.v[A] - consolidate(resentful, K, "childhood").v[A];
+    expect(dResent).toBeGreaterThan(dPlain); // betaGain 2 pulls home harder than 1
+  });
+});
+
+describe("breaking points: per-aspect refractory", () => {
+  it("an aspect in refractory cannot break, even with tension above θ", () => {
+    const inRef = soulWith({ v0: 0.8, s0: 0.3, anchor0: 0.8, t0: 1.5, ref0: 3, stubbornness: 0.9 });
+    const next = consolidate(inRef, K, "childhood");
+    expect(next.tension[A]).toBe(1.5); // NOT discharged — no break while refractory > 0
+    expect(next.betaGain[A]).toBe(1);
+    expect(next.s[A]).toBe(0.3);
+    expect(next.refractory[A]).toBe(2); // just decremented
+  });
+
+  it("breaks exactly once when the window elapses (no chatter)", () => {
+    let cur = soulWith({ v0: 0.8, s0: 0.3, anchor0: 0.8, t0: 1.5, ref0: 3, stubbornness: 0.9 });
+    const firedAt: number[] = [];
+    for (let i = 0; i < 8; i++) {
+      const nx = consolidate(cur, K, "childhood");
+      if (cur.tension[A] > 0 && nx.tension[A] === 0) firedAt.push(i); // discharge = a break
+      cur = nx;
+    }
+    // refIn 3,2,1 block (i=0,1,2); refIn 0 at i=3 fires; then refractory re-arms to 5.
+    expect(firedAt).toEqual([3]);
+  });
+});
+
+describe("breaking points: capped + budgeted set-point migration", () => {
+  const setup = { v0: 0.8, s0: 0.3, a0: 0, anchor0: 0.8, t0: 1.5 };
+
+  it("migrates s a tiny amount toward the lived value, clay more than stubborn", () => {
+    const stubborn = consolidate(soulWith({ ...setup, stubbornness: 0.95 }), K, "childhood");
+    const clay = consolidate(soulWith({ ...setup, stubbornness: 0.05 }), K, "childhood");
+    const dStubborn = stubborn.s[A] - 0.3;
+    const dClay = clay.s[A] - 0.3;
+    expect(dStubborn).toBeGreaterThan(0); // moved toward the (higher) lived value
+    expect(dClay).toBeGreaterThan(dStubborn); // clay migrates more
+    expect(dClay).toBeLessThanOrEqual(K.migrationStepCap + 1e-12); // hard per-break cap
+  });
+
+  it("s never runs away to the lived value (stays near the set point)", () => {
+    const broke = consolidate(soulWith({ ...setup, stubbornness: 0.05 }), K, "childhood");
+    expect(broke.s[A] - 0.3).toBeLessThanOrEqual(K.migrationStepCap + 1e-12);
+    expect(broke.s[A]).toBeLessThan(0.5); // nowhere near the lived ~0.8 — no mirror
+  });
+
+  it("budget caps the displacement and is debited", () => {
+    // Budget smaller than the per-break cap → migration is budget-limited, then exhausted.
+    const broke = consolidate(
+      soulWith({ ...setup, stubbornness: 0.05, budget: 0.005 }),
+      K,
+      "childhood",
+    );
+    expect(broke.s[A] - 0.3).toBeCloseTo(0.005, 12); // limited to the remaining budget
+    expect(broke.migrationBudget).toBeCloseTo(0, 12); // fully spent
+  });
+
+  it("once budget is exhausted, breaks still reconfigure v but s stops moving", () => {
+    const calm = consolidate(
+      soulWith({ ...setup, t0: 0.9, stubbornness: 0.05, budget: 0 }),
+      K,
+      "childhood",
+    );
+    const broke = consolidate(
+      soulWith({ ...setup, stubbornness: 0.05, budget: 0 }),
+      K,
+      "childhood",
+    );
+    expect(broke.s[A]).toBe(0.3); // s frozen — no budget left
+    expect(broke.migrationBudget).toBe(0);
+    expect(broke.v[A]).toBeGreaterThan(calm.v[A]); // v still reconfigured (clay escape)
+    expect(broke.tension[A]).toBe(0); // still discharged + refractory armed
+    expect(broke.refractory[A]).toBe(K.refractory);
+  });
+});
+
+describe("no-break path is byte-identical to pre-Brick-5", () => {
+  it("sub-θ tension perturbs nothing but the carried tension field", () => {
+    const opts = { v0: 0.62, s0: 0.31, a0: 0.44, anchor0: 0.7, stubbornness: 0.37 };
+    const clean = consolidate(soulWith({ ...opts, t0: 0 }), K, "adolescence");
+    const subTension = consolidate(soulWith({ ...opts, t0: 0.9 }), K, "adolescence");
+    // Every output field is identical except the tension that was carried in.
+    expect(subTension.v).toEqual(clean.v);
+    expect(subTension.s).toEqual(clean.s);
+    expect(subTension.betaGain).toEqual(clean.betaGain);
+    expect(subTension.refractory).toEqual(clean.refractory);
+    expect(subTension.disuseAnchor).toEqual(clean.disuseAnchor);
+    expect(subTension.migrationBudget).toBe(clean.migrationBudget);
+    expect(clean.tension[A]).toBe(0);
+    expect(subTension.tension[A]).toBe(0.9);
   });
 });

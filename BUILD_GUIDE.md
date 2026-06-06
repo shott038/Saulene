@@ -47,9 +47,19 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       Pure/deterministic. 17 tests green (nurture→bound; linear set-point reach; idle slump
       halts at floor `s+(1−κ)(v⁰−s)`; anchor reset / no compounding; old-age freeze;
       adolescence repels; stubbornness scaling; determinism). Magnitudes `TUNABLE (Phase 3)`.
-- [ ] **Brick 5 — Tension + breaking points** (`src/engine`)
-      tension charge/leak, threshold + refractory, clay reconfigures / stubborn hardens,
-      capped set-point migration. Pure.
+- [x] **Brick 5 — Tension + breaking points** (`src/engine`)
+      `chargeTension(soul, {practice, fit}, knobs)` tension fast loop (`Tᵢ ← ρ·Tᵢ +
+      w·max(0,−fit)·practice`; charges only on hated practice, leaks ρ<1) — separate from
+      `charge` (different raw signal, untouched fast loop). Breaking points folded into
+      `consolidate` AFTER the normal update: over-θ + non-refractory aspects rupture via one
+      signed `(1−2·stubbornness)` term (stubborn → snap home + betaGain resentment; clay →
+      escape/reconfigure), discharge `T→0`, arm a per-aspect refractory window, and migrate
+      `sᵢ` a tiny per-break-capped, lifetime-budgeted step toward the lived value (clay >
+      stubborn) — the ONLY place `s` moves. New Soul fields `refractory`/`betaGain`/
+      `migrationBudget` (birth-initialized). No-break path byte-identical to Brick 4. Pure.
+      **Proof:** 17 new tests (tension charge/leak; rare+earned threshold; stubborn↔clay
+      routing; refractory no-chatter; capped+budgeted migration that never mirrors the lived
+      value; no-break byte-identity) + all 38 prior tests green. Magnitudes `TUNABLE (Phase 3)`.
 - [x] Define `GlobalKnobs` (α, β, λ, ρ, θ, J, refractory, atrophyRate, κ) as data.
       Done in `src/engine` (`GlobalKnobs` + `DEFAULT_KNOBS`): Brick 4 consumes α/β/λ/κ/atrophyRate;
       ρ/θ/J/refractory are placeholders Brick 5 reads.
@@ -82,9 +92,11 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 ---
 
 ### Right now
-**Next brick: Phase 1 · Brick 5 — Tension + breaking points** (`src/engine`).
-Brick 4 (consolidation) is in — it consumes the Brick 3 stage table and the `GlobalKnobs`
-data. Brick 5 layers tension charge/leak onto the fast loop, then the threshold + refractory
-breaking point (clay reconfigures / stubborn hardens) and the rare capped set-point migration —
-reading the ρ/θ/J/refractory placeholders already defined in `GlobalKnobs`. Bricks 1–4 are all
-done and green (birth seeding + MBTI projection landing here; stages + consolidation already in).
+**Next: Phase 2 · the Simulator** (`tools/simulator`).
+Phase 1 — the pure engine — is COMPLETE. All five bricks are in and green (birth seeding +
+MBTI projection, stages + aging, consolidation, and now Brick 5 tension/breaking-points/
+set-point migration), 55 deterministic tests across `packages/core`. The next step is
+`lifetime(seed, sessionScript[], knobs) → trajectory`: drive scripted ledgers through the
+engine with no LLM, then the acceptance test — same seed, aligned vs mismatched grind → two
+genuinely different adults with a narratable "why." Magnitudes stay `TUNABLE (Phase 3)` until
+the simulator + harness exist to tune them against.

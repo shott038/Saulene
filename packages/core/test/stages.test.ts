@@ -10,7 +10,12 @@ import {
   stageFromMp,
   stageRules,
 } from "../src/stages/index.js";
-import { ASPECTS, type AspectVector, type Soul } from "../src/state/index.js";
+import {
+  ASPECTS,
+  type AspectVector,
+  MIGRATION_BUDGET_INIT,
+  type Soul,
+} from "../src/state/index.js";
 
 /** Build a vector with every aspect set to `fill`. */
 function vec(fill: number): AspectVector {
@@ -31,6 +36,9 @@ function makeSoul(seed = 0): Soul {
     a: vec(0),
     tension: vec(0),
     disuseAnchor: vec(0.5),
+    refractory: vec(0),
+    betaGain: vec(1),
+    migrationBudget: MIGRATION_BUDGET_INIT,
     stubbornness: ((seed * 3) % 100) / 100,
     sex: seed % 2 === 0 ? "male" : "female",
     mp: 0,
