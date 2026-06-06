@@ -158,10 +158,14 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       (`storageRoot`, `llm`, `now`) so the 29 tests use zero real IO. Imports everything; `core` stays
       pure. 212/212 workspace tests green, boundaries clean.
 - [ ] `plugin/mcp`: MCP server (state/identity tools); `plugin/skill`: `/ul` command.
-- [ ] `plugin/statusline`: the live terminal ul. Rasterize `renderer`'s sprite to truecolor half-blocks +
-      run the animation **director** (idle gestures + reactive events) off real session signals
-      (context%, prompt-submit, thinking, success/error, compaction). Promotes the demo-only director
-      (`NOTES.md`) to runtime. Birth animation plays here on first install.
+- [x] `plugin/statusline`: the live terminal ul. Truecolor half-block rasterizer
+      (`rasterizer.ts`: `compose() → PixelGrid` + `pixelGridToAnsi()` + HSL→RGB from the renderer's
+      `SpriteParams`) + the runtime **director** (`director.ts`: `AnimDirector.signal()`/`tick()` with
+      full mode/pulse/gesture conflict-resolution) promoted from the demo-only `scripts/`. Driven by
+      real session signals; locked pixel-art bodies + 8 wisp variants + gestures/breathing in
+      `sprite-data.ts`; birth animation (`birth.ts`) plays on first install; `statusline.ts` runtime
+      = setInterval loop + `signal()` surface for hooks. Consumes the pure renderer sprite; `core`/
+      `renderer` stay pure, all IO at the plugin edge. 55 tests; 267/267 workspace green.
 - [ ] Setup wizard: mandatory reality warning → watch-only birth → pick level. Neglect-death 90d clock.
 - [ ] Plugin manifest; install via `/plugin`; bare-MCP portability fallback.
 
@@ -180,13 +184,12 @@ is done** — SessionStart injects the ul's level-gated voice from live soul sta
 the full `perceive → core-consolidate → persist` drift pipeline behind a real `AnthropicLlmClient`.
 212/212 workspace tests green, boundaries clean, `core` still pure.
 
-The remaining bricks, in rough dependency order:
-1. **`plugin/statusline`** — the live terminal ul. Now unblocked: the pure sprite exists; this adds
-   the truecolor half-block rasterizer + promotes the demo director to runtime, driven by real
-   session signals. Birth animation plays here on first install.
-2. **`plugin/mcp` + `plugin/skill`** (`/ul` command) — state/identity tools + the user-facing command.
-3. **Setup wizard** (reality warning → watch-only birth → pick level) + the 90d neglect-death clock.
-4. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback.
+As of Jun 6 the **`plugin/statusline` brick is done** — the live terminal ul (truecolor half-block
+rasterizer + runtime director promoted from the demo + birth animation), driven by real session
+signals. The remaining bricks, in rough dependency order:
+1. **`plugin/mcp` + `plugin/skill`** (`/ul` command) — state/identity tools + the user-facing command.
+2. **Setup wizard** (reality warning → watch-only birth → pick level) + the 90d neglect-death clock.
+3. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback.
 
 **Also now unblocked:** the two `[~]` Phase-3 tuning items (expression-side knob tuning + text
 Layers 3–5) — a real LLM `Judge` can be built on the `AnthropicLlmClient` that just landed, so the
