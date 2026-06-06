@@ -80,7 +80,13 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       divergence surfaced by extreme scripts, not tuning.
 
 ## Phase 3 — Verification harness + renderer (tune the felt arc)
-- [ ] `renderer` stub: `state → text`, per-aspect fragments, no literal trait names, soul-hash stamp.
+- [x] `renderer` stub: pure versioned `render(soul) → {text, fragments, soulHash}` — Layer-1
+      behavioral-directive rulebook only. 10 aspects × low/high first-person imperatives + micro-demos,
+      modulated by a continuous 12-rung intensity ladder off `|v−0.5|` (no coarse bands); per-aspect
+      `fragments` pure in one value (exact ablation locality); 3 trait-interactions encoded, rest
+      `TUNABLE (Phase 3)`; headerless first-person assembly; FNV-1a `soulHash` over `v`. 16 tests green
+      (golden, no-trait-names, continuous-not-banded, ablation locality+monotonicity, hash). Layers 2–5
+      remain stubs (next item).
 - [ ] Harness metrics: trait-recovery anti-sticker · cross-soul confusion · longitudinal
       trajectory · stage silhouette · per-aspect ablation.
 - [ ] Tune the ~9 globals + per-stage table against harness + simulator.
