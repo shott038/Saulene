@@ -9,6 +9,18 @@
  * Dev-only. Build this right after the engine (before the plugin), per ARCHITECTURE.md.
  */
 
-// TODO(simulator): lifetime(seed, sessionScript[], knobs) → trajectory.
-
-export {};
+export {
+  type ScriptedSession,
+  type SessionBlock,
+  session,
+  block,
+  script,
+} from "./script.js";
+export {
+  type TrajectorySnapshot,
+  type BreakEvent,
+  type Trajectory,
+  lifetime,
+  entropyFromInt,
+} from "./lifetime.js";
+export { narrate, describeBirth } from "./narrate.js";

@@ -65,10 +65,19 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       ρ/θ/J/refractory are placeholders Brick 5 reads.
 
 ## Phase 2 — Simulator (`tools/simulator`)
-- [ ] `lifetime(seed, sessionScript[], knobs) → trajectory` — drive scripted ledgers through
-      Phase 1, no LLM.
-- [ ] **Acceptance test (SPEC):** same seed, two usage patterns (aligned vs mismatched grind)
-      → two genuinely different adults, with a narratable "why."
+- [x] `lifetime(seed, sessionScript[], knobs) → trajectory` — drive scripted ledgers through
+      Phase 1, no LLM. Done in `src/{script,lifetime,narrate}.ts`: a `ScriptedSession` ledger
+      (per-aspect `practice`/`fit` + `significance`) with compact `block`/`script` authoring, a
+      per-session loop (`charge`←practice → `chargeTension` → `accrueMp` → `stageFromMp` →
+      `consolidate`, consolidating every session), and a `Trajectory` recording snapshots
+      (`{mp, stage, v, mbti}`) + attributed break events.
+- [x] **Acceptance test (SPEC):** same seed, two usage patterns (aligned vs mismatched grind)
+      → two genuinely different adults, with a narratable "why." Done in
+      `test/acceptance.test.ts`: one clay seed lives an aligned life (crystallizes INTP, no
+      breaks) vs a mismatched grind (charges tension → 106 ruptures → clay reconfigures
+      Industriousness/Orderliness 0.48→0.93 → INTJ); plus a temperament-routing test (same
+      grind: clay reconfigures vs stubborn hardens/resents). Knobs left at `DEFAULT_KNOBS`;
+      divergence surfaced by extreme scripts, not tuning.
 
 ## Phase 3 — Verification harness + renderer (tune the felt arc)
 - [ ] `renderer` stub: `state → text`, per-aspect fragments, no literal trait names, soul-hash stamp.
@@ -92,11 +101,15 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 ---
 
 ### Right now
-**Next: Phase 2 · the Simulator** (`tools/simulator`).
-Phase 1 — the pure engine — is COMPLETE. All five bricks are in and green (birth seeding +
-MBTI projection, stages + aging, consolidation, and now Brick 5 tension/breaking-points/
-set-point migration), 55 deterministic tests across `packages/core`. The next step is
-`lifetime(seed, sessionScript[], knobs) → trajectory`: drive scripted ledgers through the
-engine with no LLM, then the acceptance test — same seed, aligned vs mismatched grind → two
-genuinely different adults with a narratable "why." Magnitudes stay `TUNABLE (Phase 3)` until
-the simulator + harness exist to tune them against.
+**Next: Phase 3 · Verification harness + renderer** (tune the felt arc).
+Phase 1 (the pure engine) and Phase 2 (the simulator) are COMPLETE. The engine's five bricks
+are green, and `tools/simulator` now drives scripted no-LLM lifetimes through it: the SPEC's
+headline acceptance test passes — one birth seed yields two genuinely different adults (aligned
+life crystallizes INTP; the mismatched grind charges tension, ruptures, and the clay
+reconfigures toward the lived direction → INTJ), with a narratable "why" and a temperament-
+routing contrast (clay reconfigures vs stubborn hardens). 57 deterministic tests across
+`packages/core` + `tools/simulator`. Magnitudes are still untuned `DEFAULT_KNOBS` — Phase 3
+builds the renderer + the five harness metrics and tunes the ~9 globals + per-stage table
+against the simulator. (Observed at default knobs and worth a Phase-3 look: under a relentless
+grind the engine re-breaks every refractory window and stubborn `betaGain` compounds without
+bound — both artifacts of the deliberately extreme script, not engine bugs; see MISSION notes.)
