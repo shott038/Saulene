@@ -24,14 +24,19 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [ ] Add `zod` when perception/storage land (boundary validation of LLM output + soul.json)
 
 ## Phase 1 — The pure engine (`packages/core`) — build bottom-up
-- [ ] **Brick 1 — Birth seeding** (`src/birth`)
-      `seedFromEntropy(entropy, now) → Soul`. Seeded PRNG + Box-Muller; per-aspect σ table +
-      gender-d mean shifts + 50/50 sex + random stubborn↔clay.
-      **Proof:** 10k-birth population test → distribution matches SPEC rarity targets
-      (INTJ ~2%, ISFJ ~14%, S/N skew). Objective pass/fail.
-- [ ] **Brick 2 — MBTI projection** (`src/state` or `src/mbti`)
+- [x] **Brick 1 — Birth seeding** (`src/birth`)
+      `seedFromEntropy(entropy, now) → Soul`. splitmix64 PRNG (FNV-1a-hashed entropy) + Box-Muller;
+      per-aspect σ table + gender-d mean shifts + 50/50 sex + a Big-Five covariance (Cholesky)
+      + random stubborn↔clay. Same entropy in → byte-identical Soul out.
+      **Proof:** 10k-birth population test → distribution matches SPEC rarity targets. ✅
+      Note: independent aspects + sex-mixture hit the 4 marginals but produced *independent*
+      joint types (INFJ ~4.4%); added a correlated-seeding covariance (the N↔J anti-correlation,
+      C↔O = −0.31) so joint rarities land — σ table untouched, only off-diagonal structure tuned.
+- [x] **Brick 2 — MBTI projection** (`src/mbti`)
       `aspects → 16-label readout` at the SPEC percentile thresholds. Pure, display-only.
-      (Needed to score Brick 1's rarities, so it lands with birth.)
+      Cuts derived in closed form from the seeding model (per-sex mean/σ_sum of each aspect-sum,
+      cut placed at the SPEC percentile over the 50/50 sex MIXTURE), not flat 0.5s. ✅
+      (Lands with birth — it's how Brick 1's rarities are scored.)
 - [x] **Brick 3 — Stages + aging** (`src/stages`)
       `mp → Stage`, per-stage plasticity/stage_sign/volatility table, rate-capped MP accrual,
       transition bands + per-ul jitter. Pure. Shape locked (ordering, signs, adolescent bump);
@@ -81,5 +86,5 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 Brick 4 (consolidation) is in — it consumes the Brick 3 stage table and the `GlobalKnobs`
 data. Brick 5 layers tension charge/leak onto the fast loop, then the threshold + refractory
 breaking point (clay reconfigures / stubborn hardens) and the rare capped set-point migration —
-reading the ρ/θ/J/refractory placeholders already defined in `GlobalKnobs`. Note: Brick 1 (birth
-seeding) and Brick 2 (MBTI projection) are still stubs — pick them up alongside.
+reading the ρ/θ/J/refractory placeholders already defined in `GlobalKnobs`. Bricks 1–4 are all
+done and green (birth seeding + MBTI projection landing here; stages + consolidation already in).
