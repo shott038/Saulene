@@ -10,7 +10,8 @@
     "test": "vitest run",
     "live": "node dist/live.js",
     "calibrate": "node dist/calibrate.js",
-    "ab": "node dist/abrun.js"
+    "ab": "node dist/abrun.js",
+    "salience": "node dist/salience.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",

@@ -19,13 +19,15 @@ import { JudgeCache } from "./cache.js";
 export const DEFAULT_ARM_MODEL = "sonnet";
 
 export interface CollectOpts {
-  /** The battery prompt (user turn). */
+  /** The battery prompt (user turn). For S1/S2 the caller folds the voice into this string. */
   userPrompt: string;
-  /** Injection appended to the system prompt (Arm A). Empty/undefined = control (Arm B). */
+  /** Injection APPENDED to Claude Code's system prompt (S0 — the shipping mechanism). */
   systemAppend?: string;
+  /** Injection that REPLACES the whole system prompt (S3 ceiling). Takes precedence over append. */
+  systemReplace?: string;
   /** Sample index — distinct samples of the same prompt give the variance for the CI. */
   sample: number;
-  /** Arm label, for the cache key + clarity ("A" | "B"). */
+  /** Arm label, for the cache key + clarity ("A" | "A-S1" | "B" …). */
   arm: string;
 }
 
@@ -57,21 +59,31 @@ export class ResponseCollector {
   }
 
   async collect(o: CollectOpts): Promise<string> {
-    const sys = o.systemAppend ?? "";
-    // Cache key folds arm + sample into the "model" slot and system+prompt into the "prompt" slot.
+    const append = o.systemAppend ?? "";
+    const replace = o.systemReplace ?? "";
+    // Cache key folds arm + sample into the "model" slot and delivery+prompt into the "prompt" slot.
+    // Backward-compatible: when there's no replace, the key matches the Phase-2 format exactly, so
+    // S0 reuses the existing .ab-cache.json entries.
     const keyModel = `${o.arm}:${this.model}:s${o.sample}`;
-    const keyPrompt = `${sys}\n<<>>\n${o.userPrompt}`;
+    const keyPrompt = replace
+      ? `R:${replace}\n<<>>\n${o.userPrompt}`
+      : `${append}\n<<>>\n${o.userPrompt}`;
     const cached = this.cache.lookup(keyModel, keyPrompt);
     if (cached !== undefined) return cached;
-    const text = await this.spawnOnce(o.userPrompt, sys);
+    const text = await this.spawnOnce(o.userPrompt, append, replace);
     this.calls++;
     this.cache.save(keyModel, keyPrompt, text);
     return text;
   }
 
-  private spawnOnce(userPrompt: string, systemAppend: string): Promise<string> {
+  private spawnOnce(
+    userPrompt: string,
+    systemAppend: string,
+    systemReplace: string,
+  ): Promise<string> {
     const args = ["-p", "--output-format", "json", "--allowedTools", "", "--model", this.model];
-    if (systemAppend) args.push("--append-system-prompt", systemAppend);
+    if (systemReplace) args.push("--system-prompt", systemReplace);
+    else if (systemAppend) args.push("--append-system-prompt", systemAppend);
     // Strip the metered key so the CLI uses subscription auth (omit it entirely, not set undefined).
     const env = Object.fromEntries(
       Object.entries(process.env).filter(([k]) => k !== "ANTHROPIC_API_KEY"),

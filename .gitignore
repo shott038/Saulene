@@ -17,6 +17,9 @@ coverage/
 .ab-cache.json
 .ab-run.json
 .ab-run.log
+# Salience-sweep run artifacts (subscription) — non-deterministic; never committed
+.salience-run.json
+.salience-run.log
 
 # Local working context (not shared)
 CLAUDE.md

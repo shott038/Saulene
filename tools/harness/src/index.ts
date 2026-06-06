@@ -44,6 +44,7 @@ export {
   JUDGE_DIMENSIONS,
   EMBED_AXES,
   BASELINE,
+  EMPIRICAL_BASELINE,
   encodeInjectionText,
 } from "./judge.js";
 export {

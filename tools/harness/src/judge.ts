@@ -41,6 +41,27 @@ export const BASELINE: AspectVector = Object.fromEntries(
   ASPECTS.map((a) => [a, 0.5]),
 ) as AspectVector;
 
+/**
+ * The MEASURED base-Claude persona — what `recoverTraits` reads off un-souled `sonnet` responses
+ * (the empirical `r_B` from the Phase-2/3 A/B runs; see `AB-FINDINGS.md`). This is the *true*
+ * no-personality reference: base Claude is NOT a neutral 0.5 — it reads orderly/analytical/calm but
+ * low-warmth/low-enthusiasm. The fake-judge codec + tests stay on the abstract 0.5 `BASELINE`
+ * (model-independent); real-judge analysis should compare against this. Re-measure per model via the
+ * A/B control arm. // model: sonnet
+ */
+export const EMPIRICAL_BASELINE: AspectVector = {
+  openness: 0.328,
+  intellect: 0.599,
+  industriousness: 0.585,
+  orderliness: 0.741,
+  enthusiasm: 0.199,
+  assertiveness: 0.497,
+  compassion: 0.248,
+  politeness: 0.442,
+  withdrawal: 0.531,
+  volatility: 0.135,
+} as AspectVector;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // The fake codec — shared by `fakeJudge` (decode) and the test fake renderers (encode).
 // ─────────────────────────────────────────────────────────────────────────────

@@ -16,7 +16,16 @@ Held unmerged on purpose; Phase 2 continues on this same branch.
 
 ---
 
-## Phase 2 — A/B behavioral validation (IN PROGRESS) — subscription-only, stays free
+## Phase 2 — A/B behavioral validation ✅ DONE — NULL result
+Built the two-arm A/B rig (subscription-only). **Result: aggregate lift = 0.000 ± 0.007** — the
+injection (`--append-system-prompt`) did NOT move judged behavior toward the target; souled
+responses indistinguishable from stock. Legible-but-inert (cf. Phase 1 r=0.905 on the text).
+Leading confound: the ~1–2k voice is dwarfed by Claude Code's ~20k system prompt. Numbers +
+empirical base persona `r_B` in `tools/harness/AB-FINDINGS.md`. Phase 3 chases the salience confound.
+
+(historical build spec for Phase 2 below)
+
+## Phase 2 build spec (historical)
 Turn the prompt-independent "judge reads the injection text" run into a real **A/B behavioral
 experiment**: does installing the ul plugin causally shift Claude's *behavior* toward the target
 personality, vs the same model with no plugin? Full design: `docs/ab-validation-plan.md` (on main —
@@ -66,31 +75,72 @@ verdict on whether the plugin demonstrably changes Claude's behavior**. Run arti
   imports `plugin`).
 - Subscription-only, no metered API. Cache everything. fakeJudge stays the CI default.
 
+---
+
+## Phase 3 — the SALIENCE experiment ✅ DONE — subscription-only, stays free
+Phase 2's null is most likely a **delivery** problem, not a content problem: the ul voice is
+appended onto Claude Code's ~20k-token system prompt and washed out. Phase 3 finds out by sweeping
+**injection salience** while holding everything else constant (same souls, same battery, same k,
+same control `r_B`, same lift + distinguishability metrics, same `ClaudeCliClient` subscription
+transport). Reuse the Phase-2 A/B rig; just parameterize *how* the voice is delivered.
+
+**Salience sweep — measure lift at each rung (S0 is the Phase-2 null, already have it):**
+- **S0 — append-to-system** (baseline): `--append-system-prompt "<voice>"`. The shipping mechanism. lift≈0.
+- **S1 — conversation channel**: prepend the voice into the user turn itself — `claude -p
+  "<voice>\n\n<prompt>"` (recent-token, high-salience position) instead of / in addition to system.
+- **S2 — channel + reinforcement**: S1 plus a short, forceful embodiment directive and/or a repeat
+  of the key behavioral lines (raise emphasis WITHOUT rewriting the renderer's content — this is a
+  delivery knob, not a renderer change).
+- **S3 — CEILING (diagnostic, not shippable)**: `--system-prompt "<voice>"` (FULL replace, no 20k
+  competition). This is the disambiguator: if even the ceiling is ~0, the content is inert
+  (foundational problem); if the ceiling moves but S0 doesn't, it's pure dilution (delivery problem)
+  → then find the minimal shippable rung (S1/S2) that clears zero.
+
+**The decision the sweep produces:**
+- Lift rises with salience and the ceiling is clearly > 0 → concept ALIVE, it's a delivery-tuning
+  problem; report which rung first clears its CI and is still shippable.
+- Ceiling ≈ 0 too → the injected voice does not drive behavior even undiluted; a deep signal about
+  the approach — report it plainly, do NOT paper over.
+
+**Hold constant for comparability:** arms = sonnet, judge = haiku, souls 1–4 (+ soul1 stages),
+6-prompt battery (2 self-report + 4 task), k=3, blind judge, randomized order, cache everything,
+strip `ANTHROPIC_API_KEY`. Also fold the free win in: replace harness `BASELINE = 0.5` with the
+measured `r_B`.
+
+## Outputs (commit — this is the evidence)
+Extend `tools/harness/AB-FINDINGS.md` (or `SALIENCE-FINDINGS.md`): a lift-vs-salience table
+(S0→S3) with CIs, distinguishability per rung, the ceiling verdict, and a plain-language call on
+delivery-problem vs foundational-problem + the recommended shippable rung. Artifacts gitignored.
+
 ## Status
 Status: ready-to-merge
 
 ## Verification
 - Build: pass (`tsc -b` clean)
-- Tests: pass (281 — fakeJudge suite + merged mcp; the A/B + live judge have no `.test.ts`, never run in CI)
+- Tests: pass (281 — fakeJudge suite + merged mcp; the A/B + salience + live judge have no `.test.ts`, never run in CI)
 - Boundaries: pass (`pnpm check:boundaries` clean — harness never imports `plugin`)
 - Lint: changed files clean (`biome check` on the new/edited harness files)
-- A/B run: DONE — subscription-only (`ClaudeCliClient` + `ResponseCollector`, `ANTHROPIC_API_KEY`
-  stripped), arms=sonnet / judge=haiku, 7 subjects × 6 prompts × k=3. Numbers in `tools/harness/AB-FINDINGS.md`.
-- Scope kept: yes.
+- Salience sweep: DONE — subscription-only (`ResponseCollector` + `ClaudeCliClient`, `ANTHROPIC_API_KEY`
+  stripped), arms=sonnet / judge=haiku, S0→S3 × 7 subjects × 6 prompts × k=3. S0 reproduced the Phase-2
+  null exactly (cache-reused). Numbers in `tools/harness/SALIENCE-FINDINGS.md`.
+- Scope kept: yes. Refactored shared rig into `ab-core.ts`; `abrun.ts` (Phase 2) still works unchanged.
 
-## Result (the headline — read AB-FINDINGS.md)
-**NULL.** Aggregate behavioral lift = **0.000 ± 0.007** (95% CI, n=7) — the injection did not move the
-model's judged behavior toward the target. Null in both self-report (−0.013) and task (−0.007) slices.
-Souled responses not distinguishable from stock (2-arm 0.33, below chance; line-up 0/7). This contrasts
-sharply with Phase 1 (judge recovers personality from the injection TEXT at r=0.905): the voice is
-legible as a description but does not change what the model DOES, as currently rendered/delivered.
-Positive byproduct: the empirical base-Claude persona `r_B` (NOT 0.5) — feed it back as the harness baseline.
+## Result (the headline — read SALIENCE-FINDINGS.md)
+**Two-axis answer.** *Target-fidelity: FOUNDATIONAL null* — lift never clears its CI at any rung,
+including the **ceiling S3 (−0.002 ± 0.016)** where the voice IS the whole system prompt. Removing the
+20k-token competitor doesn't move it ⇒ not a dilution artifact. *Noticeability: a real DELIVERY win* —
+2-arm distinguishability jumps **0.33 (S0) → 0.71 (S1)** the moment the voice enters the conversation
+channel. **The ul becomes noticeable but not itself**: high salience yields generic characterfulness,
+not the encoded target personality. Recommended shippable rung: **S1 (voice in the user channel)** for
+noticeability; **no rung** delivers measurable target-fidelity.
 
 ## Final notes (for the merger / next brick)
-- The null is reported plainly per the mission. Strongest confound + next experiment: the ~1–2k-token
-  injection competes with Claude Code's ~20k-token system prompt (`--append-system-prompt`) → likely
-  diluted; raise injection salience (conversation-channel / repeat / weight) and re-run. Also: judge
-  resolution (~0.15) ≈ the effect size (~0.17), so this rules out a LARGE effect, not a small one.
-- Phase-1 deliverables (real judge, live run, FINDINGS.md) are unchanged and still valid.
-- All run artifacts (`.ab-cache.json`, `.ab-run.json`, `.ab-run.log`, `.judge-cache.json`,
-  `.live-run.*`) are gitignored. The merge of `main` (mcp/skill/lockfile) is included on this branch.
+- Reported plainly per the mission (the foundational null is NOT papered over). Single most important
+  next step before touching the renderer: a **forced-choice target-match probe** — `recoverTraits`
+  resolution (~0.15) ≈ the effect (~0.17), so it may under-read fidelity that 2-arm hints exists. If a
+  better probe still shows null → it's the renderer (Layer-1 rulebook produces generic, not
+  discriminative, voice; cf. Phase-1 amplification finding).
+- Free win folded in: `EMPIRICAL_BASELINE` (measured `r_B`, not 0.5) committed in `judge.ts`.
+- Phase 1 (real judge / live run / FINDINGS.md) + Phase 2 (AB-FINDINGS.md) deliverables unchanged.
+- All run artifacts (`.ab-*`, `.salience-*`, `.judge-cache.json`, `.live-run.*`) gitignored. The merge
+  of `main` (mcp/skill/lockfile) is on this branch.
