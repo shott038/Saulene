@@ -1,39 +1,31 @@
 /**
- * @saulene/harness — dev-only LLM client for the REAL judge.
+ * @saulene/harness — dev-only LLM clients for the REAL judge.
  *
- * WHY THIS LIVES HERE (not reused from the plugin): the boundary graph
+ * WHY THESE LIVE HERE (not reused from the plugin): the boundary graph
  * (see `scripts/check-boundaries.mjs` / `docs/ARCHITECTURE.md`) forbids `harness → plugin`.
- * The plugin owns its own `AnthropicLlmClient` for perception; the harness owns this one for the
- * judge. Both are thin wrappers over the same SDK — duplicated on purpose so neither edge has to
- * import the other. This client satisfies `@saulene/perception`'s `LlmClient` port exactly, so the
- * judge is written against the port, not the SDK.
+ * The plugin owns its own `AnthropicLlmClient` for perception; the harness owns these for the
+ * judge. Both satisfy `@saulene/perception`'s `LlmClient` port, so the judge is written against the
+ * port, not the backend.
  *
- * DETERMINISM + COST: temp 0 ⇒ a given prompt maps to a stable response, so every `complete` is
- * memoised to a JSON file on disk (`.judge-cache.json`, gitignored). Calibration re-runs over the
- * same prompts cost ZERO model calls; a half-finished live run resumes from the cache. Delete the
- * cache file to force a fresh, fully-live pass.
+ * TWO BACKENDS, same port + same cache (`.judge-cache.json`, gitignored):
+ *   • {@link AnthropicJudgeClient} — the Anthropic SDK. Needs `ANTHROPIC_API_KEY` (billed).
+ *   • {@link ClaudeCliClient}      — shells out to the local `claude -p` binary, using this
+ *     machine's Claude Code SUBSCRIPTION auth (no API key, no per-call billing). Slower per call.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { spawn } from "node:child_process";
 import Anthropic from "@anthropic-ai/sdk";
 import type { LlmClient } from "@saulene/perception";
+import { JudgeCache } from "./cache.js";
 
-/** The judge model. Haiku, temp 0 — the same "cheap, low-temperature, single call" choice the SPEC names for perception. */
+/** The judge model. Haiku, temp 0 — the SPEC's "cheap, low-temperature, single call" choice. */
 export const DEFAULT_JUDGE_MODEL = "claude-haiku-4-5-20251001";
+
+/** A terse system prompt shared by both backends — keep the judge from chatting. */
+const JUDGE_SYSTEM = "You are a terse evaluator. Output only exactly what is asked, nothing else.";
 
 /** Max tokens per judge response — the judge only ever emits a short JSON array / single token. */
 const MAX_TOKENS = 1024;
-
-/** FNV-1a/32 over a string → 8-hex cache key. No clock, no randomness — stable across runs. */
-function keyOf(s: string): string {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193);
-  }
-  return (h >>> 0).toString(16).padStart(8, "0");
-}
 
 export interface AnthropicJudgeClientOpts {
   apiKey?: string;
@@ -43,48 +35,37 @@ export interface AnthropicJudgeClientOpts {
 }
 
 /**
- * A caching Anthropic client implementing `LlmClient`. Reads `ANTHROPIC_API_KEY` from the
- * environment when no key is supplied. Throws on a non-text response (the judge prompts always
- * ask for text).
+ * SDK backend. Reads `ANTHROPIC_API_KEY` from the environment when no key is supplied. Throws on a
+ * non-text response (the judge prompts always ask for text).
  */
 export class AnthropicJudgeClient implements LlmClient {
   private readonly client: Anthropic;
   readonly model: string;
-  private readonly cachePath: string | null;
-  private cache: Record<string, string>;
-  /** Live model calls made this process (cache misses) — surfaced by the live runner for cost visibility. */
+  private readonly cache: JudgeCache;
+  /** Live model calls made this process (cache misses) — surfaced for cost visibility. */
   calls = 0;
-  /** Cache hits this process. */
-  hits = 0;
 
   constructor(opts: AnthropicJudgeClientOpts = {}) {
     this.client = new Anthropic({ apiKey: opts.apiKey ?? process.env.ANTHROPIC_API_KEY });
     this.model = opts.model ?? DEFAULT_JUDGE_MODEL;
-    this.cachePath = opts.cachePath === undefined ? ".judge-cache.json" : opts.cachePath;
-    this.cache =
-      this.cachePath && existsSync(this.cachePath)
-        ? (JSON.parse(readFileSync(this.cachePath, "utf8")) as Record<string, string>)
-        : {};
+    this.cache = new JudgeCache(
+      opts.cachePath === undefined ? ".judge-cache.json" : opts.cachePath,
+    );
   }
 
-  private persist(): void {
-    if (!this.cachePath) return;
-    const dir = dirname(this.cachePath);
-    if (dir && dir !== "." && !existsSync(dir)) mkdirSync(dir, { recursive: true });
-    writeFileSync(this.cachePath, JSON.stringify(this.cache, null, 2));
+  /** Cache hits this process. */
+  get hits(): number {
+    return this.cache.hits;
   }
 
   async complete(prompt: string): Promise<string> {
-    const k = `${this.model}:${keyOf(prompt)}`;
-    const cached = this.cache[k];
-    if (cached !== undefined) {
-      this.hits++;
-      return cached;
-    }
+    const cached = this.cache.lookup(this.model, prompt);
+    if (cached !== undefined) return cached;
     const msg = await this.client.messages.create({
       model: this.model,
       max_tokens: MAX_TOKENS,
       temperature: 0,
+      system: JUDGE_SYSTEM,
       messages: [{ role: "user", content: prompt }],
     });
     const block = msg.content[0];
@@ -92,8 +73,75 @@ export class AnthropicJudgeClient implements LlmClient {
       throw new Error(`AnthropicJudgeClient: unexpected non-text response from ${this.model}`);
     }
     this.calls++;
-    this.cache[k] = block.text;
-    this.persist();
-    return block.text;
+    const text = block.text;
+    this.cache.save(this.model, prompt, text);
+    return text;
+  }
+}
+
+export interface ClaudeCliClientOpts {
+  /** `claude` binary. Defaults to `$SAULENE_CLAUDE_BIN` then `claude` (resolved from PATH, no shell). */
+  bin?: string;
+  /** Model alias passed to `--model` (CLI accepts short aliases like `haiku`). Default `haiku`. */
+  model?: string;
+  cachePath?: string | null;
+}
+
+/**
+ * Subscription backend: spawn `claude -p` headlessly (prompt on stdin), tools stripped, terse
+ * system prompt. Uses this machine's Claude Code auth — no API key, no per-call billing. Spawned
+ * via the binary directly (NOT a shell), so the user's interactive `claude` shell function (which
+ * injects `/color`) never runs. Slower per call (~5s) than the SDK; same port + cache.
+ */
+export class ClaudeCliClient implements LlmClient {
+  readonly model: string;
+  private readonly bin: string;
+  private readonly cache: JudgeCache;
+  calls = 0;
+
+  constructor(opts: ClaudeCliClientOpts = {}) {
+    this.bin = opts.bin ?? process.env.SAULENE_CLAUDE_BIN ?? "claude";
+    this.model = opts.model ?? "haiku";
+    this.cache = new JudgeCache(
+      opts.cachePath === undefined ? ".judge-cache.json" : opts.cachePath,
+    );
+  }
+
+  get hits(): number {
+    return this.cache.hits;
+  }
+
+  async complete(prompt: string): Promise<string> {
+    const cached = this.cache.lookup(this.model, prompt);
+    if (cached !== undefined) return cached;
+    const text = await this.spawnOnce(prompt);
+    this.calls++;
+    this.cache.save(this.model, prompt, text);
+    return text;
+  }
+
+  private spawnOnce(prompt: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const child = spawn(
+        this.bin,
+        ["-p", "--model", this.model, "--allowedTools", "", "--system-prompt", JUDGE_SYSTEM],
+        { stdio: ["pipe", "pipe", "pipe"] },
+      );
+      let out = "";
+      let err = "";
+      child.stdout.on("data", (d) => {
+        out += d;
+      });
+      child.stderr.on("data", (d) => {
+        err += d;
+      });
+      child.on("error", reject);
+      child.on("close", (code) => {
+        if (code === 0) resolve(out.trim());
+        else reject(new Error(`claude -p exited ${code}: ${err.trim() || out.trim()}`));
+      });
+      child.stdin.write(prompt);
+      child.stdin.end();
+    });
   }
 }

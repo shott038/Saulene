@@ -14,7 +14,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { ASPECTS } from "@saulene/core";
-import { type LiveRunArtifact, LIVE_RUN_PATH } from "./live-artifact.js";
+import { LIVE_RUN_PATH, type LiveRunArtifact } from "./live-artifact.js";
 
 const r3 = (x: number): number => Math.round(x * 1000) / 1000;
 

@@ -49,6 +49,8 @@ export {
 export {
   AnthropicJudgeClient,
   type AnthropicJudgeClientOpts,
+  ClaudeCliClient,
+  type ClaudeCliClientOpts,
   DEFAULT_JUDGE_MODEL,
 } from "./llm.js";
 export { type PromptBattery, PROMPT_BATTERY } from "./battery.js";
@@ -89,6 +91,11 @@ export interface HarnessOptions {
   lifetimeScript?: readonly ScriptedSession[];
   /** The fixed versioned prompt battery (stamped into the report). Default `PROMPT_BATTERY`. */
   battery?: PromptBattery;
+  /**
+   * Cap the stage-silhouette embeds to ~N per stage (a cheaper estimate for the paid live run).
+   * Omit to embed every snapshot. Does not affect the fake-judge tests (they don't pass it).
+   */
+  maxSilhouettePerStage?: number;
 }
 
 /** The aggregate report from one full harness run — every metric's result + run provenance. */
@@ -144,7 +151,12 @@ export async function runHarness(
     trialsPerSoul: battery.prompts.length,
   });
   const traj3 = await trajectory(traj, render, judge);
-  const silhouette = await stageSilhouette(traj, render, judge);
+  const silhouette = await stageSilhouette(
+    traj,
+    render,
+    judge,
+    opts.maxSilhouettePerStage !== undefined ? { maxPerStage: opts.maxSilhouettePerStage } : {},
+  );
   const ablation5 = await ablation(souls[0] as Soul, render, judge);
 
   return {

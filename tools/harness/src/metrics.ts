@@ -25,21 +25,26 @@ import { BASELINE, type Judge } from "./judge.js";
 import type { RenderFn } from "./render.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Tunable thresholds (Phase 3 placeholders — sane defaults, override via metric opts).
+// Tunable thresholds. These defaults are calibrated to the FAKE-JUDGE embed scale (0–1 aspect
+// vectors) — the CI default. The first real run (2026-06-06, Haiku) found the LLM judge's embed
+// lives at a very different scale (per-aspect ablation sensitivity ~4–5.5 vs the fake's ~1.0; embed
+// distances ~0.4–0.7), so the live judge needs a DIFFERENT set. Those live-calibrated values are
+// recorded in tools/harness/FINDINGS.md and applied via the per-metric `opts`, NOT here — changing
+// these defaults would break the fake-judge suite. Re-derive both with `run live` + `run calibrate`.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Below this mean per-aspect distance from BASELINE, recovered traits "sit at baseline" → alarm. */
-export const STICKER_EPS = 0.05; // TUNABLE (Phase 3)
+export const STICKER_EPS = 0.05; // fake-scale default; live ≈ 0.12 (see FINDINGS.md)
 /** Diagonal rate at/above this = voices are distinct enough to attribute. */
-export const DIAGONAL_THRESHOLD = 0.75; // TUNABLE (Phase 3)
+export const DIAGONAL_THRESHOLD = 0.75; // live cross-soul is degenerate (see FINDINGS.md "leak")
 /** Net day-1→year-2 embedding displacement must be ≥ this to be perceptible drift. */
-export const PERCEPTIBILITY = 0.1; // TUNABLE (Phase 3)
+export const PERCEPTIBILITY = 0.1; // fake-scale default; live ≈ 0.20 (see FINDINGS.md)
 /** No single step-to-step embedding jump may exceed this (continuous drift, not a teleport). */
-export const JERK = 0.15; // TUNABLE (Phase 3)
+export const JERK = 0.15; // fake-scale default; live noise floor ≈ 0.69 (embed-quantized — FINDINGS.md)
 /** Mean silhouette at/above this = life-stages cluster (read distinct in style space). */
-export const SILHOUETTE_THRESHOLD = 0.1; // TUNABLE (Phase 3)
+export const SILHOUETTE_THRESHOLD = 0.1; // live renderer scores ≈0.056 — stages don't cluster yet (FINDINGS.md)
 /** Per-±0.10 ablation shift below this magnitude = the renderer is deaf to that aspect → flat. */
-export const FLAT_EPS = 0.01; // TUNABLE (Phase 3)
+export const FLAT_EPS = 0.01; // fake-scale default; live ≈ 2.0 (see FINDINGS.md)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Small vector helpers.
@@ -290,13 +295,37 @@ export async function stageSilhouette(
   traj: Trajectory,
   render: RenderFn,
   judge: Judge,
-  opts: { silhouetteThreshold?: number } = {},
+  opts: { silhouetteThreshold?: number; maxPerStage?: number } = {},
 ): Promise<StageSilhouetteResult> {
   const threshold = opts.silhouetteThreshold ?? SILHOUETTE_THRESHOLD;
 
-  // Embed every snapshot, tagged by its stage.
+  // Optionally subsample snapshots evenly WITHIN each stage before embedding — a documented,
+  // cheaper silhouette estimate (each embed is a real model call). Default: embed every snapshot.
+  let snapshots = traj.snapshots;
+  if (opts.maxPerStage && opts.maxPerStage > 0) {
+    const byStage = new Map<Stage, typeof traj.snapshots>();
+    for (const snap of traj.snapshots) {
+      const arr = byStage.get(snap.stage) ?? [];
+      arr.push(snap);
+      byStage.set(snap.stage, arr);
+    }
+    const kept: typeof traj.snapshots = [];
+    for (const arr of byStage.values()) {
+      const k = Math.min(opts.maxPerStage, arr.length);
+      for (let i = 0; i < k; i++) {
+        kept.push(
+          arr[
+            Math.round((i * (arr.length - 1)) / Math.max(1, k - 1))
+          ] as Trajectory["snapshots"][number],
+        );
+      }
+    }
+    snapshots = kept;
+  }
+
+  // Embed each (sub)sampled snapshot, tagged by its stage.
   const points: { stage: Stage; vec: number[] }[] = [];
-  for (const snap of traj.snapshots) {
+  for (const snap of snapshots) {
     const soul = soulAt(traj.birth, snap.v, snap.mp);
     points.push({ stage: snap.stage, vec: await judge.embed(render(soul).text) });
   }
