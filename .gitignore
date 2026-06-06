@@ -11,3 +11,10 @@ coverage/
 
 # Local working context (not shared)
 CLAUDE.md
+
+# viz-exploration scratch — verification screenshots & tooling artifacts
+/*.png
+.playwright-mcp/
+docs/.playwright-mcp/
+scripts/_tune.mjs
+docs/_tune.html

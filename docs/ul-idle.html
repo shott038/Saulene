@@ -1,0 +1,125 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ul — idle animations (separated)</title>
+<style>
+  body { margin: 0; background: #1e1e1e; color: #888; font: 13px ui-sans-serif, system-ui; padding: 32px; }
+  h1 { color: #ccc; font-size: 14px; font-weight: 600; letter-spacing: .05em; margin: 0 0 24px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 18px; }
+  .tile { background: #161616; border: 1px solid #2a2a2a; border-radius: 10px; padding: 22px 18px 16px; width: 300px; }
+  .tile.full { width: 380px; border-color: #3a4a55; }
+  .stage { display: flex; justify-content: center; align-items: center; height: 150px; }
+  .cell { display: grid; }
+  .cell i { display: block; }
+  .cap { text-align: center; margin-top: 12px; letter-spacing: .08em; text-transform: uppercase; font-size: 11px; color: #999; }
+  .sub { text-align: center; margin-top: 4px; font-size: 10px; color: #6a8; letter-spacing: .04em; }
+</style>
+<h1>ul — idle animations, separated</h1>
+<div class="grid" id="grid"></div>
+
+<script>
+const BODY = [
+  ".........cc........",
+  ".......ccffcc......",
+  "......cfeffefc.....",
+  "......cffffffc.....",
+  ".......ccffcc......",
+  ".........cc........",
+];
+const W = 19, H = 7;
+const EYES = [[2, 8], [2, 11]];
+const HEX = { c: "#b8b8b8", f: "#ffffff", e: "#161310" }, WISP = "#ffffff";
+
+const breatheDy = (t) => { const p = t % 40; return p >= 14 && p < 26 ? 1 : 0; };       // demo tile
+const breatheIdle = (t) => { const p = t % 68; return p >= 14 && p < 26 ? 1 : 0; };     // full idle: ~2x gap
+const G = {
+  blink:  [{ blink: 1 }, { blink: 1 }],
+  double: [{ blink: 1 }, { blink: 1 }, {}, {}, { blink: 1 }, { blink: 1 }],
+  lookL:  Array(8).fill({ eye: -1 }),
+  lookR:  Array(8).fill({ eye: 1 }),
+  swayL:  Array(13).fill({ dx: -1 }),
+  swayR:  Array(13).fill({ dx: 1 }),
+};
+
+// idle wisp variants (body-relative cells; mirror axis col 9.5 → 19-c)
+// w = % chance on each swap roll (sums to 100). Absolute roll — may re-land on the same one.
+const sym = (cells) => cells.concat(cells.map(([r, c]) => [r, 19 - c]));
+const ORIGINAL = sym([[3, 3], [3, 4], [5, 4], [5, 5]]);
+const VARIANTS = [
+  { key: "original",       cells: ORIGINAL, w: 15 },
+  { key: "short top",      cells: sym([[3, 4], [5, 4], [5, 5]]), w: 15 },
+  { key: "short bottom",   cells: sym([[3, 3], [3, 4], [5, 5]]), w: 15 },
+  { key: "clip top-right", cells: ORIGINAL.filter(([r, c]) => !(r === 3 && c === 16)), w: 15 },
+  { key: "clip top-left",  cells: ORIGINAL.filter(([r, c]) => !(r === 3 && c === 3)), w: 15 },
+  { key: "two stubs",      cells: sym([[2, 3], [2, 4], [4, 3], [4, 4]]), w: 13 },
+  { key: "baby clouds",    cells: sym([[2, 1], [2, 2], [3, 0], [3, 1], [3, 2]]), w: 8 },
+  { key: "minimal",        cells: sym([[3, 4]]), w: 4 },
+];
+const POOL = VARIANTS.flatMap((v, i) => Array(v.w).fill(i)); // length 100
+const rollVariant = () => POOL[Math.floor(Math.random() * POOL.length)];
+const SWAP_MS = 135000; // 2:15
+
+function compose(wisps, { dx = 0, blink = 0, eye = 0 } = {}, dy = 0) {
+  const px = Array.from({ length: H }, () => Array(W).fill(null));
+  for (let r = 0; r < BODY.length; r++) for (let c = 0; c < W; c++) {  // body (bobs with dy)
+    const ch = BODY[r][c];
+    if (ch === ".") continue;
+    const rr = r + dy, cc = c + dx;
+    if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = ch === "e" ? HEX.f : HEX[ch];
+  }
+  if (!blink) for (const [er, ec] of EYES) {
+    const rr = er + dy, cc = ec + eye + dx;
+    if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = HEX.e;
+  }
+  for (const [r, c] of wisps) {  // wisps: dx only — they stay put while the body breathes
+    const cc = c + dx;
+    if (r >= 0 && r < H && cc >= 0 && cc < W && !px[r][cc]) px[r][cc] = WISP;
+  }
+  return px;
+}
+function cycle(frames, rest) { const len = frames.length + rest; return (t) => ({ ov: t % len < frames.length ? frames[t % len] : {}, dy: 0 }); }
+
+const TILES = [
+  { name: "breathing", f: (t) => ({ ov: {}, dy: breatheDy(t) }) },
+  { name: "blink", f: cycle(G.blink, 22) },
+  { name: "double blink", f: cycle(G.double, 26) },
+  { name: "look left", f: cycle(G.lookL, 18) },
+  { name: "look right", f: cycle(G.lookR, 18) },
+  { name: "sway left", f: cycle(G.swayL, 13) },
+  { name: "sway right", f: cycle(G.swayR, 13) },
+  { name: "full idle (random)", full: true },
+];
+
+const grid = document.getElementById("grid");
+const tiles = TILES.map((t) => {
+  const tile = document.createElement("div"); tile.className = "tile" + (t.full ? " full" : "");
+  const stage = document.createElement("div"); stage.className = "stage";
+  const cell = document.createElement("div"); cell.className = "cell";
+  const px = t.full ? 16 : 13;
+  cell.style.gridTemplateColumns = `repeat(${W}, ${px}px)`;
+  cell.style.gridTemplateRows = `repeat(${H}, ${px}px)`;
+  const cells = []; for (let i = 0; i < W * H; i++) { const c = document.createElement("i"); cell.appendChild(c); cells.push(c); }
+  stage.appendChild(cell); tile.appendChild(stage);
+  const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = t.name; tile.appendChild(cap);
+  let sub; if (t.full) { sub = document.createElement("div"); sub.className = "sub"; tile.appendChild(sub); }
+  if (sub) sub.textContent = "› " + VARIANTS[0].key;
+  grid.appendChild(tile);
+  return { t, cells, sub, rnd: { active: null, gi: 0, cooldown: 30, variant: 0, lastSwap: null } };
+});
+const paint = (cells, px) => { for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) cells[r * W + c].style.background = px[r][c] || "transparent"; };
+
+const NAMES = ["blink", "double", "lookL", "lookR", "swayL", "swayR"];
+let tick = 0;
+setInterval(() => {
+  for (const tl of tiles) {
+    if (!tl.t.full) { const s = tl.t.f(tick); paint(tl.cells, compose(ORIGINAL, s.ov, s.dy)); continue; }
+    const r = tl.rnd, now = performance.now();
+    if (r.lastSwap === null) r.lastSwap = now;
+    if (now - r.lastSwap >= SWAP_MS && !r.active) { r.variant = rollVariant(); r.lastSwap = now; tl.sub.textContent = "› " + VARIANTS[r.variant].key; }
+    let ov = {};
+    if (r.active) { ov = r.active[r.gi++]; if (r.gi >= r.active.length) { r.active = null; r.cooldown = 25 + Math.floor(Math.random() * 45); } }
+    else if (--r.cooldown <= 0) { r.active = G[NAMES[Math.floor(Math.random() * NAMES.length)]]; r.gi = 0; }
+    paint(tl.cells, compose(VARIANTS[r.variant].cells, ov, breatheIdle(tick)));
+  }
+  tick++;
+}, 80);
+</script>
