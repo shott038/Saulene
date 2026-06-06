@@ -149,7 +149,66 @@ function toAnsi(px, indent = "  ") {
 }
 const CHAR_ROWS = Math.ceil(H / 2);
 
-if (process.argv.includes("--export-response")) {
+if (process.argv.includes("--export-session")) {
+  // DEMO: a realistic session run through the conflict-resolving DIRECTOR.
+  // Modes (one at a time, high→low): compaction > filling > thinking > idle (ctxHigh = idle body).
+  // Pulses (one-shot, preempt by priority): error > success > prompt > retry > response.
+  const CUR = ORIGINAL;
+  const PULSE = {
+    prompt:   [{ ov: { wdy: 1 }, dy: -1 }, { ov: { wdy: 1 }, dy: -1 }],
+    success:  Array.from({ length: 14 }, () => ({ ov: { success: 1 }, dy: -1 })),
+    error:    ERROR.map((o) => ({ ov: o, dy: 0 })),                       // ERROR frames carry noWisps
+    retry:    Array.from({ length: 5 }, () => ({ ov: { noWisps: 1 }, dy: 0 })),
+    response: Array.from({ length: 9 }, () => ({ ov: { win: -1 }, dy: 0 })),
+  };
+  const PRIO = { error: 5, success: 4, prompt: 3, retry: 2, response: 1 };
+  const SCAN = [-1, 0, 1, 0];
+
+  let th = false, fl = false, comp = 0, ctxHigh = false;      // mode inputs
+  let pulse = null, pi = 0, gest = null, gi = 0, gcool = 24, scan = 0;
+  const fire = (n) => { if (comp <= 0 && (!pulse || PRIO[n] > PRIO[pulse])) { pulse = n; pi = 0; } };
+  const at = {                                               // tick → event (a full turn + edge cases)
+    12: () => fire("prompt"),        // user hits enter
+    16: () => { th = true; },        // thinking starts
+    30: () => { fl = true; },        // context starts filling (preempts thinking visually)
+    52: () => { fl = false; },       // intake stops → back to thinking
+    64: () => { th = false; fire("success"); }, // generation done + success
+    86: () => fire("response"),      // response finished
+    100: () => fire("error"),        // a command errored
+    114: () => fire("retry"),        // retry attempt
+    126: () => { comp = 40; },       // context compaction (exclusive)
+    172: () => { ctxHigh = true; },  // context now >80% → full-cloud rest, swap off
+    188: () => fire("prompt"),       // a hop on the full cloud
+  };
+
+  const frames = [];
+  for (let t = 0; t < 212; t++) {
+    if (at[t]) at[t]();
+    let p;
+    if (comp > 0) {                                          // EXCLUSIVE — nothing else runs
+      pulse = gest = null;
+      p = compose([], { eyeDy: 1, eye: SCAN[scan++ % 4] }, 0); comp--;
+    } else if (pulse) {                                      // a one-shot is playing
+      const f = PULSE[pulse][pi++];
+      p = compose(f.ov.noWisps ? [] : CUR, f.ov, f.dy);
+      if (pi >= PULSE[pulse].length) { pulse = null; gcool = 22; }
+    } else if (fl) {                                         // context filling (mode > thinking)
+      p = compose(CUR, { blink: 1, open: 2 }, 1);
+    } else if (th) {                                         // thinking — wisps pulled in
+      p = compose(CUR, { win: 5 }, 0);
+    } else {                                                 // idle / ctxHigh rest: breathe + gestures
+      let ov = {};
+      if (gest) { ov = G[gest][gi++]; if (gi >= G[gest].length) { gest = null; gcool = 24; } }
+      else if (--gcool <= 0) { gest = GESTURES[t % GESTURES.length]; gi = 0; }
+      if (ctxHigh) ov = { ...ov, ctx: 1 };
+      p = compose(CUR, ov, breatheDy(t));
+    }
+    frames.push({ d: 80, p });
+  }
+  const out = fileURLToPath(new URL("../docs/ul-session-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-response")) {
   // response finished: wisps push out 1px on both sides, then back to default
   const frames = [], cells = ORIGINAL;
   for (let t = 0; t < 6; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });

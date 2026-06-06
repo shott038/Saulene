@@ -47,8 +47,24 @@ NOT BUILT (deferred — Samuel called it done here): model/mode change · big fi
 permission prompt waiting · git commit/push.
 
 compose() overlay flags: dx, dy, blink, eye (+eyeDy), wdy (wisp y), win (wisp in/out), open(1|2),
-ctx, success, noWisps. Bodies: BODY, BODY_SUCCESS, BODY_CTXHIGH, BODY_OPEN[2]. When wiring to real
-hooks, add a priority/debounce layer (compaction is exclusive; error/success interrupt small ones).
+ctx, success, noWisps. Bodies: BODY, BODY_SUCCESS, BODY_CTXHIGH, BODY_OPEN[2].
+
+## 🎛 CONFLICT RESOLUTION / DIRECTOR (the orchestration layer)
+All animations share the same channels (body shape · dx/dy · eyes · wisps), so a director decides
+what plays when triggers overlap. Two layers:
+- MODES (sustained, exactly one, high→low): compaction > context-filling > thinking > ctx>80% rest > idle
+- PULSES (one-shot, preempt by priority): error > success > prompt > retry > response
+Rules: (1) compaction is EXCLUSIVE — suspends idle loop, pulses, gestures, swap, breathing until done;
+(2) one mode at a time (filling beats thinking while context climbs; revert to thinking after);
+(3) pulses preempt by priority, play to completion, then hand back to the mode; (4) idle gestures +
+the 2:15 swap only run at rest (idle / >80%); (5) >80% governs only the resting body — transient
+states use their own body then settle back.
+Proof: `node scripts/ul-idle.mjs --export-session` → docs/ul-session.gif runs a full lifecycle
+(prompt→thinking→filling→success→response→error→retry→COMPACTION→idle→>80%) with every overlap
+resolved. This director is currently DEMO-only; the live player still uses ad-hoc idle logic — to
+ship, promote the director to the runtime engine and drive it from the real hooks.
+
+Combined preview of everything: docs/ul-all.html (sprite variations + all animations, one page).
 
 ## ✅ KEEPERS — these are the real, locked visuals
 - **The default ul look** — the locked cloud-spirit geometry.
