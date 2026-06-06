@@ -104,6 +104,9 @@ const VARIANTS = [
 const POOL = VARIANTS.flatMap((v, i) => Array(v.w).fill(i)); // length 100
 const rollVariant = () => POOL[Math.floor(Math.random() * POOL.length)];
 const SWAP_MS = 135000; // 2:15
+const TWINK = sym([[-1, 5], [5, 5]]);  // four corner sparkle dots (super-rare twinkle easter egg)
+const TWINKLE_CHANCE = 0.0025;         // 0.25% at each 2:15 roll
+const TWINKLE_LEN = 18;                // fast strobe length (ticks)
 
 /** Compose one frame → 2D array of hex|null. Body bobs with dy; wisps take dx only. */
 function compose(wisps, { dx = 0, blink = 0, eye = 0, eyeDy = 0, open = 0, wdy = 0, ctx = 0, win = 0, success = 0 } = {}, dy = 0) {
@@ -149,7 +152,16 @@ function toAnsi(px, indent = "  ") {
 }
 const CHAR_ROWS = Math.ceil(H / 2);
 
-if (process.argv.includes("--export-session")) {
+if (process.argv.includes("--export-twinkle")) {
+  // super-rare twinkle easter egg: corner sparkle dots strobe fast, then back to idle
+  const frames = [], cells = ORIGINAL;
+  for (let t = 0; t < 6; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
+  for (let i = 0; i < TWINKLE_LEN; i++) frames.push({ d: 55, p: compose(i % 2 === 0 ? TWINK : [], {}, breatheDy(6 + i)) });
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
+  const out = fileURLToPath(new URL("../docs/ul-twinkle-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-session")) {
   // DEMO: a realistic session run through the conflict-resolving DIRECTOR.
   // Modes (one at a time, high→low): compaction > filling > thinking > idle (ctxHigh = idle body).
   // Pulses (one-shot, preempt by priority): error > success > prompt > retry > response.
@@ -323,15 +335,22 @@ if (process.argv.includes("--export-session")) {
   // live player: breathing + random gestures + occasional variant swap
   process.stdout.write("\x1b[?25l");
   let active = null, gi = 0, cooldown = 30, tick = 0, first = true;
-  let variant = 0, lastSwap = Date.now();
+  let variant = 0, lastSwap = Date.now(), twinkle = 0;
   const cleanup = () => { process.stdout.write("\x1b[?25h\n"); process.exit(0); };
   process.on("SIGINT", cleanup);
   const timer = setInterval(() => {
-    if (Date.now() - lastSwap >= SWAP_MS && !active) { variant = rollVariant(); lastSwap = Date.now(); }
-    let ov = {};
-    if (active) { ov = active[gi++]; if (gi >= active.length) { active = null; cooldown = 25 + Math.floor(Math.random() * 45); } }
-    else if (--cooldown <= 0) { active = G[GESTURES[Math.floor(Math.random() * GESTURES.length)]]; gi = 0; }
-    const wisps = ov.noWisps ? [] : VARIANTS[variant].cells;
+    if (Date.now() - lastSwap >= SWAP_MS && !active && twinkle <= 0) {  // 2:15 roll
+      lastSwap = Date.now();
+      if (Math.random() < TWINKLE_CHANCE) twinkle = TWINKLE_LEN;        // super-rare sparkle
+      else variant = rollVariant();
+    }
+    let ov = {}, wisps;
+    if (twinkle > 0) { wisps = (twinkle-- % 2 === 0) ? TWINK : []; }   // normal wisps gone — only sparkles
+    else {
+      if (active) { ov = active[gi++]; if (gi >= active.length) { active = null; cooldown = 25 + Math.floor(Math.random() * 45); } }
+      else if (--cooldown <= 0) { active = G[GESTURES[Math.floor(Math.random() * GESTURES.length)]]; gi = 0; }
+      wisps = ov.noWisps ? [] : VARIANTS[variant].cells;
+    }
     const frame = toAnsi(compose(wisps, ov, breatheDy(tick++)));
     if (!first) process.stdout.write(`\x1b[${CHAR_ROWS}A`);
     first = false;

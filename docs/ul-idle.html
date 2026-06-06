@@ -70,6 +70,9 @@ const VARIANTS = [
 const POOL = VARIANTS.flatMap((v, i) => Array(v.w).fill(i)); // length 100
 const rollVariant = () => POOL[Math.floor(Math.random() * POOL.length)];
 const SWAP_MS = 135000; // 2:15
+const TWINK = sym([[-1, 5], [5, 5]]);  // four corner sparkle dots (super-rare twinkle easter egg)
+const TWINKLE_CHANCE = 0.0025;         // 0.25% at each 2:15 roll
+const TWINKLE_LEN = 18;                // fast strobe length (ticks)
 
 function compose(wisps, { dx = 0, blink = 0, eye = 0, eyeDy = 0, open = 0, wdy = 0, ctx = 0, win = 0, success = 0 } = {}, dy = 0) {
   const px = Array.from({ length: H }, () => Array(W).fill(null));
@@ -133,6 +136,12 @@ const TILES = [
       if (k < 35) return { ov: { blink: 1, open: 1 }, dy: 1 };   // closing — quick frame 1 (one beat)
       return { ov: {}, dy: 0 };                                  // back to default
     } },
+  { name: "TWINKLE (rare · 0.25% @ 2:15)", f: (t) => {
+      const k = t % 40;
+      const strobe = k < TWINKLE_LEN;                        // fast sparkle strobe, then rest
+      const wisps = strobe ? (k % 2 === 0 ? TWINK : []) : ORIGINAL;  // wisps gone during the twinkle
+      return { ov: {}, dy: breatheDy(t), wisps };
+    } },
   { name: "full idle (random)", full: true },
   { name: "context >80% (full cloud, no swap)", full: true, ctxHigh: true },
 ];
@@ -151,7 +160,7 @@ const tiles = TILES.map((t) => {
   let sub; if (t.full) { sub = document.createElement("div"); sub.className = "sub"; tile.appendChild(sub); }
   if (sub) sub.textContent = t.ctxHigh ? "swap OFF · idle anims on" : "› " + VARIANTS[0].key;
   grid.appendChild(tile);
-  return { t, cells, sub, rnd: { active: null, gi: 0, cooldown: 30, variant: 0, lastSwap: null } };
+  return { t, cells, sub, rnd: { active: null, gi: 0, cooldown: 30, variant: 0, lastSwap: null, twinkle: 0 } };
 });
 const paint = (cells, px) => { for (let r = 0; r < H; r++) for (let c = 0; c < W; c++) cells[r * W + c].style.background = px[r][c] || "transparent"; };
 
@@ -159,18 +168,31 @@ const NAMES = ["blink", "double", "lookL", "lookR", "swayL", "swayR"];
 let tick = 0;
 setInterval(() => {
   for (const tl of tiles) {
-    if (!tl.t.full) { const s = tl.t.f(tick); paint(tl.cells, compose(s.ov.noWisps ? [] : ORIGINAL, s.ov, s.dy)); continue; }
+    if (!tl.t.full) {
+      const s = tl.t.f(tick);
+      const w = s.wisps !== undefined ? s.wisps : (s.ov.noWisps ? [] : ORIGINAL);
+      paint(tl.cells, compose(w, s.ov, s.dy)); continue;
+    }
     const r = tl.rnd, now = performance.now();
     if (!tl.t.ctxHigh) {  // context >80% locks the sprite — no 2:15 swap
       if (r.lastSwap === null) r.lastSwap = now;
-      if (now - r.lastSwap >= SWAP_MS && !r.active) { r.variant = rollVariant(); r.lastSwap = now; if (tl.sub) tl.sub.textContent = "› " + VARIANTS[r.variant].key; }
+      if (now - r.lastSwap >= SWAP_MS && !r.active && r.twinkle <= 0) {
+        r.lastSwap = now;
+        if (Math.random() < TWINKLE_CHANCE) { r.twinkle = TWINKLE_LEN; }   // super-rare easter egg
+        else { r.variant = rollVariant(); if (tl.sub) tl.sub.textContent = "› " + VARIANTS[r.variant].key; }
+      }
+    }
+    const base = tl.t.ctxHigh ? ORIGINAL : VARIANTS[r.variant].cells;
+    if (r.twinkle > 0) {                          // sparkle strobe — wisps gone, only the dots, then back
+      const on = r.twinkle-- % 2 === 0;
+      paint(tl.cells, compose(on ? TWINK : [], tl.t.ctxHigh ? { ctx: 1 } : {}, breatheIdle(tick)));
+      continue;
     }
     let ov = {};
     if (r.active) { ov = r.active[r.gi++]; if (r.gi >= r.active.length) { r.active = null; r.cooldown = 25 + Math.floor(Math.random() * 45); } }
     else if (--r.cooldown <= 0) { r.active = G[NAMES[Math.floor(Math.random() * NAMES.length)]]; r.gi = 0; }
-    const cells = tl.t.ctxHigh ? ORIGINAL : VARIANTS[r.variant].cells;  // ctx-high keeps original wisps
     if (tl.t.ctxHigh) ov = { ...ov, ctx: 1 };                            // "full" cloud body
-    paint(tl.cells, compose(ov.noWisps ? [] : cells, ov, breatheIdle(tick)));
+    paint(tl.cells, compose(ov.noWisps ? [] : base, ov, breatheIdle(tick)));
   }
   tick++;
 }, 80);
