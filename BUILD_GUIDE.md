@@ -21,7 +21,8 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       disuseAnchor, stubbornness, sex, mp, lastUsedAt)
 - [x] Biome (lint+format), GitHub Actions CI (`pnpm check`), `LICENSE` (MIT) — per the
       Code Architecture Playbook (formatter + CI from commit one)
-- [ ] Add `zod` when perception/storage land (boundary validation of LLM output + soul.json)
+- [x] Add `zod` when perception/storage land (boundary validation of LLM output + soul.json) —
+      landed with `storage`: zod validates `soul.json` + every history record on load, fail-loud
 
 ## Phase 1 — The pure engine (`packages/core`) — build bottom-up
 - [x] **Brick 1 — Birth seeding** (`src/birth`)
@@ -116,7 +117,10 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 
 ## Phase 4 — The shippable plugin (LLM + IO edge)
 - [ ] `perception`: ledger schema + rubric + evidence-quote hard validation; `LlmClient` port.
-- [ ] `storage`: soul.json + full history; two-shelf (diary | voice-samples) with label wall.
+- [x] `storage`: soul.json (atomic save, zod fail-loud load, missing≠malformed) + append-only full
+      history (ledger/diary/voice JSONL); two-shelf (diary | voice-samples) with physical label wall;
+      retrieval-by-state-distance (`nearestVoiceSamples`, L2 over 10 aspects); quality-gate +
+      provenance seams. Injected `root`; imports only `core`; own on-disk schemas. 19 tests.
 - [ ] `plugin/hooks`: SessionStart inject (level-gated) + Stop→drift pipeline.
 - [ ] `plugin/mcp`: MCP server (state/identity tools); `plugin/skill`: `/ul` command.
 - [ ] Setup wizard: mandatory reality warning → watch-only birth → pick level. Neglect-death 90d clock.
