@@ -86,6 +86,17 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [ ] Tune the ~9 globals + per-stage table against harness + simulator.
 - [ ] Build out the 5 renderer layers (rulebook → fewshot → spine → framing → drift) + fingerprint.
 
+**Tuning findings surfaced by the Phase 2 simulator (address here, NOT in core yet):**
+- **Break rarity is entirely knob-dependent.** A relentless negative-fit grind pins tension far
+  above θ, so the engine re-breaks every refractory window (~106 ruptures over a 320-session life
+  in the acceptance test). That's the intended extreme script exposing the mechanism, not a bug —
+  but it means break *rarity* lives in θ/ρ/refractory tuning (and, at the real plugin edge, in
+  rate-limiting `accrueMp`). Tune so breaks are rare + earned in realistic usage.
+- **`betaGain` (stubborn resentment) is unbounded.** Each stubborn break multiplies it by
+  `(1+resentmentGain·stubbornness)`; under repeated breaks it compounded to ~3e8 in the test.
+  Harmless while breaks are genuinely rare, but consider a `betaGain` ceiling when tuning — a core
+  change to weigh once the break-rarity knobs are set.
+
 ## Phase 4 — The shippable plugin (LLM + IO edge)
 - [ ] `perception`: ledger schema + rubric + evidence-quote hard validation; `LlmClient` port.
 - [ ] `storage`: soul.json + full history; two-shelf (diary | voice-samples) with label wall.
