@@ -13,6 +13,7 @@
 
 import { ASPECTS, type Aspect, type Soul } from "@saulene/core";
 import { INTENSITY_LADDER, INTERACTIONS, RENDERER_VERSION, RULEBOOK } from "./rulebook.js";
+import { type VoiceOpts, buildVoiceBlock } from "./voice.js";
 
 export { RENDERER_VERSION } from "./rulebook.js";
 
@@ -24,10 +25,22 @@ export interface RenderedInjection {
   fragments: Record<Aspect, string>;
   /** Deterministic hash of the soul state — stamped per transcript for exact replay. */
   soulHash: string;
+  /**
+   * The Layer-2 few-shot voice block folded into `text` (empty when there's no corpus). Kept as
+   * a separate field for testability; NOT a per-aspect fragment, so ablation locality is exact.
+   */
+  voiceBlock: string;
 }
 
-/** Pure + versioned: same soul → same injection. */
-export type RenderFn = (soul: Soul) => RenderedInjection;
+/**
+ * Optional Layer-2 inputs. Absent / empty `voiceSamples` ⇒ `render` returns EXACTLY today's
+ * Layer-1 output (byte-identical; `voiceBlock` is `""`). With samples ⇒ the few-shot voice
+ * block is folded into `text`.
+ */
+export type RenderOpts = VoiceOpts;
+
+/** Pure + versioned: same (soul, opts) → same injection. */
+export type RenderFn = (soul: Soul, opts?: RenderOpts) => RenderedInjection;
 
 const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
 
@@ -91,17 +104,40 @@ function assemble(fragments: Record<Aspect, string>, v: Record<Aspect, number>):
   return blocks.join("\n\n");
 }
 
-/** Concrete `RenderFn`. Pure + versioned: same soul → byte-identical injection. */
-export function render(soul: Soul): RenderedInjection {
+/**
+ * Concrete `RenderFn`. Pure + versioned: same (soul, opts) → byte-identical injection.
+ *
+ * Layer 2 is ADDITIVE. With no `voiceSamples`, `text` is exactly the Layer-1 floor and
+ * `voiceBlock` is `""` — byte-identical to the pre-Layer-2 renderer. With samples, the
+ * assembled few-shot voice block is appended to `text` only; `fragments` stay the pure
+ * per-aspect Layer-1 fragments (ablation locality intact) and `soulHash` covers soul state
+ * alone (samples/corpus are inputs, not state, so they don't move the replay hash).
+ */
+export function render(soul: Soul, opts: RenderOpts = {}): RenderedInjection {
   const fragments = Object.fromEntries(
     ASPECTS.map((a) => [a, renderFragment(a, soul.v[a])]),
   ) as Record<Aspect, string>;
+  const layer1 = assemble(fragments, soul.v);
+  const voiceBlock = buildVoiceBlock(soul, opts);
   return {
-    text: assemble(fragments, soul.v),
+    text: voiceBlock ? `${layer1}\n\n${voiceBlock}` : layer1,
     fragments,
     soulHash: soulHash(soul),
+    voiceBlock,
   };
 }
 
 export { RULEBOOK, INTENSITY_LADDER, INTERACTIONS } from "./rulebook.js";
 export type { Directive, AspectRule, Interaction } from "./rulebook.js";
+export {
+  type VoiceSampleInput,
+  type VoiceOpts,
+  buildVoiceBlock,
+  rankVoiceSamples,
+  syntheticExemplars,
+  realFraction,
+  VOICE_BLOCK_SIZE,
+  VOICE_FRAMING,
+  CROSSFADE_HALF_SAT,
+  OLD_MODEL_PENALTY,
+} from "./voice.js";

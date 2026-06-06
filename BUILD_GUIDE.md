@@ -105,7 +105,16 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       (INFP→INFJ), stubborn still resists (betaGain ~3). **Expression-side tuning (rulebook + the
       ~9 renderer knobs vs the harness) still PENDING** — needs a real LLM `Judge` (Phase 4); the
       harness fakeJudge can't score felt prose. Per-stage magnitude table not yet swept.
-- [ ] Build out the 5 renderer layers (rulebook → fewshot → spine → framing → drift) + fingerprint.
+- [~] Build out the 5 renderer layers (rulebook → fewshot → spine → framing → drift) + fingerprint.
+      **Layer 2 done** (`layers/voice.ts`): state-matched real-voice few-shot, the pervade engine.
+      `render(soul, opts?)` is now additive — no `voiceSamples` ⇒ byte-identical Layer-1 floor
+      (`voiceBlock: ""`, all 16 floor tests green); with samples ⇒ a few-shot block folds into
+      `text` only (`fragments`/`soulHash` stay pure Layer-1, ablation locality intact). Samples
+      weighted by state-distance (local L2 — renderer can't import storage, so a local
+      `VoiceSampleInput` type) × recency × provenance (off-current-model down-weight); mandatory
+      anti-quotation/topic-orthogonal framing line; cold-start crossfade `c/(c+20)` from
+      soul-derived synthetic exemplars → real samples as `corpusSize` grows. 16 new tests green.
+      Layers 3 (spine), 4 (anti-decay re-inject), 5 (drift) + fingerprint still pending.
 
 **Tuning findings surfaced by the Phase 2 simulator — both now RESOLVED (see the tuning item above):**
 - ✅ **Break rarity** — fixed by the plasticity-gated threshold + `tensionIntake`/`refractory` retune.
