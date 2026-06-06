@@ -87,8 +87,11 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       `TUNABLE (Phase 3)`; headerless first-person assembly; FNV-1a `soulHash` over `v`. 16 tests green
       (golden, no-trait-names, continuous-not-banded, ablation locality+monotonicity, hash). Layers 2–5
       remain stubs (next item).
-- [ ] Harness metrics: trait-recovery anti-sticker · cross-soul confusion · longitudinal
-      trajectory · stage silhouette · per-aspect ablation.
+- [x] Harness metrics: trait-recovery anti-sticker · cross-soul confusion · longitudinal
+      trajectory · stage silhouette · per-aspect ablation. `tools/harness` parameterized over a
+      locally-pinned `RenderFn` (NOT a renderer import) + a fakeable `Judge` port; deterministic
+      `fakeJudge` + fake renderers exercise each metric's pass AND fail path. 15 tests green.
+      Thresholds are `// TUNABLE (Phase 3)` placeholders.
 - [ ] Tune the ~9 globals + per-stage table against harness + simulator.
 - [ ] Build out the 5 renderer layers (rulebook → fewshot → spine → framing → drift) + fingerprint.
 
