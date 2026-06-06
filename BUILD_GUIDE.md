@@ -36,14 +36,18 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       `mp → Stage`, per-stage plasticity/stage_sign/volatility table, rate-capped MP accrual,
       transition bands + per-ul jitter. Pure. Shape locked (ordering, signs, adolescent bump);
       magnitudes are placeholders flagged `TUNABLE (Phase 3)`. 15 deterministic tests green.
-- [ ] **Brick 4 — Consolidation update rule** (`src/engine`) — the heart
-      nurture spring (room-bounded) + linear set-point pull + sticky decay-floor atrophy.
-      `(soul, knobs, stage) → soul`. **Test:** positive drive → toward bound; idle aspect →
-      slumps to floor `s+(1−κ)(v⁰−s)` and halts; old-age plasticity≈0 freezes the blend.
+- [x] **Brick 4 — Consolidation update rule** (`src/engine`) — the heart
+      nurture spring (room-bounded) + linear set-point pull + sticky decay-floor atrophy +
+      leaky-accumulator fast loop. `consolidate(soul, knobs, stage) → soul`, `charge(...)`.
+      Pure/deterministic. 17 tests green (nurture→bound; linear set-point reach; idle slump
+      halts at floor `s+(1−κ)(v⁰−s)`; anchor reset / no compounding; old-age freeze;
+      adolescence repels; stubbornness scaling; determinism). Magnitudes `TUNABLE (Phase 3)`.
 - [ ] **Brick 5 — Tension + breaking points** (`src/engine`)
       tension charge/leak, threshold + refractory, clay reconfigures / stubborn hardens,
       capped set-point migration. Pure.
-- [ ] Define `GlobalKnobs` (α, β, λ, ρ, θ, J, refractory, atrophyRate, κ) as data.
+- [x] Define `GlobalKnobs` (α, β, λ, ρ, θ, J, refractory, atrophyRate, κ) as data.
+      Done in `src/engine` (`GlobalKnobs` + `DEFAULT_KNOBS`): Brick 4 consumes α/β/λ/κ/atrophyRate;
+      ρ/θ/J/refractory are placeholders Brick 5 reads.
 
 ## Phase 2 — Simulator (`tools/simulator`)
 - [ ] `lifetime(seed, sessionScript[], knobs) → trajectory` — drive scripted ledgers through
@@ -73,6 +77,9 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 ---
 
 ### Right now
-**Next brick: Phase 1 · Brick 4 — Consolidation update rule** (`src/engine`) — the heart.
-It imports the Brick 3 stage table (`plasticity`/`stageSign`/`volatility`) and Brick 1's birth
-seeding. Build the nurture spring (room-bounded) + linear set-point pull + sticky decay-floor atrophy.
+**Next brick: Phase 1 · Brick 5 — Tension + breaking points** (`src/engine`).
+Brick 4 (consolidation) is in — it consumes the Brick 3 stage table and the `GlobalKnobs`
+data. Brick 5 layers tension charge/leak onto the fast loop, then the threshold + refractory
+breaking point (clay reconfigures / stubborn hardens) and the rare capped set-point migration —
+reading the ρ/θ/J/refractory placeholders already defined in `GlobalKnobs`. Note: Brick 1 (birth
+seeding) and Brick 2 (MBTI projection) are still stubs — pick them up alongside.
