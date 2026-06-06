@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ul — palettes & animations</title>
+<style>
+  :root{--bg:#f3efe6;--ink:#2b2620;--muted:#9a9286;--line:#e7e0d3;--accent:#d97757;
+    --serif:"Iowan Old Style",Palatino,Georgia,serif;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.5;-webkit-font-smoothing:antialiased}
+  header{max-width:1120px;margin:0 auto;padding:48px 28px 8px;text-align:center}
+  h1{font-size:34px;margin:0 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--muted);font-size:16px;max-width:560px;margin:0 auto}
+  h2{max-width:1120px;margin:34px auto 14px;padding:0 28px;font-family:var(--mono);font-size:12px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  section{max-width:1120px;margin:0 auto;padding:0 28px}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+  .card{margin:0;background:#fbf8f2;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;box-shadow:0 6px 18px rgba(120,90,60,.05)}
+  .art{padding:10px 10px 2px}
+  .art svg{display:block;border-radius:12px}
+  figcaption{display:flex;align-items:center;gap:8px;justify-content:center;padding:8px 0 14px;width:100%}
+  figcaption strong{font-size:15px;font-weight:600}
+  .sw{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
+  .matrix{max-width:1120px;margin:0 auto 60px;padding:0 28px;display:grid;gap:8px;
+    grid-template-columns:repeat(6,1fr)}
+  .cell{background:#fbf8f2;border:1px solid var(--line);border-radius:12px;display:flex;justify-content:center;padding:6px}
+  .cell svg{display:block;border-radius:8px}
+  footer{max-width:1120px;margin:0 auto;padding:0 28px 60px;color:var(--muted);font-family:var(--mono);font-size:12px}
+</style></head><body>
+<header>
+  <h1>the <span style="color:var(--accent)">ul</span> — palettes &amp; animations</h1>
+  <p class="sub">One locked cloud-spirit, recolored and brought to life. The outline stays ink; only the body fill swaps. Every card is animated.</p>
+</header>
+
+<h2>Palettes <span style="color:var(--line)">·</span> 14 variants (idle animation)</h2>
+<section><div class="grid"><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u0" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Cumulus">
+  <style>
+    @keyframes u0-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u0-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u0-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u0-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u0-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u0-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u0-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u0 .wisp line{transform-box:fill-box;animation:u0-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u0 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u0-float 3.6s ease-in-out infinite}
+    #u0 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u0-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u0 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#ffffff"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Cumulus</strong><span class="sw" style="background:#ffffff"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u1" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Storm">
+  <style>
+    @keyframes u1-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u1-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u1-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u1-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u1-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u1-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u1-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u1 .wisp line{transform-box:fill-box;animation:u1-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u1 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u1-float 3.6s ease-in-out infinite}
+    #u1 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u1-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u1 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#c2c7cf"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Storm</strong><span class="sw" style="background:#c2c7cf"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u2" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Slate">
+  <style>
+    @keyframes u2-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u2-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u2-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u2-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u2-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u2-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u2-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u2 .wisp line{transform-box:fill-box;animation:u2-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u2 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u2-float 3.6s ease-in-out infinite}
+    #u2 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u2-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u2 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#8e99a8"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Slate</strong><span class="sw" style="background:#8e99a8"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u3" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Sky">
+  <style>
+    @keyframes u3-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u3-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u3-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u3-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u3-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u3-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u3-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u3 .wisp line{transform-box:fill-box;animation:u3-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u3 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u3-float 3.6s ease-in-out infinite}
+    #u3 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u3-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u3 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bfe1f6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Sky</strong><span class="sw" style="background:#bfe1f6"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u4" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Sea">
+  <style>
+    @keyframes u4-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u4-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u4-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u4-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u4-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u4-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u4-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u4 .wisp line{transform-box:fill-box;animation:u4-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u4 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u4-float 3.6s ease-in-out infinite}
+    #u4 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u4-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u4 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#9fd6cf"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Sea</strong><span class="sw" style="background:#9fd6cf"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u5" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Mint">
+  <style>
+    @keyframes u5-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u5-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u5-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u5-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u5-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u5-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u5-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u5 .wisp line{transform-box:fill-box;animation:u5-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u5 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u5-float 3.6s ease-in-out infinite}
+    #u5 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u5-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u5 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#b9e7d0"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Mint</strong><span class="sw" style="background:#b9e7d0"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u6" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Gold">
+  <style>
+    @keyframes u6-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u6-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u6-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u6-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u6-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u6-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u6-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u6 .wisp line{transform-box:fill-box;animation:u6-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u6 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u6-float 3.6s ease-in-out infinite}
+    #u6 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u6-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u6 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f4d57e"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Gold</strong><span class="sw" style="background:#f4d57e"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u7" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Peach">
+  <style>
+    @keyframes u7-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u7-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u7-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u7-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u7-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u7-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u7-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u7 .wisp line{transform-box:fill-box;animation:u7-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u7 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u7-float 3.6s ease-in-out infinite}
+    #u7 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u7-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u7 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f7c8a3"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Peach</strong><span class="sw" style="background:#f7c8a3"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u8" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Ember">
+  <style>
+    @keyframes u8-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u8-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u8-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u8-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u8-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u8-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u8-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u8 .wisp line{transform-box:fill-box;animation:u8-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u8 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u8-float 3.6s ease-in-out infinite}
+    #u8 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u8-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u8 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f0a079"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Ember</strong><span class="sw" style="background:#f0a079"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="u9" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Rose">
+  <style>
+    @keyframes u9-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u9-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u9-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u9-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u9-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u9-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u9-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u9 .wisp line{transform-box:fill-box;animation:u9-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u9 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u9-float 3.6s ease-in-out infinite}
+    #u9 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u9-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u9 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f4b9c7"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Rose</strong><span class="sw" style="background:#f4b9c7"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="ua" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Lilac">
+  <style>
+    @keyframes ua-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ua-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ua-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ua-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ua-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ua-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ua-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ua .wisp line{transform-box:fill-box;animation:ua-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ua .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ua-float 3.6s ease-in-out infinite}
+    #ua .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:ua-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#ua *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#dcc6f0"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Lilac</strong><span class="sw" style="background:#dcc6f0"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="ub" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Dusk">
+  <style>
+    @keyframes ub-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ub-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ub-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ub-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ub-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ub-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ub-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ub .wisp line{transform-box:fill-box;animation:ub-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ub .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ub-float 3.6s ease-in-out infinite}
+    #ub .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:ub-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#ub *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bcaee6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Dusk</strong><span class="sw" style="background:#bcaee6"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="uc" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Midnight">
+  <style>
+    @keyframes uc-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uc-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uc-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uc-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uc-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uc-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uc-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uc .wisp line{transform-box:fill-box;animation:uc-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uc .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uc-float 3.6s ease-in-out infinite}
+    #uc .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:uc-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#uc *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#e7e2d9"/>
+  <g class="wisp" stroke="#6b7488" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#3a4252"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#f4f1ea"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Midnight</strong><span class="sw" style="background:#3a4252"></span></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="ud" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Ink">
+  <style>
+    @keyframes ud-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ud-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ud-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ud-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ud-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ud-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ud-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ud .wisp line{transform-box:fill-box;animation:ud-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ud .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ud-float 3.6s ease-in-out infinite}
+    #ud .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:ud-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#ud *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#e7e2d9"/>
+  <g class="wisp" stroke="#564f45" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#000000"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#1d1b17"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#f4f1ea"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Ink</strong><span class="sw" style="background:#1d1b17"></span></figcaption></figure></div></section>
+
+<h2>Animations <span style="color:var(--line)">·</span> default palette</h2>
+<section><div class="grid"><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="ue" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Cumulus">
+  <style>
+    @keyframes ue-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ue-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ue-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ue-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ue-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ue-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ue-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ue .wisp line{transform-box:fill-box;animation:ue-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ue .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ue-float 3.6s ease-in-out infinite}
+    #ue .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:ue-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#ue *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#ffffff"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Idle</strong></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="uf" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Cumulus">
+  <style>
+    @keyframes uf-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uf-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uf-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uf-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uf-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uf-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uf-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uf .wisp line{transform-box:fill-box;animation:uf-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uf .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uf-breathe 3.4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#uf *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#ffffff"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Breathe</strong></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="ug" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Cumulus">
+  <style>
+    @keyframes ug-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ug-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ug-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ug-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ug-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ug-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ug-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ug .wisp line{transform-box:fill-box;animation:ug-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ug .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ug-sway 4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#ug *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#ffffff"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Sway</strong></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="uh" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Cumulus">
+  <style>
+    @keyframes uh-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uh-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uh-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uh-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uh-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uh-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uh-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uh .wisp line{transform-box:fill-box;animation:uh-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uh .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uh-bob 2.6s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#uh *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#ffffff"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Bob</strong></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="ui" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Cumulus">
+  <style>
+    @keyframes ui-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ui-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ui-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ui-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ui-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ui-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ui-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ui .wisp line{transform-box:fill-box;animation:ui-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ui .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ui-bounce 1.9s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#ui *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#ffffff"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Bounce</strong></figcaption></figure><figure class="card"><div class="art"><svg xmlns="http://www.w3.org/2000/svg" id="uj" viewBox="0 0 300 200" width="180" height="120" role="img" aria-label="ul — Cumulus">
+  <style>
+    @keyframes uj-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uj-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uj-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uj-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uj-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uj-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uj-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uj .wisp line{transform-box:fill-box;animation:uj-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    
+    #uj .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:uj-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#uj *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#ffffff"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+    <figcaption><strong>Blink</strong></figcaption></figure></div></section>
+
+<h2>Palette × animation</h2>
+<div class="matrix"><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="uk" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Sky">
+  <style>
+    @keyframes uk-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uk-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uk-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uk-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uk-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uk-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uk-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uk .wisp line{transform-box:fill-box;animation:uk-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uk .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uk-float 3.6s ease-in-out infinite}
+    #uk .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:uk-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#uk *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bfe1f6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="ul" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Sky">
+  <style>
+    @keyframes ul-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ul-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ul-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ul-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ul-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ul-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ul-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ul .wisp line{transform-box:fill-box;animation:ul-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ul .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ul-breathe 3.4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#ul *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bfe1f6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="um" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Sky">
+  <style>
+    @keyframes um-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes um-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes um-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes um-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes um-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes um-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes um-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #um .wisp line{transform-box:fill-box;animation:um-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #um .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:um-sway 4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#um *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bfe1f6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="un" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Sky">
+  <style>
+    @keyframes un-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes un-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes un-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes un-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes un-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes un-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes un-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #un .wisp line{transform-box:fill-box;animation:un-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #un .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:un-bob 2.6s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#un *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bfe1f6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="uo" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Sky">
+  <style>
+    @keyframes uo-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uo-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uo-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uo-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uo-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uo-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uo-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uo .wisp line{transform-box:fill-box;animation:uo-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uo .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uo-bounce 1.9s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#uo *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bfe1f6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="up" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Sky">
+  <style>
+    @keyframes up-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes up-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes up-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes up-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes up-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes up-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes up-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #up .wisp line{transform-box:fill-box;animation:up-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    
+    #up .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:up-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#up *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bfe1f6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="uq" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Ember">
+  <style>
+    @keyframes uq-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uq-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uq-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uq-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uq-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uq-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uq-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uq .wisp line{transform-box:fill-box;animation:uq-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uq .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uq-float 3.6s ease-in-out infinite}
+    #uq .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:uq-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#uq *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f0a079"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="ur" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Ember">
+  <style>
+    @keyframes ur-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ur-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ur-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ur-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ur-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ur-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ur-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ur .wisp line{transform-box:fill-box;animation:ur-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ur .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ur-breathe 3.4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#ur *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f0a079"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="us" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Ember">
+  <style>
+    @keyframes us-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes us-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes us-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes us-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes us-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes us-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes us-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #us .wisp line{transform-box:fill-box;animation:us-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #us .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:us-sway 4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#us *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f0a079"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="ut" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Ember">
+  <style>
+    @keyframes ut-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ut-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ut-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ut-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ut-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ut-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ut-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ut .wisp line{transform-box:fill-box;animation:ut-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ut .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ut-bob 2.6s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#ut *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f0a079"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="uu" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Ember">
+  <style>
+    @keyframes uu-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uu-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uu-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uu-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uu-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uu-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uu-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uu .wisp line{transform-box:fill-box;animation:uu-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uu .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uu-bounce 1.9s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#uu *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f0a079"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="uv" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Ember">
+  <style>
+    @keyframes uv-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uv-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uv-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uv-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uv-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uv-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uv-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uv .wisp line{transform-box:fill-box;animation:uv-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    
+    #uv .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:uv-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#uv *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#f0a079"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="uw" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Dusk">
+  <style>
+    @keyframes uw-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uw-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uw-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uw-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uw-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uw-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uw-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uw .wisp line{transform-box:fill-box;animation:uw-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uw .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uw-float 3.6s ease-in-out infinite}
+    #uw .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:uw-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#uw *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bcaee6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="ux" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Dusk">
+  <style>
+    @keyframes ux-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes ux-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes ux-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes ux-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes ux-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes ux-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes ux-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #ux .wisp line{transform-box:fill-box;animation:ux-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #ux .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:ux-breathe 3.4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#ux *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bcaee6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="uy" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Dusk">
+  <style>
+    @keyframes uy-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uy-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uy-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uy-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uy-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uy-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uy-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uy .wisp line{transform-box:fill-box;animation:uy-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uy .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uy-sway 4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#uy *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bcaee6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="uz" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Dusk">
+  <style>
+    @keyframes uz-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes uz-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes uz-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes uz-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes uz-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes uz-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes uz-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #uz .wisp line{transform-box:fill-box;animation:uz-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #uz .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:uz-bob 2.6s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#uz *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bcaee6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="u10" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Dusk">
+  <style>
+    @keyframes u10-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u10-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u10-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u10-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u10-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u10-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u10-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u10 .wisp line{transform-box:fill-box;animation:u10-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u10 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u10-bounce 1.9s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#u10 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bcaee6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="u11" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Dusk">
+  <style>
+    @keyframes u11-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u11-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u11-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u11-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u11-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u11-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u11-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u11 .wisp line{transform-box:fill-box;animation:u11-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    
+    #u11 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u11-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u11 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#efeae0"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#bcaee6"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="u12" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Midnight">
+  <style>
+    @keyframes u12-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u12-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u12-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u12-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u12-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u12-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u12-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u12 .wisp line{transform-box:fill-box;animation:u12-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u12 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u12-float 3.6s ease-in-out infinite}
+    #u12 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u12-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u12 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#e7e2d9"/>
+  <g class="wisp" stroke="#6b7488" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#3a4252"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#f4f1ea"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="u13" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Midnight">
+  <style>
+    @keyframes u13-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u13-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u13-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u13-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u13-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u13-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u13-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u13 .wisp line{transform-box:fill-box;animation:u13-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u13 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u13-breathe 3.4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#u13 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#e7e2d9"/>
+  <g class="wisp" stroke="#6b7488" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#3a4252"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#f4f1ea"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="u14" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Midnight">
+  <style>
+    @keyframes u14-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u14-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u14-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u14-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u14-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u14-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u14-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u14 .wisp line{transform-box:fill-box;animation:u14-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u14 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u14-sway 4s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#u14 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#e7e2d9"/>
+  <g class="wisp" stroke="#6b7488" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#3a4252"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#f4f1ea"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="u15" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Midnight">
+  <style>
+    @keyframes u15-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u15-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u15-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u15-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u15-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u15-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u15-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u15 .wisp line{transform-box:fill-box;animation:u15-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u15 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u15-bob 2.6s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#u15 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#e7e2d9"/>
+  <g class="wisp" stroke="#6b7488" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#3a4252"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#f4f1ea"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="u16" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Midnight">
+  <style>
+    @keyframes u16-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u16-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u16-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u16-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u16-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u16-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u16-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u16 .wisp line{transform-box:fill-box;animation:u16-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    #u16 .cloud{transform-origin:150px 108px;transform-box:fill-box;animation:u16-bounce 1.9s ease-in-out infinite}
+    
+    @media (prefers-reduced-motion:reduce){#u16 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#e7e2d9"/>
+  <g class="wisp" stroke="#6b7488" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#3a4252"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#f4f1ea"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div><div class="cell"><svg xmlns="http://www.w3.org/2000/svg" id="u17" viewBox="0 0 300 200" width="120" height="80" role="img" aria-label="ul — Midnight">
+  <style>
+    @keyframes u17-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes u17-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+    @keyframes u17-sway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+    @keyframes u17-bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-4px) rotate(1.5deg)}}
+    @keyframes u17-bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-11px)}40%{transform:translateY(0)}55%{transform:translateY(-4px)}70%{transform:translateY(0)}}
+    @keyframes u17-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes u17-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.35;transform:translateX(-3px)}}
+    #u17 .wisp line{transform-box:fill-box;animation:u17-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
+    
+    #u17 .eyes{transform-origin:150px 108px;transform-box:fill-box;animation:u17-blink 5s ease-in-out infinite}
+    @media (prefers-reduced-motion:reduce){#u17 *{animation:none!important}}
+  </style>
+  <rect width="300" height="200" rx="18" fill="#e7e2d9"/>
+  <g class="wisp" stroke="#6b7488" stroke-width="4" stroke-linecap="round"><line x1="66" y1="100" x2="80" y2="100" style="--i:0"/><line x1="46" y1="112" x2="64" y2="112" style="--i:1"/><line x1="62" y1="124" x2="76" y2="124" style="--i:2"/><line x1="220" y1="100" x2="234" y2="100" style="--i:3"/><line x1="236" y1="112" x2="254" y2="112" style="--i:4"/><line x1="224" y1="124" x2="238" y2="124" style="--i:5"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle cx="150" cy="100" r="31"/><circle cx="110" cy="102" r="20"/><circle cx="126" cy="86" r="24"/><circle cx="150" cy="74" r="30"/><circle cx="174" cy="86" r="24"/><circle cx="190" cy="102" r="20"/><circle cx="126" cy="116" r="24"/><circle cx="150" cy="128" r="30"/><circle cx="174" cy="116" r="24"/></g>
+    <g fill="#3a4252"><circle cx="150" cy="100" r="26"/><circle cx="110" cy="102" r="15"/><circle cx="126" cy="86" r="19"/><circle cx="150" cy="74" r="25"/><circle cx="174" cy="86" r="19"/><circle cx="190" cy="102" r="15"/><circle cx="126" cy="116" r="19"/><circle cx="150" cy="128" r="25"/><circle cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#f4f1ea"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div></div>
+
+<footer>Geometry locked in docs/ul-default.svg · regenerate: node scripts/build-ul-gallery.mjs</footer>
+</body></html>

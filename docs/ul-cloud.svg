@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="450" height="300" role="img" aria-label="ul — wind-spirit cloud mascot">
+  <!-- preview background (remove for the real asset) -->
+  <rect width="300" height="200" fill="#efeae0"/>
+
+  <!-- calm wisps, balanced on both edges, varying distance from the body -->
+  <g stroke="#161310" stroke-width="4" stroke-linecap="round">
+    <line x1="66"  y1="100" x2="80"  y2="100"/>
+    <line x1="46"  y1="112" x2="64"  y2="112"/>
+    <line x1="62"  y1="124" x2="76"  y2="124"/>
+    <line x1="220" y1="100" x2="234" y2="100"/>
+    <line x1="236" y1="112" x2="254" y2="112"/>
+    <line x1="224" y1="124" x2="238" y2="124"/>
+  </g>
+
+  <!-- ink silhouette: a ring of puffs (top, sides AND bottom) → rounded cloud all around -->
+  <g fill="#161310">
+    <circle cx="150" cy="100" r="31"/>
+    <circle cx="110" cy="102" r="20"/>
+    <circle cx="126" cy="86"  r="24"/>
+    <circle cx="150" cy="74"  r="30"/>
+    <circle cx="174" cy="86"  r="24"/>
+    <circle cx="190" cy="102" r="20"/>
+    <circle cx="126" cy="116" r="24"/>
+    <circle cx="150" cy="128" r="30"/>
+    <circle cx="174" cy="116" r="24"/>
+  </g>
+
+  <!-- body inset by ~5px (leaves the outline ring); becomes palette color later -->
+  <g fill="#ffffff">
+    <circle cx="150" cy="100" r="26"/>
+    <circle cx="110" cy="102" r="15"/>
+    <circle cx="126" cy="86"  r="19"/>
+    <circle cx="150" cy="74"  r="25"/>
+    <circle cx="174" cy="86"  r="19"/>
+    <circle cx="190" cy="102" r="15"/>
+    <circle cx="126" cy="116" r="19"/>
+    <circle cx="150" cy="128" r="25"/>
+    <circle cx="174" cy="116" r="19"/>
+  </g>
+
+  <!-- face: two dot eyes -->
+  <circle cx="143" cy="108" r="3.6" fill="#161310"/>
+  <circle cx="157" cy="108" r="3.6" fill="#161310"/>
+</svg>

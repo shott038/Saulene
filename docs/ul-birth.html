@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ul — birth</title>
+<style>
+  :root{--bg:#f3efe6;--ink:#2b2620;--muted:#9a9286;--line:#e7e0d3;--accent:#d97757;
+    --serif:"Iowan Old Style",Palatino,Georgia,serif;--mono:"SF Mono",ui-monospace,Menlo,monospace}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:radial-gradient(120% 90% at 50% 30%,#faf7f0,var(--bg));
+    color:var(--ink);font-family:var(--serif);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+  h1{font-size:30px;margin:8px 0 0;letter-spacing:-.02em;font-weight:600}
+  h1 .ul{color:var(--accent)}
+  .sub{color:var(--muted);font-size:15px;margin:0;max-width:460px;text-align:center}
+  .stage{background:#fbf8f2;border:1px solid var(--line);border-radius:24px;padding:10px;
+    box-shadow:0 12px 40px rgba(120,90,60,.08)}
+  .stage svg{display:block;border-radius:16px}
+  .row{display:flex;gap:10px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--muted)}
+  button{font-family:var(--mono);font-size:13px;background:var(--accent);color:#fff;border:0;
+    padding:9px 18px;border-radius:10px;cursor:pointer;letter-spacing:.03em}
+  button:hover{background:#c8623f}
+  .phases{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.04em}
+</style></head><body>
+  <h1>an <span class="ul">ul</span> is born</h1>
+  <p class="sub">Watch-only. On first install, this plays once — then the ul lives.</p>
+  <div class="stage" id="stage"><svg xmlns="http://www.w3.org/2000/svg" id="birth" viewBox="0 0 300 200" width="440" height="293" role="img" aria-label="an ul is born">
+  <style>
+    @keyframes birth-form{0%{opacity:0;transform:scale(.06)}60%{opacity:1}100%{opacity:1;transform:scale(1)}}
+    @keyframes birth-gather{0%{opacity:0;transform:translateX(calc(var(--dir)*48px))}100%{opacity:.9;transform:translateX(0)}}
+    @keyframes birth-spark{0%{opacity:0;transform:scale(.2)}40%{opacity:.85}100%{opacity:0;transform:scale(2.8)}}
+    @keyframes birth-flush{0%,100%{fill:#ffffff}45%{fill:#ffd7a0}}
+    @keyframes birth-eyeopen{0%{opacity:0;transform:scaleY(.05)}100%{opacity:1;transform:scaleY(1)}}
+    @keyframes birth-breath{0%{transform:scale(1)}35%{transform:scale(1.07)}100%{transform:scale(1)}}
+    @keyframes birth-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes birth-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+    @keyframes birth-drift{0%,100%{opacity:.9;transform:translateX(0)}50%{opacity:.4;transform:translateX(-3px)}}
+
+    #birth .p{transform-box:fill-box;transform-origin:center;animation:birth-form .6s cubic-bezier(.2,1.3,.4,1) both;animation-delay:calc(.9s + var(--i)*.1s)}
+    #birth .wisp line{transform-box:fill-box;animation:birth-gather .8s ease both, birth-drift 3s ease-in-out infinite;animation-delay:calc(.2s + var(--i)*.08s), 3.9s}
+    #birth .glow{transform-box:fill-box;transform-origin:150px 108px;animation:birth-spark 1.1s ease 1.9s both}
+    #birth .body{animation:birth-flush 1.3s ease 1.9s 1}
+    #birth .eyes{transform-box:fill-box;transform-origin:150px 108px;animation:birth-eyeopen .45s ease both, birth-blink 5s ease-in-out infinite;animation-delay:2.6s, 4.6s}
+    #birth .cloud{transform-box:fill-box;transform-origin:150px 108px;animation:birth-breath 1s ease both, birth-float 3.6s ease-in-out infinite;animation-delay:2.7s, 4s}
+    @media (prefers-reduced-motion:reduce){#birth *{animation-duration:.01s!important;animation-delay:0s!important}}</style>
+  <defs><filter id="birth-b" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="11"/></filter></defs>
+  <circle class="glow" cx="150" cy="108" r="42" fill="#ffce86" filter="url(#birth-b)"/>
+  <g class="wisp" stroke="#161310" stroke-width="4" stroke-linecap="round"><line style="--i:0;--dir:-1" x1="66" y1="100" x2="80" y2="100"/><line style="--i:1;--dir:-1" x1="46" y1="112" x2="64" y2="112"/><line style="--i:2;--dir:-1" x1="62" y1="124" x2="76" y2="124"/><line style="--i:3;--dir:1" x1="220" y1="100" x2="234" y2="100"/><line style="--i:4;--dir:1" x1="236" y1="112" x2="254" y2="112"/><line style="--i:5;--dir:1" x1="224" y1="124" x2="238" y2="124"/></g>
+  <g class="cloud">
+    <g fill="#161310"><circle class="p" style="--i:0" cx="150" cy="100" r="31"/><circle class="p" style="--i:1" cx="110" cy="102" r="20"/><circle class="p" style="--i:2" cx="126" cy="86" r="24"/><circle class="p" style="--i:3" cx="150" cy="74" r="30"/><circle class="p" style="--i:4" cx="174" cy="86" r="24"/><circle class="p" style="--i:5" cx="190" cy="102" r="20"/><circle class="p" style="--i:6" cx="126" cy="116" r="24"/><circle class="p" style="--i:7" cx="150" cy="128" r="30"/><circle class="p" style="--i:8" cx="174" cy="116" r="24"/></g>
+    <g class="body" fill="#ffffff"><circle class="p" style="--i:0" cx="150" cy="100" r="26"/><circle class="p" style="--i:1" cx="110" cy="102" r="15"/><circle class="p" style="--i:2" cx="126" cy="86" r="19"/><circle class="p" style="--i:3" cx="150" cy="74" r="25"/><circle class="p" style="--i:4" cx="174" cy="86" r="19"/><circle class="p" style="--i:5" cx="190" cy="102" r="15"/><circle class="p" style="--i:6" cx="126" cy="116" r="19"/><circle class="p" style="--i:7" cx="150" cy="128" r="25"/><circle class="p" style="--i:8" cx="174" cy="116" r="19"/></g>
+    <g class="eyes" fill="#161310"><circle cx="143" cy="108" r="3.6"/><circle cx="157" cy="108" r="3.6"/></g>
+  </g>
+</svg></div>
+  <div class="row"><button id="replay">↻ replay</button>
+    <span class="phases">gather → condense → spark → wake → first breath → idle</span></div>
+<script>
+  const stage = document.getElementById('stage');
+  const original = stage.firstElementChild;
+  document.getElementById('replay').addEventListener('click', () => {
+    const fresh = original.cloneNode(true);
+    stage.replaceChild(fresh, stage.firstElementChild);
+  });
+</script>
+</body></html>
