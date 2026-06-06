@@ -10,9 +10,10 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.102.0",
     "@saulene/core": "workspace:*",
-    "@saulene/renderer": "workspace:*",
     "@saulene/perception": "workspace:*",
+    "@saulene/renderer": "workspace:*",
     "@saulene/storage": "workspace:*"
   }
 }
