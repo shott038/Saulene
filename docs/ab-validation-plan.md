@@ -57,13 +57,40 @@ A handful of distinct souls (≈4–8) spanning the type space, plus life-stage 
 (young/adult/old) pulled from `tools/simulator` trajectories — so we also test whether an *older*
 ul behaves measurably differently from a young one.
 
+## Transport: drive the local Claude Code subscription, NOT the metered API
+Both arms AND the judge run through the local `claude` CLI in headless mode, so the whole run is
+covered by the user's Claude Code subscription — zero metered API spend. This also means we test
+the *actual shipping model*, not an API stand-in.
+
+- **Response collection (the two arms), per battery prompt:**
+  - Arm A (treatment): `claude -p "<prompt>" --append-system-prompt "<render(soul).text>" --model <m> --output-format json`
+    — `--append-system-prompt` is the faithful analog of the real SessionStart hook (it adds the ul
+    voice on top of Claude Code's normal system prompt).
+  - Arm B (control): identical call with NO `--append-system-prompt`.
+  - Disable tools for clean conversational answers (e.g. `--disallowedTools` / restrictive
+    `--permission-mode`); parse the response text out of the JSON envelope.
+- **Judge**: same `claude -p ... --output-format json` with a system prompt instructing it to rate
+  the 10 behavioral dimensions 0–1 and emit JSON (behaviorally anchored, no trait names).
+- **Subscription auth, not API key:** ensure `ANTHROPIC_API_KEY` is NOT present in the subprocess
+  env (it would route to metered billing). Strip it from the spawned env so the CLI uses the
+  logged-in subscription.
+- **No embeddings endpoint on the subscription.** The subscription CLI has no `embed`. So for the
+  embed-based metrics (trajectory / stage-silhouette / ablation) substitute the **judge's recovered
+  10-aspect vector** as the embedding — semantically the right space anyway. The `Judge.embed`
+  port stays, backed by `recoverTraits` under the hood for the subscription build.
+- **Rate/throughput:** subscription has usage limits; keep N souls × P prompts × k samples modest
+  for the first run, prefer sequential (or low parallelism) calls, and cache responses (the judge
+  worker's `cache.ts`) so re-runs don't re-spend quota.
+
 ## Where it lives / boundaries
 - Dev-only tooling: extend `tools/harness` with a model-in-the-loop A/B runner (e.g.
-  `abrun.ts`) + a response collector that calls the base model. Injection text comes from the
-  REAL `@saulene/renderer` `render(soul)`.
-- `core` / `renderer` stay PURE. All LLM IO lives in the dev-only harness.
-- **Never in CI / default `pnpm test`** — real model calls cost money + are non-deterministic.
-  Gate behind an explicit script + `ANTHROPIC_API_KEY`. The `fakeJudge` suite stays the CI default.
+  `abrun.ts`) + a response collector that shells out to the `claude` CLI. Injection text comes
+  from the REAL `@saulene/renderer` `render(soul)`. Built as the CONTINUATION of the
+  `real-judge-tuning` branch (the live-run harness already lives there) — NOT a parallel worktree,
+  to avoid two workers editing `tools/harness/` at once.
+- `core` / `renderer` stay PURE. All LLM IO (CLI subprocess) lives in the dev-only harness.
+- **Never in CI / default `pnpm test`** — real model calls are non-deterministic + consume the
+  subscription. Gate behind an explicit script. The `fakeJudge` suite stays the CI default.
 
 ## Outputs (commit these — this run is the evidence)
 - The empirical base-Claude persona vector `r_B` (and feed it back as the harness's calibrated
