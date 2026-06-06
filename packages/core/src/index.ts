@@ -10,3 +10,4 @@ export * from "./state/index.js";
 export * from "./engine/index.js";
 export * from "./stages/index.js";
 export * from "./birth/index.js";
+export * from "./mbti/index.js";
