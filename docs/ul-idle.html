@@ -25,7 +25,17 @@ const BODY = [
   ".......ccffcc......",
   ".........cc........",
 ];
-const W = 19, H = 7;
+const BODY_SUCCESS = [  // success: white cap + grey band on top (raised / happy)
+  "........ffff.......", ".......cccccc......", "......cfeffefc.....", "......cffffffc.....", ".......ccffcc......", ".........cc........",
+];
+const BODY_CTXHIGH = [  // context > 80%: "full" cloud — flat grey caps top & bottom
+  "........cccc.......", ".......cffffc......", "......cfeffefc.....", "......cffffffc.....", ".......cffffc......", "........cccc.......",
+];
+const BODY_OPEN = [  // context-filling: no eyes, top opens — nubs pulse apart (frame1 → frame2)
+  [ "........c..c.......", ".......cffffc......", "......cffffffc.....", "......cffffffc.....", ".......ccffcc......", ".........cc........" ],
+  [ ".......c....c......", ".......cffffc......", "......cffffffc.....", "......cffffffc.....", ".......ccffcc......", ".........cc........" ],
+];
+const W = 19, H = 8, BASE = 1; // BASE = resting row offset → 1px headroom for the prompt hop
 const EYES = [[2, 8], [2, 11]];
 const HEX = { c: "#b8b8b8", f: "#ffffff", e: "#161310" }, WISP = "#ffffff";
 
@@ -38,6 +48,9 @@ const G = {
   lookR:  Array(8).fill({ eye: 1 }),
   swayL:  Array(13).fill({ dx: -1 }),
   swayR:  Array(13).fill({ dx: 1 }),
+  // reactive — error: fast jerk L→R→L→center, wisps vanish for the whole shake
+  error:  [{ dx: -2, noWisps: 1 }, { dx: -2, noWisps: 1 }, { dx: 2, noWisps: 1 }, { dx: 2, noWisps: 1 },
+           { dx: -2, noWisps: 1 }, { dx: -2, noWisps: 1 }, { dx: 0, noWisps: 1 }, { dx: 0, noWisps: 1 }],
 };
 
 // idle wisp variants (body-relative cells; mirror axis col 9.5 → 19-c)
@@ -58,21 +71,23 @@ const POOL = VARIANTS.flatMap((v, i) => Array(v.w).fill(i)); // length 100
 const rollVariant = () => POOL[Math.floor(Math.random() * POOL.length)];
 const SWAP_MS = 135000; // 2:15
 
-function compose(wisps, { dx = 0, blink = 0, eye = 0 } = {}, dy = 0) {
+function compose(wisps, { dx = 0, blink = 0, eye = 0, eyeDy = 0, open = 0, wdy = 0, ctx = 0, win = 0, success = 0 } = {}, dy = 0) {
   const px = Array.from({ length: H }, () => Array(W).fill(null));
-  for (let r = 0; r < BODY.length; r++) for (let c = 0; c < W; c++) {  // body (bobs with dy)
-    const ch = BODY[r][c];
+  const body = open ? BODY_OPEN[open - 1] : success ? BODY_SUCCESS : ctx ? BODY_CTXHIGH : BODY;
+  for (let r = 0; r < body.length; r++) for (let c = 0; c < W; c++) {  // body (bobs with dy)
+    const ch = body[r][c];
     if (ch === ".") continue;
-    const rr = r + dy, cc = c + dx;
+    const rr = r + BASE + dy, cc = c + dx;
     if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = ch === "e" ? HEX.f : HEX[ch];
   }
-  if (!blink) for (const [er, ec] of EYES) {
-    const rr = er + dy, cc = ec + eye + dx;
+  if (!blink && !open) for (const [er, ec] of EYES) {
+    const rr = er + BASE + dy + eyeDy, cc = ec + eye + dx;
     if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = HEX.e;
   }
-  for (const [r, c] of wisps) {  // wisps: dx only — they stay put while the body breathes
-    const cc = c + dx;
-    if (r >= 0 && r < H && cc >= 0 && cc < W && !px[r][cc]) px[r][cc] = WISP;
+  for (const [r, c] of wisps) {  // wisps: wdy offset; win pulls them inward (thinking) until absorbed
+    const inward = c < 9.5 ? win : -win;
+    const rr = r + BASE + wdy, cc = c + inward + dx;
+    if (rr >= 0 && rr < H && cc >= 0 && cc < W && !px[rr][cc]) px[rr][cc] = WISP;
   }
   return px;
 }
@@ -86,7 +101,40 @@ const TILES = [
   { name: "look right", f: cycle(G.lookR, 18) },
   { name: "sway left", f: cycle(G.swayL, 13) },
   { name: "sway right", f: cycle(G.swayR, 13) },
+  { name: "PROMPT SUBMIT", f: (t) => { const k = t % 22; return k < 2 ? { ov: { wdy: 1 }, dy: -1 } : { ov: {}, dy: 0 }; } },
+  { name: "THINKING", f: (t) => {
+      const k = t % 70;
+      let win = 0;
+      if (k >= 10 && k < 15) win = k - 9;        // slide in 1..5
+      else if (k >= 15 && k < 50) win = 5;       // thinking — wisps gone
+      else if (k >= 50 && k < 55) win = 55 - k;  // slide back out 5..1
+      return { ov: { win }, dy: 0 };
+    } },
+  { name: "SUCCESS", f: (t) => {
+      const k = t % 30;
+      if (k < 8) return { ov: {}, dy: 0 };                 // default position
+      if (k < 22) return { ov: { success: 1 }, dy: -1 };   // up 1px + white-cap success body
+      return { ov: {}, dy: 0 };                            // back to default
+    } },
+  { name: "RETRY", f: (t) => ({ ov: { noWisps: (t % 18) < 5 ? 1 : 0 }, dy: 0 }) },
+  { name: "RESPONSE FINISHED", f: (t) => {
+      const k = t % 24;
+      return { ov: { win: (k >= 6 && k < 15) ? -1 : 0 }, dy: 0 };  // wisps out 1px then back
+    } },
+  { name: "CONTEXT COMPACTION (exclusive)", f: (t) => {
+      const seq = [-1, 0, 1, 0];                     // fast scan: left · middle · right · middle
+      return { ov: { eyeDy: 1, eye: seq[t % 4], noWisps: 1 }, dy: 0 };  // eyes down + fast scan, wisps gone, nothing else
+    } },
+  { name: "ERROR (jerk)", f: cycle(G.error, 22) },
+  { name: "CONTEXT FILLING", f: (t) => {
+      const k = t % 48;
+      if (k < 10) return { ov: {}, dy: 0 };                      // default position
+      if (k < 34) return { ov: { blink: 1, open: 2 }, dy: 1 };   // taking in context — hold frame 2
+      if (k < 35) return { ov: { blink: 1, open: 1 }, dy: 1 };   // closing — quick frame 1 (one beat)
+      return { ov: {}, dy: 0 };                                  // back to default
+    } },
   { name: "full idle (random)", full: true },
+  { name: "context >80% (full cloud, no swap)", full: true, ctxHigh: true },
 ];
 
 const grid = document.getElementById("grid");
@@ -101,7 +149,7 @@ const tiles = TILES.map((t) => {
   stage.appendChild(cell); tile.appendChild(stage);
   const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = t.name; tile.appendChild(cap);
   let sub; if (t.full) { sub = document.createElement("div"); sub.className = "sub"; tile.appendChild(sub); }
-  if (sub) sub.textContent = "› " + VARIANTS[0].key;
+  if (sub) sub.textContent = t.ctxHigh ? "swap OFF · idle anims on" : "› " + VARIANTS[0].key;
   grid.appendChild(tile);
   return { t, cells, sub, rnd: { active: null, gi: 0, cooldown: 30, variant: 0, lastSwap: null } };
 });
@@ -111,14 +159,18 @@ const NAMES = ["blink", "double", "lookL", "lookR", "swayL", "swayR"];
 let tick = 0;
 setInterval(() => {
   for (const tl of tiles) {
-    if (!tl.t.full) { const s = tl.t.f(tick); paint(tl.cells, compose(ORIGINAL, s.ov, s.dy)); continue; }
+    if (!tl.t.full) { const s = tl.t.f(tick); paint(tl.cells, compose(s.ov.noWisps ? [] : ORIGINAL, s.ov, s.dy)); continue; }
     const r = tl.rnd, now = performance.now();
-    if (r.lastSwap === null) r.lastSwap = now;
-    if (now - r.lastSwap >= SWAP_MS && !r.active) { r.variant = rollVariant(); r.lastSwap = now; tl.sub.textContent = "› " + VARIANTS[r.variant].key; }
+    if (!tl.t.ctxHigh) {  // context >80% locks the sprite — no 2:15 swap
+      if (r.lastSwap === null) r.lastSwap = now;
+      if (now - r.lastSwap >= SWAP_MS && !r.active) { r.variant = rollVariant(); r.lastSwap = now; if (tl.sub) tl.sub.textContent = "› " + VARIANTS[r.variant].key; }
+    }
     let ov = {};
     if (r.active) { ov = r.active[r.gi++]; if (r.gi >= r.active.length) { r.active = null; r.cooldown = 25 + Math.floor(Math.random() * 45); } }
     else if (--r.cooldown <= 0) { r.active = G[NAMES[Math.floor(Math.random() * NAMES.length)]]; r.gi = 0; }
-    paint(tl.cells, compose(VARIANTS[r.variant].cells, ov, breatheIdle(tick)));
+    const cells = tl.t.ctxHigh ? ORIGINAL : VARIANTS[r.variant].cells;  // ctx-high keeps original wisps
+    if (tl.t.ctxHigh) ov = { ...ov, ctx: 1 };                            // "full" cloud body
+    paint(tl.cells, compose(ov.noWisps ? [] : cells, ov, breatheIdle(tick)));
   }
   tick++;
 }, 80);

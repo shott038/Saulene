@@ -23,6 +23,33 @@ white body fill, white wisps, black eyes. Sprite is ~13px wide, rendered as true
 Run: `node scripts/ul-idle.mjs` (live, Ctrl-C to stop) · `node scripts/ul-idle.mjs --export` then
 `python3 scripts/_gif.py` (rebuild the GIF).
 
+## ✅ REACTIVE ANIMATIONS — built Jun 6 (engine: scripts/ul-idle.mjs, preview: docs/ul-idle.html)
+All composited per frame via `compose(wisps, overlay, dy)`. Each has a `--export-<name>` mode that
+writes `docs/ul-<name>-frames.json`; `python3 scripts/_gif.py <frames.json> <out.gif>` renders it.
+Preview them live, separated, at docs/ul-idle.html (each its own tile; breathing only in the
+breathing/full-idle/ctx-high tiles).
+
+DONE (8 + the >80% state):
+- **Context window filling** — drops to down position, eyes off, top opens (`BODY_OPEN`): holds
+  frame 2 while taking in, quick frame 1 to close, back to default. Keeps current wisps.
+- **Context >80% default** (`BODY_CTXHIGH`) — "full" cloud (grey caps top+bottom); idle anims still
+  play; the 2:15 variant swap is OFF while >80%.
+- **User submits a prompt** — quick 1px hop: body up, wisps down (opposite), snap back.
+- **Claude thinking** — wisps slide into the body (`win`) and vanish, held, then slide back out.
+- **Big success** (`BODY_SUCCESS`) — up 1px into the white-cap "happy" sprite, hold, settle back.
+- **Error** — fast jerk L→R→L→center, wisps blank for the whole shake.
+- **Retry** — wisps vanish then reappear, once per retry.
+- **Response finished** — wisps push out 1px both sides (`win:-1`), then back.
+- **Context compaction** — EXCLUSIVE (suspends all else): eyes drop 1px, fast L·mid·R·mid scan,
+  wisps gone.
+
+NOT BUILT (deferred — Samuel called it done here): model/mode change · big file write/lots of output ·
+permission prompt waiting · git commit/push.
+
+compose() overlay flags: dx, dy, blink, eye (+eyeDy), wdy (wisp y), win (wisp in/out), open(1|2),
+ctx, success, noWisps. Bodies: BODY, BODY_SUCCESS, BODY_CTXHIGH, BODY_OPEN[2]. When wiring to real
+hooks, add a priority/debounce layer (compaction is exclusive; error/success interrupt small ones).
+
 ## ✅ KEEPERS — these are the real, locked visuals
 - **The default ul look** — the locked cloud-spirit geometry.
   - `scripts/ul-geometry.mjs` — the canonical geometry (puffs, eyes, ink/body). **Source of truth.**

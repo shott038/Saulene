@@ -18,3 +18,5 @@ CLAUDE.md
 docs/.playwright-mcp/
 scripts/_tune.mjs
 docs/_tune.html
+# regenerable animation frame intermediates (rebuilt via ul-idle.mjs --export-*)
+docs/ul-*-frames.json

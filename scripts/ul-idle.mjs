@@ -23,7 +23,44 @@ const BODY = [
   ".......ccffcc......",
   ".........cc........",
 ];
-const W = 19, H = 7;
+// success: top puffs up into a flat white cap + grey band (raised / happy)
+const BODY_SUCCESS = [
+  "........ffff.......",
+  ".......cccccc......",
+  "......cfeffefc.....",
+  "......cffffffc.....",
+  ".......ccffcc......",
+  ".........cc........",
+];
+// context > 80%: the cloud reads "full" — flat grey caps top & bottom, denser/closed body
+const BODY_CTXHIGH = [
+  "........cccc.......",
+  ".......cffffc......",
+  "......cfeffefc.....",
+  "......cffffffc.....",
+  ".......cffffc......",
+  "........cccc.......",
+];
+// context-filling: no eyes, top opens — two grey nubs pulse apart (frame 1 → frame 2)
+const BODY_OPEN = [
+  [ // frame 1 — nubs closer
+    "........c..c.......",
+    ".......cffffc......",
+    "......cffffffc.....",
+    "......cffffffc.....",
+    ".......ccffcc......",
+    ".........cc........",
+  ],
+  [ // frame 2 — nubs wider apart
+    ".......c....c......",
+    ".......cffffc......",
+    "......cffffffc.....",
+    "......cffffffc.....",
+    ".......ccffcc......",
+    ".........cc........",
+  ],
+];
+const W = 19, H = 8, BASE = 1; // BASE = resting row offset → leaves 1px headroom for the prompt hop
 const EYES = [[2, 8], [2, 11]];
 const HEX = { c: "#b8b8b8", f: "#ffffff", e: "#161310" }, WISP = "#ffffff";
 const BG = "#1e1e1e";
@@ -41,6 +78,14 @@ const G = {
   swayR:  Array(13).fill({ dx: 1 }),  // drift right and hold ~1s
 };
 const GESTURES = ["blink", "double", "lookL", "lookR", "swayL", "swayR"];
+
+// REACTIVE — error: fast jerk left→right→left→center; wisps vanish for the whole shake
+const ERROR = [
+  { dx: -2, noWisps: 1 }, { dx: -2, noWisps: 1 },
+  { dx: 2, noWisps: 1 }, { dx: 2, noWisps: 1 },
+  { dx: -2, noWisps: 1 }, { dx: -2, noWisps: 1 },
+  { dx: 0, noWisps: 1 }, { dx: 0, noWisps: 1 },
+];
 
 // idle wisp variants (mirror axis col 9.5 → 19-c).
 // w = % chance on each swap roll (sums to 100); absolute roll, may re-land on the same one.
@@ -61,21 +106,23 @@ const rollVariant = () => POOL[Math.floor(Math.random() * POOL.length)];
 const SWAP_MS = 135000; // 2:15
 
 /** Compose one frame → 2D array of hex|null. Body bobs with dy; wisps take dx only. */
-function compose(wisps, { dx = 0, blink = 0, eye = 0 } = {}, dy = 0) {
+function compose(wisps, { dx = 0, blink = 0, eye = 0, eyeDy = 0, open = 0, wdy = 0, ctx = 0, win = 0, success = 0 } = {}, dy = 0) {
   const px = Array.from({ length: H }, () => Array(W).fill(null));
-  for (let r = 0; r < BODY.length; r++) for (let c = 0; c < W; c++) {
-    const ch = BODY[r][c];
+  const body = open ? BODY_OPEN[open - 1] : success ? BODY_SUCCESS : ctx ? BODY_CTXHIGH : BODY;
+  for (let r = 0; r < body.length; r++) for (let c = 0; c < W; c++) {
+    const ch = body[r][c];
     if (ch === ".") continue;
-    const rr = r + dy, cc = c + dx;
+    const rr = r + BASE + dy, cc = c + dx;
     if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = ch === "e" ? HEX.f : HEX[ch];
   }
-  if (!blink) for (const [er, ec] of EYES) {
-    const rr = er + dy, cc = ec + eye + dx;
+  if (!blink && !open) for (const [er, ec] of EYES) {
+    const rr = er + BASE + dy + eyeDy, cc = ec + eye + dx;
     if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = HEX.e;
   }
-  for (const [r, c] of wisps) {
-    const cc = c + dx;
-    if (r >= 0 && r < H && cc >= 0 && cc < W && !px[r][cc]) px[r][cc] = WISP;
+  for (const [r, c] of wisps) {  // wisps: own vertical offset (wdy); win pulls them inward (thinking)
+    const inward = c < 9.5 ? win : -win;          // both sides slide toward center
+    const rr = r + BASE + wdy, cc = c + inward + dx;
+    if (rr >= 0 && rr < H && cc >= 0 && cc < W && !px[rr][cc]) px[rr][cc] = WISP; // absorbed when it reaches the body
   }
   return px;
 }
@@ -102,7 +149,102 @@ function toAnsi(px, indent = "  ") {
 }
 const CHAR_ROWS = Math.ceil(H / 2);
 
-if (process.argv.includes("--export")) {
+if (process.argv.includes("--export-response")) {
+  // response finished: wisps push out 1px on both sides, then back to default
+  const frames = [], cells = ORIGINAL;
+  for (let t = 0; t < 6; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });
+  for (let i = 0; i < 9; i++) frames.push({ d: 80, p: compose(cells, { win: -1 }, 0) }); // out 1px
+  for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });          // back
+  const out = fileURLToPath(new URL("../docs/ul-response-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-compaction")) {
+  // context compaction: eyes drop 1px, then scan left → middle → right → middle (loop)
+  const seq = [-1, 0, 1, 0];                       // wisps gone for the whole compaction
+  const frames = [];
+  for (let t = 0; t < 4; t++) frames.push({ d: 60, p: compose([], {}, 0) });           // eyes centered, wisps gone
+  for (let t = 0; t < 3; t++) frames.push({ d: 60, p: compose([], { eyeDy: 1 }, 0) }); // eyes drop down
+  for (let n = 0; n < 48; n++) frames.push({ d: 45, p: compose([], { eyeDy: 1, eye: seq[n % 4] }, 0) }); // fast scan (1 tick/pos)
+  const out = fileURLToPath(new URL("../docs/ul-compaction-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-retry")) {
+  // retry: wisps vanish then reappear, once per retry attempt
+  const frames = [], cells = ORIGINAL;
+  for (let t = 0; t < 6; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });
+  for (let r = 0; r < 3; r++) {                                       // three retries
+    for (let i = 0; i < 5; i++) frames.push({ d: 80, p: compose([], {}, 0) });
+    for (let i = 0; i < 8; i++) frames.push({ d: 80, p: compose(cells, {}, 0) });
+  }
+  const out = fileURLToPath(new URL("../docs/ul-retry-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-success")) {
+  // success: pop body up 1px into the white-cap "success" body, hold, settle back. wisps kept.
+  const frames = [], cells = ORIGINAL;
+  for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });             // default position
+  for (let i = 0; i < 14; i++) frames.push({ d: 80, p: compose(cells, { success: 1 }, -1) }); // up 1px + success body
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });            // back to default
+  const out = fileURLToPath(new URL("../docs/ul-success-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-thinking")) {
+  // thinking: wisps slide into the body and vanish, held while thinking, then slide back out
+  const frames = [], cells = ORIGINAL;
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });
+  for (let w = 1; w <= 5; w++) frames.push({ d: 60, p: compose(cells, { win: w }, 0) });
+  for (let t = 0; t < 24; t++) frames.push({ d: 80, p: compose(cells, { win: 5 }, 0) }); // thinking (no wisps)
+  for (let w = 4; w >= 0; w--) frames.push({ d: 60, p: compose(cells, { win: w }, 0) });
+  for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });
+  const out = fileURLToPath(new URL("../docs/ul-thinking-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-ctxhigh")) {
+  // context > 80% default: the "full" body, idle anims still play (breathe + blink + look), no swap
+  const frames = [], cells = ORIGINAL;
+  const push = (ov, dy) => frames.push({ d: 80, p: compose(cells, { ctx: 1, ...ov }, dy) });
+  for (let t = 0; t < 16; t++) push({}, breatheDy(t));                 // breathing
+  G.blink.forEach(() => push({ blink: 1 }, 1));                         // blink
+  for (let t = 0; t < 10; t++) push({}, breatheDy(t));
+  G.lookL.forEach(() => push({ eye: -1 }, 1));                          // glance left
+  for (let t = 0; t < 8; t++) push({}, 0);
+  G.lookR.forEach(() => push({ eye: 1 }, 1));                           // glance right
+  for (let t = 0; t < 12; t++) push({}, breatheDy(t));
+  const out = fileURLToPath(new URL("../docs/ul-ctxhigh-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-prompt")) {
+  // user submits a prompt: quick 1px hop up, then back down. wisps stay put.
+  const frames = [], cells = ORIGINAL;
+  for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
+  frames.push({ d: 60, p: compose(cells, { wdy: 1 }, -1) });   // body up, wisps down
+  frames.push({ d: 60, p: compose(cells, { wdy: 1 }, -1) });
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
+  const out = fileURLToPath(new URL("../docs/ul-prompt-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-ctx")) {
+  // context-filling demo: idle → drop down (breathing dip), eyes off, hold frame 2 while taking
+  // in context → frame 1 as it closes → back to default. wisps kept.
+  const frames = [], cells = ORIGINAL;
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });                  // default position
+  for (let i = 0; i < 24; i++) frames.push({ d: 90, p: compose(cells, { blink: 1, open: 2 }, 1) }); // taking in → hold frame 2
+  frames.push({ d: 55, p: compose(cells, { blink: 1, open: 1 }, 1) });  // closing → quick frame 1 (in-between beat)
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });                  // back to default
+  const out = fileURLToPath(new URL("../docs/ul-ctx-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export-error")) {
+  // error demo loop: calm → fast shake (wisps gone) → calm
+  const frames = [];
+  const cells = ORIGINAL;
+  for (let t = 0; t < 12; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
+  for (const ov of ERROR) frames.push({ d: 70, p: compose([], ov, 0) });
+  for (let t = 0; t < 16; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
+  const out = fileURLToPath(new URL("../docs/ul-error-frames.json", import.meta.url));
+  writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
+  console.log(`wrote ${frames.length} frames → ${out}`);
+} else if (process.argv.includes("--export")) {
   // deterministic ~12s timeline for the GIF: gestures + a couple of variant swaps
   const N = 150;
   const gscript = [[16, "blink"], [40, "lookL"], [64, "double"], [90, "swayL"], [116, "swayR"]];
@@ -130,7 +272,8 @@ if (process.argv.includes("--export")) {
     let ov = {};
     if (active) { ov = active[gi++]; if (gi >= active.length) { active = null; cooldown = 25 + Math.floor(Math.random() * 45); } }
     else if (--cooldown <= 0) { active = G[GESTURES[Math.floor(Math.random() * GESTURES.length)]]; gi = 0; }
-    const frame = toAnsi(compose(VARIANTS[variant].cells, ov, breatheDy(tick++)));
+    const wisps = ov.noWisps ? [] : VARIANTS[variant].cells;
+    const frame = toAnsi(compose(wisps, ov, breatheDy(tick++)));
     if (!first) process.stdout.write(`\x1b[${CHAR_ROWS}A`);
     first = false;
     process.stdout.write(frame);
