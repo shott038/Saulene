@@ -4,13 +4,13 @@
  * Same `seed`. One ul lives an ALIGNED life — it exercises the aspects it is good at and enjoys
  * (high practice, high fit) — and flourishes along its nature. A second ul, born from the SAME
  * seed, lives a MISMATCHED GRIND — it hammers a domain it has no nature for and hates (high
- * practice, strongly negative fit) — which charges tension to repeated breaking points; being
- * clay, those breaks reconfigure it toward the lived direction. The two adults end genuinely
- * different, and the trajectory lets us narrate exactly why.
+ * practice, strongly negative fit) — which charges tension to a few RARE, earned breaking points
+ * (plasticity-gated to the formative stages); being clay, those breaks reconfigure it toward the
+ * lived direction. The two adults end genuinely different, and the trajectory narrates exactly why.
  *
- * We assert the MECHANISM produces divergence, NOT specific magnitudes — knobs are untuned
- * placeholders (Phase 3 tunes them). Where divergence needs surfacing we make the scripts more
- * EXTREME, never touch `core` or the knob defaults (per the mission's scope discipline).
+ * Runs at the Phase-3-TUNED `DEFAULT_KNOBS`: breaks are now rare (a handful over a life, only in
+ * childhood/adolescence — old age is frozen), so we assert the MECHANISM and its temperament
+ * routing, with margins that reflect the tuned (not the old 100-rupture) regime.
  *
  * The `console.log` narration is part of the proof — run with `vitest --reporter=verbose` (or read
  * the captured output) to see the "born X → became Y, because…" story for each life.
@@ -92,8 +92,9 @@ describe("Phase 2 acceptance: same birth seed, two lives → two different adult
     const clayRise = clay.final.v.industriousness - clay.birth.v.industriousness;
     const stubbornRise = stubborn.final.v.industriousness - stubborn.birth.v.industriousness;
 
-    // Clay's disposition migrates toward the grind far more than the stubborn ul's, which resists.
-    expect(clayRise).toBeGreaterThan(stubbornRise + 0.2);
+    // Clay's disposition migrates toward the grind meaningfully more than the stubborn ul's, which
+    // resists. (Tuned regime: clay ≈ +0.41 vs stubborn ≈ +0.22 — clay reconfigures ~2× as far.)
+    expect(clayRise).toBeGreaterThan(stubbornRise + 0.15);
 
     // Stubborn's resistance is mechanically visible: each break deepens the homeward pull
     // (betaGain rises with resentment); clay gains little to none.

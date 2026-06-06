@@ -92,19 +92,27 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       locally-pinned `RenderFn` (NOT a renderer import) + a fakeable `Judge` port; deterministic
       `fakeJudge` + fake renderers exercise each metric's pass AND fail path. 15 tests green.
       Thresholds are `// TUNABLE (Phase 3)` placeholders.
-- [ ] Tune the ~9 globals + per-stage table against harness + simulator.
+- [~] Tune the ~9 globals + per-stage table against harness + simulator.
+      **Engine/break knobs tuned against the simulator (done):** added a SPEC-mandated but
+      previously-missing **plasticity-gated break threshold** (`θ_eff = θ/plasticity(stage)`), so
+      ruptures are formative-only (childhood/adolescence), hard in early adulthood, ~impossible in
+      old age (θ_eff≈20θ → the lived self locks). Bounded resentment with a new `betaGainCap` (4).
+      Retuned `tensionIntake 0.5→0.2` (max-grind tension steady-state w/(1−ρ) = 2.0) and
+      `refractory 5→30`. Result over a relentless 280-session grind: **94→8 breaks**, all in
+      childhood/adolescence, old age frozen (Δv 0.0000), betaGain ≤ ~2.3; a realistic mostly-positive
+      life stays at **0 breaks**, smooth drift (~0.4, jerk ~0.05). Clay still reconfigures
+      (INFP→INFJ), stubborn still resists (betaGain ~3). **Expression-side tuning (rulebook + the
+      ~9 renderer knobs vs the harness) still PENDING** — needs a real LLM `Judge` (Phase 4); the
+      harness fakeJudge can't score felt prose. Per-stage magnitude table not yet swept.
 - [ ] Build out the 5 renderer layers (rulebook → fewshot → spine → framing → drift) + fingerprint.
 
-**Tuning findings surfaced by the Phase 2 simulator (address here, NOT in core yet):**
-- **Break rarity is entirely knob-dependent.** A relentless negative-fit grind pins tension far
-  above θ, so the engine re-breaks every refractory window (~106 ruptures over a 320-session life
-  in the acceptance test). That's the intended extreme script exposing the mechanism, not a bug —
-  but it means break *rarity* lives in θ/ρ/refractory tuning (and, at the real plugin edge, in
-  rate-limiting `accrueMp`). Tune so breaks are rare + earned in realistic usage.
-- **`betaGain` (stubborn resentment) is unbounded.** Each stubborn break multiplies it by
-  `(1+resentmentGain·stubbornness)`; under repeated breaks it compounded to ~3e8 in the test.
-  Harmless while breaks are genuinely rare, but consider a `betaGain` ceiling when tuning — a core
-  change to weigh once the break-rarity knobs are set.
+**Tuning findings surfaced by the Phase 2 simulator — both now RESOLVED (see the tuning item above):**
+- ✅ **Break rarity** — fixed by the plasticity-gated threshold + `tensionIntake`/`refractory` retune.
+  A relentless 280-session grind now breaks 8× (was 94), only in the formative stages; a realistic
+  life breaks 0×. (Real-time `accrueMp` rate-limiting at the plugin edge is still a separate Phase-4
+  guard, but the engine no longer relies on it for rarity.)
+- ✅ **`betaGain` unboundedness** — fixed by `betaGainCap` (4). Resentment now saturates after a few
+  crises instead of compounding to 1e4+.
 
 ## Phase 4 — The shippable plugin (LLM + IO edge)
 - [ ] `perception`: ledger schema + rubric + evidence-quote hard validation; `LlmClient` port.

@@ -52,6 +52,13 @@ export interface GlobalKnobs {
    * `resentmentGain · stubbornness` (clay, stubbornness→0, gains no resentment).
    */
   resentmentGain: number;
+  /**
+   * Hard ceiling on per-aspect `betaGain` — resentment deepens the homeward pull but cannot
+   * compound without bound across repeated breaks. Keeps a relentlessly-mismatched stubborn ul
+   * from acquiring an absurd (1e4) spring. Small (~4): a few crises' worth of deepening, then it
+   * saturates. (Breaks are rare once plasticity-gated, so this rarely binds in realistic use.)
+   */
+  betaGainCap: number;
   /** Fraction of the lived gap `(vᵢ − sᵢ)` that a break migrates `sᵢ` (before caps). Small. */
   migrationFraction: number;
   /** Hard cap on |Δsᵢ| from a single break — the per-break migration ceiling. Tiny. */
@@ -78,9 +85,10 @@ export const DEFAULT_KNOBS: GlobalKnobs = {
   rho: 0.9, // TUNABLE (Phase 3) — Brick 5 tension leak
   theta: 1.0, // TUNABLE (Phase 3) — Brick 5 break threshold
   breakBase: 0.1, // TUNABLE (Phase 3) — Brick 5 break magnitude base
-  refractory: 5, // TUNABLE (Phase 3) — Brick 5 refractory window
-  tensionIntake: 0.5, // TUNABLE (Phase 3) — Brick 5 tension intake weight (w)
+  refractory: 30, // TUNABLE (Phase 3) — spaces ruptures so even a relentless grind breaks rarely
+  tensionIntake: 0.2, // TUNABLE (Phase 3) — w: max-grind tension steady-state = w/(1−ρ) = 2.0
   resentmentGain: 0.5, // TUNABLE (Phase 3) — Brick 5 stubborn-break betaGain bump
+  betaGainCap: 4, // TUNABLE (Phase 3) — resentment ceiling (bounds the homeward-pull deepening)
   migrationFraction: 0.1, // TUNABLE (Phase 3) — Brick 5 fraction of (v−s) migrated per break
   migrationStepCap: 0.02, // TUNABLE (Phase 3) — Brick 5 per-break |Δs| cap
   atrophyRate: 0.1, // TUNABLE (Phase 3)
@@ -263,10 +271,15 @@ export function consolidate(soul: Soul, knobs: GlobalKnobs, stage: Stage): Soul 
     const refIn = soul.refractory[aspect];
     refractory[aspect] = refIn > 0 ? refIn - 1 : 0;
 
-    // ── Breaking point — rare, earned. Evaluated AFTER the normal update. ──
+    // ── Breaking point — rare, earned, PLASTICITY-GATED. Evaluated AFTER the normal update. ──
+    // The effective threshold scales inversely with stage plasticity: breaks are formative in
+    // childhood/adolescence (plasticity≈1 → θ_eff≈θ), HARD in early adulthood (≈0.45 → θ_eff≈2.2θ),
+    // and effectively impossible in old age (≈0.05 → θ_eff≈20θ → the lived self is locked). This is
+    // the SPEC "breaking points are plasticity-gated → rare + harder in adulthood" rule.
     let finalV = next;
     const ti = soul.tension[aspect];
-    if (ti > knobs.theta && refIn === 0) {
+    const breakThreshold = knobs.theta / plasticity;
+    if (ti > breakThreshold && refIn === 0) {
       const j = knobs.breakBase * ti; // jump magnitude scales with tension at break
       const dev = next - si; // lived deviation, post normal-update
       const devSign = dev > 0 ? 1 : dev < 0 ? -1 : 0;
@@ -281,8 +294,11 @@ export function consolidate(soul: Soul, knobs: GlobalKnobs, stage: Stage): Soul 
       finalV = clamp01(next + jump);
 
       // Resentment: a stubborn break deepens the homeward pull for THIS aspect only
-      // (clay, stubbornness→0, gains none). Compounds across rare repeat breaks.
-      betaGain[aspect] = soul.betaGain[aspect] * (1 + knobs.resentmentGain * soul.stubbornness);
+      // (clay, stubbornness→0, gains none). Compounds across rare repeat breaks, capped.
+      betaGain[aspect] = Math.min(
+        knobs.betaGainCap,
+        soul.betaGain[aspect] * (1 + knobs.resentmentGain * soul.stubbornness),
+      );
 
       // Capped, lifetime-budgeted set-point migration toward the lived value — clay migrates
       // more than stubborn. The ONLY place `s` moves. Per-break cap, then the shared budget.

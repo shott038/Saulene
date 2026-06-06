@@ -39,6 +39,7 @@ import {
   projectMbti,
   seedFromEntropy,
   stageFromMp,
+  stageRules,
 } from "@saulene/core";
 import type { ScriptedSession } from "./script.js";
 
@@ -117,8 +118,10 @@ export function lifetime(
     const stage = stageFromMp(soul.mp, soul);
 
     // Mirror core's break predicate (read-only) so we can attribute ruptures this consolidation.
+    // Must match core exactly, including the plasticity-gated threshold θ/plasticity(stage).
+    const breakThreshold = knobs.theta / stageRules(stage).plasticity;
     const priming = ASPECTS.filter(
-      (a) => soul.tension[a] > knobs.theta && soul.refractory[a] === 0,
+      (a) => soul.tension[a] > breakThreshold && soul.refractory[a] === 0,
     );
     const pre = soul;
 
