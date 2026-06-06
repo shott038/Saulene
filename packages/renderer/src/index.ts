@@ -9,3 +9,4 @@
 
 export * from "./layers/index.js";
 export * from "./fingerprint/index.js";
+export * from "./sprite/index.js";
