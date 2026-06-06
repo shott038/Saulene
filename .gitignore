@@ -11,3 +11,6 @@ coverage/
 
 # Local working context (not shared)
 CLAUDE.md
+
+# Feature worktrees (each tracks its own branch; never part of main's tree)
+.claude/worktrees/
