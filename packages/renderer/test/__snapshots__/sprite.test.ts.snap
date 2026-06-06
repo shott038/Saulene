@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`spriteParams — determinism / golden file > SPRITE_VERSION matches snapshot 1`] = `"1.0.0"`;
+
+exports[`spriteParams — determinism / golden file > matches the golden snapshot for a fixed soul 1`] = `
+{
+  "aura": 0.6,
+  "blush": 0.68,
+  "bodyScaleX": 1.055,
+  "bodyScaleY": 1.112,
+  "bottomBulge": 1.069,
+  "eyeDropY": 1.4000000000000004,
+  "eyeRadius": 4.322,
+  "eyeSpacingFactor": 1.124,
+  "hue": 328.83400000000006,
+  "lightness": 64.8796,
+  "mouthCurve": -0.050000000000000044,
+  "puffJitter": 3.3000000000000003,
+  "saturation": 80.1,
+  "seed": 3073928711,
+  "shimmer": 0.55,
+  "stage": "childhood",
+  "stageScale": 0.75,
+  "tilt": -7.327187015558593,
+  "topBulge": 1.137,
+  "wispCount": 6,
+  "wispLengthFactor": 1.18,
+}
+`;
