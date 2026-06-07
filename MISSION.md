@@ -70,4 +70,15 @@ surrogate pyramid: pay for real-CLI truth ONCE, then simulate millions of lives 
 - Update `BUILD_GUIDE.md` in the SAME commit (add a "large-scale life-sim" section; check off Layer B).
 
 ## Status
-Status: in-progress
+Status: ready-to-merge
+
+## Verification
+- Build: pass (tsc -b clean)
+- Tests: pass (397 passed, 0 failed — 18 new life-sim + 6 new perception signals)
+- Scope kept: yes — only edit outside tools/life-sim is ledgerToSignals extraction to @saulene/perception + stop.ts update. No engine magnitudes touched.
+- Summary: tools/life-sim package (SyntheticUser + conversation runner + fingerprint builder + LedgerSource contract), ledgerToSignals extracted to perception, full boundary wiring, 24 new tests, FINDINGS.md, BUILD_GUIDE.md updated.
+
+## Final notes
+- The only conflict risk is packages/plugin/src/hooks/stop.ts — any branch that also edits stop.ts should apply the ledgerToSignals import cleanly (the original inline block is gone, replaced by a single ledgerToSignals call).
+- tools/life-sim has no overlap with any other feature branch.
+- live.ts (SAULENE_LIVE=1 gated) not tested in CI — by design. It needs real claude -p auth.
