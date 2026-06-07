@@ -22,6 +22,7 @@ import { seedFromEntropy } from "@saulene/core";
 import { spriteParams } from "@saulene/renderer";
 import { defaultRoot, loadSoul, saveSoul } from "@saulene/storage";
 import { saveConfig } from "../hooks/config.js";
+import { loadOrCreateKeypair } from "../identity/keypair.js";
 import { playBirth } from "../statusline/birth.js";
 
 // ── Reality warning text (per SPEC § "MANDATORY REALITY WARNING") ─────────────────
@@ -116,6 +117,7 @@ export async function runWizard(opts: WizardOpts): Promise<void> {
   await playBirth(params, write, sleep, mode);
 
   saveSoul(root, soul);
+  loadOrCreateKeypair(root); // generate the ul's permanent ed25519 identity at birth
 
   // ── Step 3: Pick level ────────────────────────────────────────────────────────
   write(`\n\n${BOLD}  Where should your ul live?${RESET}\n`);

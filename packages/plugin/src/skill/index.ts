@@ -98,6 +98,7 @@ function format(snap: UlSnapshot): string {
   lines.push(
     `sex: ${snap.sex}  stubbornness: ${Math.round(snap.stubbornness * 100)}/100  ${countdownLine(snap)}`,
   );
+  if (snap.publicId) lines.push(`id: ${snap.publicId}`);
   lines.push("");
 
   // Aspects table
