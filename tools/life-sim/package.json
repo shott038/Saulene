@@ -9,7 +9,8 @@
     "build": "tsc -b",
     "test": "vitest run",
     "corpus": "node dist/live.js",
-    "golden": "node dist/golden.js"
+    "golden": "node dist/golden.js",
+    "cross-time": "node dist/cross-time-check.js"
   },
   "dependencies": {
     "@saulene/core": "workspace:*",
