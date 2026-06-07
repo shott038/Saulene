@@ -218,8 +218,14 @@ Remaining bricks to ship:
    watch-only birth [seed soul → persist → birth animation] → pick level + `saveConfig`). 90d clock
    coherent end to end (birth sets `lastUsedAt`; SessionStart checks/resets). `runWizard` exported
    for the manifest. Fully dep-injected; 305/305 green.
-3. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback — wire SessionStart
-   (side-effects) + UserPromptSubmit (voice) + Stop (drift) + MCP + `/ul` skill + first-run `runWizard`.
+3. ✅ **Plugin manifest (DONE)** — `.claude-plugin/plugin.json` + `hooks/hooks.json` (SessionStart
+   side-effects / UserPromptSubmit voice / Stop drift) + `.mcp.json` (MCP + bare-MCP standalone
+   fallback) + `skills/ul` + `skills/ul-setup` + `src/bin/*` CLI wrappers incl. the interactive
+   `setup.js` (drives `runWizard` via readline + plays the birth animation). 305/305 green.
+
+**→ The plugin is COMPLETE and installable.** Engine → perception → storage → hooks (S1 delivery) →
+statusline → MCP/`/ul` → wizard → manifest, with the central bet validated (the ul demonstrably,
+context-appropriately changes Claude's behavior). Install via `/plugin`; first run `/ul-setup`.
 
 **Still open (lower priority, not blocking ship):** the `[~]` Phase-3 renderer items — text Layers
 3–5 (spine/framing/drift) + fingerprint, and the per-stage magnitude sweep. The harness + real
