@@ -74,5 +74,16 @@ types at merge. Until W1 lands, build against a small **fixture corpus** matchin
 - Update `BUILD_GUIDE.md` in the SAME commit (add to the "large-scale life-sim" section; check off
   Layer A).
 
+## Verification
+- Build: pass
+- Tests: pass (411 passed — 38 new in tools/life-sim-pop, 373 pre-existing)
+- Scope kept: yes — no engine changes, no W1/W2 collision, W3 deferred as instructed
+- Summary: New package @saulene/life-sim-pop with EmpiricalLedgerSource, population() runner, CRN/frozen-soul/LHS/power experiment toolkit, 4000-life sweep verified, FINDINGS.md written.
+
+## Final notes
+- Touches: biome.json (adds population-results.json to ignore — minimal, additive), scripts/check-boundaries.mjs (new entry, additive), root tsconfig.json (new reference, additive), docs/ARCHITECTURE.md (new row, additive), BUILD_GUIDE.md (new block).
+- W1 (cli-perception / life-sim) edits scripts/check-boundaries.mjs and BUILD_GUIDE.md too. The merger should merge both boundary-file edits (both are additive, no overlap). W1 may also add tools/life-sim — this package adds tools/life-sim-pop (disjoint dirs, no collision).
+- TODO(merge-W1): in empirical-source.ts, replace the local `ledgerToSignals` function and `Observation` import with the shared pure fn from @saulene/life-sim once W1 lands.
+
 ## Status
-Status: in-progress
+Status: ready-to-merge
