@@ -88,6 +88,30 @@ describe("runClosedLoopLife", () => {
     expect(sessionIndices).toContain(3); // final session always snapshotted
   });
 
+  // Regression: the first live golden run died when one session's perception returned malformed
+  // JSON. One bad call must NOT abort the whole (multi-hour) life — skip it and carry on.
+  it("skips a session with malformed perception instead of aborting the life", async () => {
+    const result = await runClosedLoopLife({
+      seed: makeSeed(7),
+      syntheticUser: makeUser(),
+      ulLlm: fakeLlm(["ul reply"]),
+      // Session index 1 gets broken JSON (the observed live failure mode); the rest are valid.
+      perceptionLlm: fakeLlm([
+        fakePerceptionJson("user msg", "intellect"),
+        '```json\n{ "observations": [ broken,,, ',
+        fakePerceptionJson("user msg", "intellect"),
+        fakePerceptionJson("user msg", "intellect"),
+      ]),
+      numSessions: 4,
+      snapshotEvery: 2,
+      turns: 1,
+      clock: makeWeeklyClock(),
+    });
+
+    expect(result.skipped).toBe(1); // exactly the one bad session was skipped
+    expect(result.final).toBeDefined(); // the life still completed
+  });
+
   it("each snapshot has sessionIndex, virtualTime, soul, and transcript", async () => {
     const clock = makeWeeklyClock();
     const result = await runClosedLoopLife({

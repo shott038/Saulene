@@ -94,7 +94,7 @@ function makeClosedLoopResult(opts: {
     transcript,
   }));
 
-  return { birth, final, snapshots };
+  return { birth, final, snapshots, skipped: 0 };
 }
 
 // ── Metric 1: crossTimeIdentity ───────────────────────────────────────────────

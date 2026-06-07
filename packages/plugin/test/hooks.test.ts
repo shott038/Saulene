@@ -448,6 +448,27 @@ describe("stop", () => {
     expect(readDiary(root)).toHaveLength(0);
   });
 
+  it("retries perception once and consolidates when the retry succeeds", async () => {
+    const initialSoul = mintSoul();
+    saveSoul(root, initialSoul);
+
+    // First call returns malformed JSON (the observed live failure); the retry returns a valid
+    // judgment. The session must consolidate rather than be lost to one bad response.
+    let calls = 0;
+    const flaky: LlmClient = {
+      complete: async () => {
+        calls++;
+        return calls === 1 ? "broken {{{" : JSON.stringify(FAKE_JUDGMENT);
+      },
+    };
+
+    await stop({ transcript: TRANSCRIPT, llm: flaky, storageRoot: root, now: NOW });
+
+    expect(calls).toBe(2); // retried exactly once
+    expect(loadSoul(root)?.mp).toBeGreaterThan(initialSoul.mp); // consolidated → aged
+    expect(readDiary(root)).toHaveLength(1); // the recovered session was processed
+  });
+
   it("handles a judgment with no observations (trivial session)", async () => {
     saveSoul(root, mintSoul());
     const trivialJudgment: SessionJudgment = {

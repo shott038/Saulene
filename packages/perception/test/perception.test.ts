@@ -185,6 +185,20 @@ describe("perceive (pipeline)", () => {
     expect(result.diary).toBeTypeOf("string");
   });
 
+  // Real models (esp. cheap ones via `claude -p`) wrap JSON in a ```json fence or add prose,
+  // despite the prompt asking for bare JSON. Caught by the first live golden run; must not regress.
+  it("tolerates a ```json markdown fence around the output", async () => {
+    const fenced = `\`\`\`json\n${cannedGood}\n\`\`\``;
+    const result = await perceive(TRANSCRIPT, fakeLlm(fenced));
+    expect(result.observations).toHaveLength(1);
+  });
+
+  it("tolerates a line of prose before the JSON object", async () => {
+    const withProse = `Here is the analysis:\n${cannedGood}`;
+    const result = await perceive(TRANSCRIPT, fakeLlm(withProse));
+    expect(result.observations).toHaveLength(1);
+  });
+
   it("strips a row whose quote is hallucinated (does not throw)", async () => {
     const canned = JSON.stringify(
       judgment([

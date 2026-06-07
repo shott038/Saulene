@@ -58,12 +58,14 @@ export interface StopOpts {
   reporterOpts?: Pick<ReporterOpts, "registryUrl" | "fetch">;
 }
 
+/** How many times to attempt perception before skipping the session (1 retry on malformed output). */
+const PERCEPTION_ATTEMPTS = 2;
+
 /**
  * Stop hook handler — the perceive → consolidate → persist drift pipeline.
  *
- * Does NOT throw on `PerceptionError` — a failed observation pass is logged and skipped; the
- * soul is untouched. Callers who want retry logic can wrap this function and re-call it. Other
- * errors (storage, engine) propagate normally.
+ * Does NOT throw on `PerceptionError` — perception is retried once, then a still-failing pass is
+ * logged and skipped; the soul is untouched. Other errors (storage, engine) propagate normally.
  */
 export async function stop(opts: StopOpts): Promise<void> {
   const root = opts.storageRoot ?? defaultRoot();
@@ -76,22 +78,35 @@ export async function stop(opts: StopOpts): Promise<void> {
   const priorMp = soul.mp; // snapshot before aging (for stage-change detection)
 
   // ── 2. Perceive ───────────────────────────────────────────────────────────────
-  // LLM reads the transcript and emits a bounded, evidence-cited judgment. PerceptionError
-  // (malformed LLM output) is caught: we log and bail — the soul state is untouched.
-  let judgment: Awaited<ReturnType<typeof perceiveDetailed>>["judgment"];
-  let rejected: Awaited<ReturnType<typeof perceiveDetailed>>["rejected"];
-
-  try {
-    const result = await perceiveDetailed(opts.transcript, opts.llm);
-    judgment = result.judgment;
-    rejected = result.rejected;
-  } catch (err) {
-    if (err instanceof PerceptionError) {
-      console.error("[saulene/stop] perception failed — session not consolidated:", err.message);
-      return;
+  // LLM reads the transcript and emits a bounded, evidence-cited judgment. A cheap model can
+  // occasionally emit malformed JSON (truncation, unescaped chars) — retry once before giving
+  // up, since the plugin's CLI client is uncached so a fresh call can recover. On final failure
+  // we log and bail — the soul state is untouched, never corrupted by a bad response.
+  let result: Awaited<ReturnType<typeof perceiveDetailed>> | undefined;
+  let lastErr: PerceptionError | undefined;
+  for (let attempt = 1; attempt <= PERCEPTION_ATTEMPTS; attempt++) {
+    try {
+      result = await perceiveDetailed(opts.transcript, opts.llm);
+      break;
+    } catch (err) {
+      if (err instanceof PerceptionError) {
+        lastErr = err;
+        console.error(
+          `[saulene/stop] perception attempt ${attempt}/${PERCEPTION_ATTEMPTS} failed: ${err.message}`,
+        );
+        continue;
+      }
+      throw err; // unexpected errors (network, storage) propagate
     }
-    throw err; // unexpected errors (network, storage) propagate
   }
+  if (!result) {
+    console.error(
+      "[saulene/stop] perception failed after retries — session not consolidated:",
+      lastErr?.message,
+    );
+    return;
+  }
+  const { judgment, rejected } = result;
 
   if (rejected.length > 0) {
     // Stripped rows: hallucinated quotes or user-profiling attempts — logged for visibility.

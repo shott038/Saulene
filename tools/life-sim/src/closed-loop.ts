@@ -25,7 +25,7 @@ import {
   stageFromMp,
 } from "@saulene/core";
 import type { LlmClient } from "@saulene/perception";
-import { ledgerToSignals, perceive } from "@saulene/perception";
+import { PerceptionError, ledgerToSignals, perceive } from "@saulene/perception";
 import { type Transcript, runConversation } from "./conversation.js";
 import type { SyntheticUser } from "./synthetic-user.js";
 
@@ -72,6 +72,8 @@ export interface ClosedLoopResult {
   birth: Soul;
   final: Soul;
   snapshots: LifeSnapshot[];
+  /** Sessions whose perception failed (malformed LLM output) and were skipped — no drift applied. */
+  skipped: number;
 }
 
 /**
@@ -87,6 +89,7 @@ export async function runClosedLoopLife(opts: ClosedLoopOpts): Promise<ClosedLoo
   const birth = seedFromEntropy(opts.seed, clock0);
   let soul = birth;
   const snapshots: LifeSnapshot[] = [];
+  let skipped = 0;
   const knobs = opts.knobs ?? DEFAULT_KNOBS;
   const turns = opts.turns ?? 3;
   const snapshotEvery = opts.snapshotEvery ?? 3;
@@ -101,7 +104,20 @@ export async function runClosedLoopLife(opts: ClosedLoopOpts): Promise<ClosedLoo
     });
 
     // 2. Perceive the transcript → evidence-cited, quote-validated ledger.
-    const judgment = await perceive(transcript.text, opts.perceptionLlm);
+    // A cheap model occasionally emits malformed JSON; one bad call must NOT abort the whole
+    // (multi-hour) life — skip that session's drift and carry on. The plugin's Stop hook has
+    // its own retry; here a retry would just re-hit the deterministic cache, so we skip.
+    let judgment: Awaited<ReturnType<typeof perceive>>;
+    try {
+      judgment = await perceive(transcript.text, opts.perceptionLlm);
+    } catch (err) {
+      if (err instanceof PerceptionError) {
+        skipped++;
+        console.error(`[life-sim] session ${i} perception failed — skipped: ${err.message}`);
+        continue;
+      }
+      throw err;
+    }
 
     // 3. Convert ledger observations → per-aspect engine signals.
     const { practice, fit } = ledgerToSignals(judgment.observations);
@@ -131,5 +147,5 @@ export async function runClosedLoopLife(opts: ClosedLoopOpts): Promise<ClosedLoo
     }
   }
 
-  return { birth, final: { ...soul }, snapshots };
+  return { birth, final: { ...soul }, snapshots, skipped };
 }

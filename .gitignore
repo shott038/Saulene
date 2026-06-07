@@ -55,3 +55,7 @@ tools/demo/out/
 
 # per-worktree feature missions — never tracked on main
 MISSION.md
+
+# live-run caches (subscription model responses) — never tracked
+.*cache*.json
+*cache*.json

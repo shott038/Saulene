@@ -66,11 +66,29 @@ ${transcript}
 """`;
 }
 
+/**
+ * Pull the JSON object out of a model response. We ask for bare JSON, but real models (esp. cheap
+ * ones via `claude -p`) frequently wrap it in a ```json fence or add a line of prose — which a raw
+ * `JSON.parse` rejects. So: strip a surrounding code fence, then, if prose remains, slice from the
+ * first `{` to the last `}`. Clean JSON passes straight through unchanged.
+ */
+function extractJson(raw: string): string {
+  const trimmed = raw.trim();
+  const fence = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  const unfenced = (fence?.[1] ?? trimmed).trim();
+  if (!unfenced.startsWith("{")) {
+    const start = unfenced.indexOf("{");
+    const end = unfenced.lastIndexOf("}");
+    if (start !== -1 && end > start) return unfenced.slice(start, end + 1);
+  }
+  return unfenced;
+}
+
 /** Parse the raw model string into a zod-validated `SessionJudgment`, or throw `PerceptionError`. */
 function parseJudgment(raw: string): SessionJudgment {
   let json: unknown;
   try {
-    json = JSON.parse(raw);
+    json = JSON.parse(extractJson(raw));
   } catch (err) {
     throw new PerceptionError("LLM output was not valid JSON", err);
   }
