@@ -185,9 +185,17 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 - [ ] Setup wizard: mandatory reality warning → watch-only birth → pick level. Neglect-death 90d clock.
 - [ ] Plugin manifest; install via `/plugin`; bare-MCP portability fallback.
 
-## Phase 5 — Registry / token (parked — separate track, later)
-- [ ] Gallery website (public fingerprint + MBTI + age + stage; nursery/graveyard/dormant).
-- [ ] Solana birth-certificate (opt-in) + Saulene token (paid restore for neglect-death).
+## Phase 5 — Registry / token (separate track — design locked, see `docs/registry-website-plan.md`)
+Claim mechanism LOCKED: ed25519 keypair (Solana-compatible → token wallet later, no rework).
+Opt-in; public fingerprint only (private soul never leaves the machine).
+- [ ] **Plugin side (this repo):** ed25519 keypair at setup (`~/.saulene/key.json`) + `/ul claim` +
+      opt-in signed reporter (heartbeat + lifecycle events). The foundation everything else needs.
+- [ ] **Registry (new repo):** Next.js + Supabase; signature-verifying ingest API; `uls`/`events`
+      schema; daily death-sweep cron.
+- [ ] **Gallery website:** the wall of real sprites (renderer is pure JS → reuse on web), alive/dead
+      counts, nursery/graveyard/dormant, MBTI spread, claim flow.
+- [ ] **Solana birth-certificate (opt-in) + Saulene token** (paid restore for neglect-death) — off
+      the same keypair.
 
 ---
 
