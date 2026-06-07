@@ -207,9 +207,15 @@ Two validated improvements to fold into the product:
 2. **`r_B` baseline** — the empirical base-Claude persona replaces the assumed 0.5 (done in harness).
 
 Remaining bricks to ship:
-1. **Switch `plugin/hooks` SessionStart to S1-style delivery** (small, evidence-backed change).
+1. ✅ **S1 delivery (DONE)** — `plugin/hooks` now delivers the voice via a **`UserPromptSubmit`**
+   hook (per-turn `additionalContext`, the S1 conversation-channel position), not SessionStart's
+   system-prompt context. SessionStart now does gating + renders-and-caches (`session-cache.ts` →
+   `session-injection.json`) + `lastUsedAt` bump and returns null; `user-prompt-submit.ts` reads the
+   cache cheaply each turn. Gating/neglect-death/drift all intact. **Manifest must wire BOTH hooks**
+   (SessionStart for side-effects only — do NOT use its return as additionalContext; UserPromptSubmit
+   for the voice). 291/291 green.
 2. **Setup wizard** (reality warning → watch-only birth → pick level) + the 90d neglect-death clock.
-3. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback.
+3. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback — wire the two hooks above.
 
 **Still open (lower priority, not blocking ship):** the `[~]` Phase-3 renderer items — text Layers
 3–5 (spine/framing/drift) + fingerprint, and the per-stage magnitude sweep. The harness + real
