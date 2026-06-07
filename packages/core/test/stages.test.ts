@@ -7,6 +7,7 @@ import {
   STAGE_BANDS,
   type Stage,
   accrueMp,
+  presentedAge,
   stageFromMp,
   stageRules,
 } from "../src/stages/index.js";
@@ -176,5 +177,76 @@ describe("accrueMp", () => {
     const before = soul.mp;
     accrueMp(soul, 1);
     expect(soul.mp).toBe(before);
+  });
+});
+
+describe("presentedAge", () => {
+  const [b0, b1, b2] = STAGE_BANDS;
+
+  function soulWithMp(mp: number): Soul {
+    const soul = makeSoul(0);
+    return { ...soul, mp };
+  }
+
+  it("bounds: output is always in [13, 65]", () => {
+    for (const mp of [
+      0,
+      1,
+      b0 - 1,
+      b0,
+      b0 + 1,
+      b1 - 1,
+      b1,
+      b1 + 1,
+      b2 - 1,
+      b2,
+      b2 + 1,
+      2000,
+      1e6,
+    ]) {
+      const age = presentedAge(soulWithMp(mp));
+      expect(age).toBeGreaterThanOrEqual(13);
+      expect(age).toBeLessThanOrEqual(65);
+    }
+  });
+
+  it("monotonic: age never decreases as mp rises", () => {
+    let prev = Number.NEGATIVE_INFINITY;
+    for (let mp = 0; mp <= 2000; mp += 5) {
+      const age = presentedAge(soulWithMp(mp));
+      expect(age).toBeGreaterThanOrEqual(prev);
+      prev = age;
+    }
+  });
+
+  it("childhood (mp=0 to b0) presents as 13–17", () => {
+    expect(presentedAge(soulWithMp(0))).toBeCloseTo(13, 1);
+    expect(presentedAge(soulWithMp(b0 - 0.01))).toBeLessThan(17);
+    expect(presentedAge(soulWithMp(b0 - 0.01))).toBeGreaterThan(13);
+  });
+
+  it("adolescence (mp=b0 to b1) presents as 17–24", () => {
+    expect(presentedAge(soulWithMp(b0))).toBeCloseTo(17, 1);
+    expect(presentedAge(soulWithMp(b1 - 0.01))).toBeLessThan(24);
+    expect(presentedAge(soulWithMp(b1 - 0.01))).toBeGreaterThan(17);
+  });
+
+  it("early_adulthood (mp=b1 to b2) presents as 25–40", () => {
+    expect(presentedAge(soulWithMp(b1))).toBeCloseTo(25, 1);
+    expect(presentedAge(soulWithMp(b2 - 0.01))).toBeLessThan(40);
+    expect(presentedAge(soulWithMp(b2 - 0.01))).toBeGreaterThan(25);
+  });
+
+  it("old_adulthood (mp>=b2) presents as 42–65 (asymptotic)", () => {
+    expect(presentedAge(soulWithMp(b2))).toBeCloseTo(42, 1);
+    expect(presentedAge(soulWithMp(b2 + 500))).toBeGreaterThan(53); // half-sat point ≈ 53.5
+    expect(presentedAge(soulWithMp(1e6))).toBeCloseTo(65, 0);
+  });
+
+  it("is pure: does not mutate the soul", () => {
+    const soul = soulWithMp(300);
+    const mpBefore = soul.mp;
+    presentedAge(soul);
+    expect(soul.mp).toBe(mpBefore);
   });
 });

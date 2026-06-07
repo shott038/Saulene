@@ -126,7 +126,14 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       `VoiceSampleInput` type) × recency × provenance (off-current-model down-weight); mandatory
       anti-quotation/topic-orthogonal framing line; cold-start crossfade `c/(c+20)` from
       soul-derived synthetic exemplars → real samples as `corpusSize` grows. 16 new tests green.
-      Layers 3 (spine), 4 (anti-decay re-inject), 5 (drift) + fingerprint still pending.
+      **Layer 3 done** (`layers/age.ts`): age/stage voice expression. `buildAgeBlock(soul)`
+      maps `presentedAge(soul)` → three manner directives (cadence/economy, decisiveness/hedging,
+      reference-frame) across 12-rung ladders (age 13–65). ADDITIVE: `mp=0` → `ageBlock: ""`
+      → byte-identical Layer-1 floor; all 16 prior golden tests still pass. Competence-invariance
+      contract enforced (manner only, never capability), theatrical-tropes guardrail tested. 25
+      new tests green. `presentedAge()` added to `packages/core/src/stages` (smooth monotonic
+      MP→age in [13,65] with Michaelis-Menten asymptote in old_adulthood); 7 new core tests green.
+      Layers 4 (spine), 5 (anti-decay re-inject), 6 (drift) + fingerprint still pending.
 
 - [x] **The look — the terminal ul sprite** (renderer's second surface; see SPEC → Expression → the *look*).
       The ul is a cloud-spirit sprite drawn in the user's terminal/statusline. **Visual design LOCKED (Jun 6):**
