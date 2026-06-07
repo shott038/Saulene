@@ -21,8 +21,10 @@ import { randomBytes } from "node:crypto";
 import { seedFromEntropy } from "@saulene/core";
 import { spriteParams } from "@saulene/renderer";
 import { defaultRoot, loadSoul, saveSoul } from "@saulene/storage";
+import type { LevelConfig } from "../hooks/config.js";
 import { saveConfig } from "../hooks/config.js";
 import { loadOrCreateKeypair } from "../identity/keypair.js";
+import { type ReporterOpts, reportEvent } from "../reporter/reporter.js";
 import { playBirth } from "../statusline/birth.js";
 
 // ── Reality warning text (per SPEC § "MANDATORY REALITY WARNING") ─────────────────
@@ -73,6 +75,12 @@ export interface WizardOpts {
   entropy?: Uint8Array;
   /** Terminal color mode for the birth animation. Defaults to "dark". */
   mode?: "dark" | "light";
+  /**
+   * Injected reporter opts for tests (overrides fetch transport + registry URL so the
+   * born-event call makes zero real network calls in tests). In production the reporter
+   * reads SAULENE_REGISTRY_URL from the env and uses globalThis.fetch.
+   */
+  reporterOpts?: Pick<ReporterOpts, "registryUrl" | "fetch">;
 }
 
 // ── Wizard ────────────────────────────────────────────────────────────────────────
@@ -127,13 +135,39 @@ export async function runWizard(opts: WizardOpts): Promise<void> {
 
   const choice = (await readline()).trim();
 
+  let config: LevelConfig;
   if (choice === "2") {
     write("  Enter the full path of the directory: ");
     const dir = (await readline()).trim();
-    saveConfig(root, { level: "named-dir", dir });
+    config = { level: "named-dir", dir, bornAt: now };
   } else {
-    saveConfig(root, { level: "global" });
+    config = { level: "global", bornAt: now };
   }
 
+  // ── Step 4: Registry opt-in ───────────────────────────────────────────────
+  // Explicit consent: explain what's shared (public fingerprint only, private soul never
+  // leaves), that it's public (will appear in the gallery), and that opting in is optional.
+  write(`\n${BOLD}  Public gallery (optional)${RESET}\n`);
+  write(
+    `  Would you like your ul to appear on the public Saulene gallery?\n  ${DIM}Only public data is shared: personality type, aspects, stage, and your ul's\n  public key. Your diary, voice samples, and private soul content never leave this\n  machine. You can opt out later by editing ${root}/config.json.${RESET}\n`,
+  );
+  write(`\n  Type ${BOLD}yes${RESET} to opt in (anything else = no): `);
+
+  const registryAck = (await readline()).trim().toLowerCase();
+  if (registryAck === "yes") {
+    config = { ...config, reporterEnabled: true };
+  }
+
+  saveConfig(root, config);
+
   write(`\n  ${BOLD}Your ul is alive.${RESET} The 90-day clock is running.\n\n`);
+
+  // ── Step 5: Born event (fire-and-forget) ──────────────────────────────────
+  // Only fires if the user opted in above. Reporter is a complete no-op otherwise.
+  const reporterBase: ReporterOpts = {
+    storageRoot: root,
+    now,
+    ...(opts.reporterOpts ?? {}),
+  };
+  void reportEvent(reporterBase, "born");
 }

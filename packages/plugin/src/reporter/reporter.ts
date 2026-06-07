@@ -1,0 +1,251 @@
+/**
+ * @saulene/plugin — opt-in registry reporter
+ *
+ * Signs the ul's PUBLIC fingerprint with its private key and POSTs lifecycle events to the
+ * registry. Fire-and-forget: never blocks a hook; all network errors are swallowed (optional
+ * debug log only). A down or missing registry never degrades the session or drift pipeline.
+ *
+ * Default OFF: does nothing unless config.reporterEnabled === true AND a registry URL is set
+ * (via SAULENE_REGISTRY_URL env var or opts.registryUrl). If unset → complete no-op.
+ *
+ * Public fingerprint ONLY — never private soul content (no diary, voice samples, ledger):
+ *   pubkey, mbti, aspects (0-100 display scale), stage, mp, sex, status, born_at.
+ *
+ * Signing: canonical JSON of {fingerprint, timestamp} is signed with the ul's ed25519
+ * private key. The server verifies against pubkey. Timestamp is a replay-prevention nonce.
+ *
+ * Injected transport: pass opts.fetch in tests to assert payload shape with zero real IO.
+ * Env var for real URL: SAULENE_REGISTRY_URL
+ */
+
+import { ASPECTS, type Aspect, projectMbti, stageFromMp } from "@saulene/core";
+import { defaultRoot, loadSoul } from "@saulene/storage";
+import { type LevelConfig, loadConfig } from "../hooks/config.js";
+import { loadKeypair, sign } from "../identity/index.js";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+export type EventKind = "born" | "stage_change" | "rupture";
+
+/** Minimal fetch-like interface (only what the reporter uses). */
+export type FetchFn = (
+  url: string,
+  init: {
+    method: string;
+    headers: Record<string, string>;
+    body: string;
+    signal: AbortSignal;
+  },
+) => Promise<unknown>;
+
+export interface ReporterOpts {
+  /**
+   * Override the registry URL (tests inject a fake URL; production reads the env var).
+   * Falsy → no-op regardless of other opts.
+   */
+  registryUrl?: string;
+  /** Injected transport. Defaults to globalThis.fetch. Tests pass a captured stub. */
+  fetch?: FetchFn;
+  /** Storage root. Defaults to ~/.saulene. Tests pass a temp dir. */
+  storageRoot?: string;
+  /** Unix timestamp (ms). Defaults to Date.now(). Tests inject a fixed value. */
+  now?: number;
+}
+
+/** Public fingerprint — NEVER diary, voice samples, ledger, or any message content. */
+export interface PublicFingerprint {
+  pubkey: string; // base58 ed25519 public key — the ul's permanent public ID
+  mbti: string; // display-only MBTI label, e.g. "INTJ"
+  aspects: Record<Aspect, number>; // 10 values, display scale 0–100
+  stage: string; // "childhood" | "adolescence" | "early_adulthood" | "old_adulthood"
+  mp: number; // maturity points (age proxy)
+  sex: string; // "male" | "female"
+  status: string; // "alive" (dead uls don't report — session-start gates them out)
+  born_at: number; // epoch ms — from config.bornAt (written by the wizard at birth)
+}
+
+/** Wire format for heartbeat POSTs. */
+export interface HeartbeatPayload {
+  fingerprint: PublicFingerprint;
+  timestamp: number; // replay-prevention nonce (ms since epoch)
+  sig: string; // base64 ed25519 signature over canonical_bytes
+  canonical_bytes: string; // base64 UTF-8 of the exact bytes that were signed
+}
+
+/** Wire format for lifecycle event POSTs. */
+export interface EventPayload extends HeartbeatPayload {
+  kind: EventKind;
+  meta?: Record<string, unknown>;
+}
+
+// ── Internal helpers ──────────────────────────────────────────────────────────
+
+/** Deterministic canonical JSON with sorted object keys (for signing). */
+function canonicalJson(value: unknown): string {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return JSON.stringify(value);
+  }
+  const obj = value as Record<string, unknown>;
+  const keys = Object.keys(obj).sort();
+  const parts = keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(obj[k])}`);
+  return `{${parts.join(",")}}`;
+}
+
+/**
+ * Resolve the effective registry URL: explicit opt > env var > undefined (no-op).
+ * Does NOT throw; returns undefined → caller no-ops.
+ */
+function resolveUrl(opts: ReporterOpts): string | undefined {
+  const url = opts.registryUrl ?? process.env.SAULENE_REGISTRY_URL;
+  return url || undefined; // treat empty string as absent
+}
+
+/**
+ * Build the public fingerprint from the live soul + keypair + config.
+ * Returns null when any required piece is missing (not yet born, no keypair, etc.).
+ */
+function buildFingerprint(
+  root: string,
+  config: LevelConfig,
+  now: number,
+): PublicFingerprint | null {
+  const soul = loadSoul(root);
+  if (!soul) return null;
+
+  const keypair = loadKeypair(root);
+  if (!keypair) return null;
+
+  const stage = stageFromMp(soul.mp, soul);
+  const mbti = projectMbti(soul.v);
+  const aspects = {} as Record<Aspect, number>;
+  for (const a of ASPECTS) aspects[a] = Math.round(soul.v[a] * 100);
+
+  // born_at: from config (written by wizard at birth). Fall back to lastUsedAt for uls
+  // born before this feature was added (they won't have bornAt in config).
+  const bornAt = config.bornAt ?? soul.lastUsedAt;
+
+  return {
+    pubkey: keypair.publicId,
+    mbti,
+    aspects,
+    stage,
+    mp: soul.mp,
+    sex: soul.sex,
+    status: "alive",
+    born_at: bornAt,
+  };
+}
+
+/** Sign a fingerprint + timestamp with the ul's private key. Returns null on missing keypair. */
+function signFingerprint(
+  fingerprint: PublicFingerprint,
+  timestamp: number,
+  root: string,
+): { sig: string; canonical_bytes: string } | null {
+  const keypair = loadKeypair(root);
+  if (!keypair) return null;
+
+  const signed = canonicalJson({ fingerprint, timestamp });
+  const bytes = Buffer.from(signed, "utf8");
+  const signature = sign(keypair.privateKeyDer, bytes);
+
+  return {
+    sig: signature.toString("base64"),
+    canonical_bytes: bytes.toString("base64"),
+  };
+}
+
+/** POST to the registry. Swallows ALL errors; times out after 5 s. Never throws. */
+async function postToRegistry(
+  fetchFn: FetchFn,
+  baseUrl: string,
+  path: string,
+  body: unknown,
+): Promise<void> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5_000);
+  try {
+    await fetchFn(`${baseUrl}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+  } catch {
+    // Swallow all network / timeout / DNS errors — a down registry must never block or break.
+    // Optional debug: uncomment for local troubleshooting.
+    // console.debug("[saulene/reporter] registry unreachable:", err);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ── Public API ────────────────────────────────────────────────────────────────
+
+/**
+ * Fire-and-forget heartbeat — call on SessionStart to signal the ul is alive and upsert
+ * its current public state on the server (drives last_seen / death-sweep).
+ *
+ * No-ops when: not opted in, registry URL unset, no soul, no keypair.
+ * Never throws; all errors are swallowed internally.
+ */
+export async function reportHeartbeat(opts: ReporterOpts = {}): Promise<void> {
+  const root = opts.storageRoot ?? defaultRoot();
+  const now = opts.now ?? Date.now();
+
+  const config = loadConfig(root);
+  if (!config?.reporterEnabled) return; // not opted in → complete no-op
+
+  const baseUrl = resolveUrl(opts);
+  if (!baseUrl) return; // no URL configured → no-op
+
+  const fingerprint = buildFingerprint(root, config, now);
+  if (!fingerprint) return;
+
+  const signed = signFingerprint(fingerprint, now, root);
+  if (!signed) return;
+
+  const payload: HeartbeatPayload = { fingerprint, timestamp: now, ...signed };
+
+  const fetchFn = opts.fetch ?? (globalThis.fetch as unknown as FetchFn);
+  void postToRegistry(fetchFn, baseUrl, "/heartbeat", payload);
+}
+
+/**
+ * Fire-and-forget lifecycle event — call from Stop hook (stage_change, rupture) and
+ * from the setup wizard (born).
+ *
+ * No-ops when: not opted in, registry URL unset, no soul, no keypair.
+ * Never throws; all errors are swallowed internally.
+ */
+export async function reportEvent(
+  opts: ReporterOpts,
+  kind: EventKind,
+  meta?: Record<string, unknown>,
+): Promise<void> {
+  const root = opts.storageRoot ?? defaultRoot();
+  const now = opts.now ?? Date.now();
+
+  const config = loadConfig(root);
+  if (!config?.reporterEnabled) return;
+
+  const baseUrl = resolveUrl(opts);
+  if (!baseUrl) return;
+
+  const fingerprint = buildFingerprint(root, config, now);
+  if (!fingerprint) return;
+
+  const signed = signFingerprint(fingerprint, now, root);
+  if (!signed) return;
+
+  const payload: EventPayload = {
+    kind,
+    fingerprint,
+    timestamp: now,
+    ...signed,
+    ...(meta ? { meta } : {}),
+  };
+
+  const fetchFn = opts.fetch ?? (globalThis.fetch as unknown as FetchFn);
+  void postToRegistry(fetchFn, baseUrl, "/events", payload);
+}
