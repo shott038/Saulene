@@ -1,5 +1,21 @@
 # Plan: lock the database — the "vault" (SAFE public vs VALUABLE gated)
 
+**Status: ✅ DONE + verified live (2026-06-07).** Implemented via the Supabase MCP:
+- VALUABLE columns moved off `uls`/`snapshots` into **`ul_secrets`** + **`snapshot_secrets`** (RLS
+  on, **zero policies → anon fully denied**); added `unlocks` (payment) table; added SAFE `sprite`
+  column to `uls`. `uls`/`snapshots`/`events` keep public-read of SAFE fields only.
+- Ingest Edge Function **v3** routes SAFE→public tables, VALUABLE→secret tables.
+- New **`ul-private`** Edge Function = the only read path to the vault: requires ed25519 ownership
+  proof + an `unlocks` row (else 402).
+- Verified: signed heartbeat → SAFE in `uls`, VALUABLE in `ul_secrets`; anon can't read secrets;
+  `ul-private` returns 402 unpaid / 200 + full vault when paid. Test data cleaned (all tables 0).
+- TODO later: wire a real payment provider to insert `unlocks`; populate the `sprite` descriptor from
+  the reporter (deferred to website-build); the `ul-private` web claim UX.
+
+---
+
+_(original plan below)_
+
 **Status:** planned. The registry DB is currently **public-read on everything** (anon can read every
 column). With reporting now default-on, the valuable soul numbers would sit in a publicly-queryable
 table. This plan splits the data so the public sees only SAFE fields and the VALUABLE fields are
