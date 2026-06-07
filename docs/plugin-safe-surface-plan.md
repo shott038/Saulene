@@ -1,5 +1,16 @@
 # Plan: plugin shows only SAFE data (qualitative-only surfaces)
 
+**Status: ✅ DONE + independently verified (2026-06-07).** `/ul`, `ul_snapshot`, `ul_drift`,
+`ul_countdown`, and the shared `mcp/snapshot.ts` now return SAFE fields only (MBTI/stage/age/sex/
+sprite/pubkey/countdown/status + a qualitative drift phrase); the raw 10 aspects + dynamics no
+longer appear in any user-facing surface. `/ul` shows a gallery upsell. Reporter unchanged (still
+feeds the gated DB). Tests assert no numeric leak (no `\d+/100`, no aspect/stubbornness/tension
+strings). 354 tests green. The sprite-descriptor reporter bonus was NOT done (deferred to website).
+
+---
+
+_(original plan below)_
+
 **Status:** planned. Pairs with `docs/db-vault-plan.md`. Goal: the plugin's user-facing surfaces
 (`/ul` skill + MCP tools) stop revealing the VALUABLE numbers, so the raw 10 aspects / stubbornness /
 dynamics aren't given away in-product — the gallery (paid) becomes the only nice place to see them.

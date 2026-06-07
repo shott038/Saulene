@@ -47,5 +47,8 @@ docs/_tune.html
 # regenerable animation frame intermediates (rebuilt via ul-idle.mjs --export-*)
 docs/ul-*-frames.json
 
+# Generated lifecycle-visualizer output (regenerated via `pnpm demo:html`)
+tools/demo/out/
+
 # Scheduler lock (transient)
 .claude/scheduled_tasks.lock
