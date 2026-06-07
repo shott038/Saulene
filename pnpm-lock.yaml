@@ -68,6 +68,18 @@ importers:
         specifier: ^3.23.8
         version: 3.25.76
 
+  tools/demo:
+    dependencies:
+      '@saulene/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@saulene/renderer':
+        specifier: workspace:*
+        version: link:../../packages/renderer
+      '@saulene/simulator':
+        specifier: workspace:*
+        version: link:../simulator
+
   tools/harness:
     dependencies:
       '@anthropic-ai/sdk':
