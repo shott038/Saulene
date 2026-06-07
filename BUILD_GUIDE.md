@@ -293,8 +293,8 @@ statusline → MCP/`/ul` → wizard → manifest. Install via `/plugin`; first r
    everything is unit-tested but has never been run in a live Claude Code install.
 5. **Lower priority:** Phase-3 renderer text Layers 3–5 + fingerprint + per-stage magnitude sweep;
    the Solana token.
-6. **Large-scale life simulation — Layer D** (W3 follow-on): golden closed-loop
-   lives + felt-expression validation metrics against the real fingerprint corpus.
+6. ~~**Large-scale life simulation — Layer D**~~ **DONE ✅** — golden closed-loop lives + validation
+   metrics landed in `tools/life-sim` (see Layer D section below).
 
 ---
 
@@ -323,5 +323,20 @@ paired, frozen-soul A/B, Latin-hypercube, power analysis), a runnable 4,000-life
 deterministic), and `FINDINGS.md`. 38 new tests. Boundary: `["core","perception","simulator"]`.
 TODO(merge-W1): swap the local `ledgerToSignals` in `empirical-source.ts` for the shared pure fn.
 
-### Layer D — Golden closed-loop validation (W3 — follow-on)
-Replay real sessions through the pipeline; compare predicted vs actual soul drift. Needs Layer C first.
+### Layer D — Golden closed-loop validation (DONE ✅, `tools/life-sim`)
+Real sessions through the full pipeline; four validation metrics answer "does this feel like a person changing?"
+
+- **Closed-loop life driver** (`src/closed-loop.ts`): per session: render(soul) → real synthetic-user ↔ ul
+  conversation → real `perceive()` → `ledgerToSignals` → `charge`/`chargeTension`/`accrueMp`/`stageFromMp`/
+  `consolidate`. Clock injected (no `Date.now`). Frozen-soul control arm via `frozen: true`. Snapshots every
+  N sessions. Returns `{birth, final, snapshots}`.
+- **ValidationJudge port** (`src/validation/judge.ts`): minimal blind-judge interface — `sameBeingOverTime`
+  and `distinguishable`. `fakeValidationJudge` for CI; `realValidationJudge` wraps an injected `LlmClient`.
+- **Four validation metrics** (`src/validation/metrics.ts`):
+  1. `crossTimeIdentity` — blind judge: same soul AND orderable in time? (the primary test)
+  2. `frozenSoulControlAB` — drifting arm diverges from frozen arm? (pure v-vector, no LLM)
+  3. `twoLivesOneSeed` — aligned vs grind from same seed → two felt adults a judge can tell apart?
+  4. `surrogateVsTruth` — pure-engine `lifetime()` vs closed-loop trajectory (no LLM)
+- **`golden.ts`** — gated behind `SAULENE_LIVE=1`; runs 3 seeds × 15 sessions, executes all 4 metrics,
+  writes `FINDINGS.md`. Run: `SAULENE_LIVE=1 pnpm --filter @saulene/life-sim golden`.
+- **20 new tests** (fake LLM, deterministic); `pnpm check` clean (boundaries + typecheck + 454 tests).
