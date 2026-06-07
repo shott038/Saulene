@@ -8,4 +8,4 @@ Run the following command and display its output to the user:
 node ${CLAUDE_PLUGIN_ROOT}/dist/bin/skill-ul.js
 ```
 
-If the command produces no output, tell the user: "You don't have an ul yet. Run the Saulene setup to create your companion."
+If the command produces no output, tell the user: "You don't have an ul yet. Run `/ul-setup` to create your companion, or run `! node ${CLAUDE_PLUGIN_ROOT}/dist/bin/setup.js` directly in your terminal."
