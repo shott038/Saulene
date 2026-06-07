@@ -112,10 +112,71 @@ Extend `tools/harness/AB-FINDINGS.md` (or `SALIENCE-FINDINGS.md`): a lift-vs-sal
 (S0→S3) with CIs, distinguishability per rung, the ceiling verdict, and a plain-language call on
 delivery-problem vs foundational-problem + the recommended shippable rung. Artifacts gitignored.
 
+---
+
+## Phase 4 — forced-choice identification with a DIFFICULTY GRADIENT ✅ DONE — subscription-only
+> **RESULT (read IDENT-FINDINGS.md):** the 7-way line-up does NOT recover graded identity — overall
+> **0.204 ≈ chance 0.143**, with the judge collapsing **48% of all picks onto `cold-extreme`** and
+> **never** picking "default" (stock-Claude control → default 0/18). NOT the expected rising curve
+> (warm-extreme, the farthest persona, scores 0.111). Two real causes: (1) base Claude's own strong
+> cold/analytical persona (`r_B`) dominates outputs and biases the judge; (2) the renderer's effect is
+> ASYMMETRIC — cold injections amplify the base (land cold), warm injections fight it and lose (warm
+> souls never read as warm). **Synthesis across phases:** the renderer encodes COARSE identity (binary
+> contrast → 100% in 3.5) and the ul is noticeable (Phase 3), but FINE multi-class identity is swamped
+> by the base model's persona. Also fixed this phase: `--strict-mcp-config` on all headless calls so
+> they never boot MCP servers (was spiking CPU load to ~28; now ~4). Tuned the verdict logic to be
+> chance/bias-aware (mean-tier + modal-pick detection), so it no longer reports a false gradient.
+
+(historical Phase-4 spec below)
+
+## Phase 4 spec (historical)
+Phase 3.5 already proved the easy end: two max-contrast souls → forced-choice **3/3 = 100%**, so the
+renderer DOES encode distinct identity and the forced-choice probe is sensitive enough to read it.
+Phase 4 fills in the whole curve — vary how distinct each persona is and measure how recognition
+degrades, so we learn the **distinctiveness threshold** (how far from default a soul must sit to be
+reliably identifiable), not just "extremes work."
+
+**The probe (per souled response):** show the blind judge the response + a line-up of N
+**independently-worded** behavioral descriptions (one per candidate persona, synthesized in neutral
+language from each persona's aspect vector — NOT the renderer's own prose, so it's behavior-inference,
+not surface phrase-matching) + a **"just default Claude / no distinct personality"** option. Ask
+"which persona produced this?" Score accuracy vs chance (1/(N+1)).
+
+**The difficulty gradient — independent variable = distance from the empirical base persona `r_B`**
+(the measured base-Claude vector already in `judge.ts`). Construct a ladder of test personas at
+controlled L2 distances from `r_B` (build Souls with chosen disposition `v`):
+- **2 EXTREME** — far from `r_B`, opposite poles, clearly distinct from EACH OTHER (e.g. one
+  warm/expressive/open, one cold/rigid/withdrawn). Expect ~easy (Phase 3.5 already saw 100%).
+- **2 NEAR-DEFAULT** — barely off `r_B` (small nudge on a couple aspects). Expect ~chance — the floor.
+- **2–3 MIDDLE** — moderate distance, the interesting part of the curve.
+
+**What the curve tells us:**
+- Accuracy RISES with distance-from-`r_B` (extremes easy, near-default at chance) → **fidelity is REAL
+  but graded**; report the threshold distance for reliable identification + a confusion matrix (which
+  souls get mistaken for which). This is the expected outcome given Phase 3.5 — quantify it.
+- Accuracy FLAT even for extremes → contradicts Phase 3.5; re-examine the probe.
+
+**Hold constant:** deliver at **S1** (the noticeability-winning rung; optionally S3 ceiling for an
+upper bound), arms=sonnet, judge=haiku, the 6-prompt battery, k=3, blind, randomized line-up order,
+cache everything, strip `ANTHROPIC_API_KEY`. Reuse the Phase-2/3/3.5 rig.
+
+## Outputs (commit — the evidence)
+`tools/harness/IDENT-FINDINGS.md` (or append): the accuracy-vs-distance table/curve (per persona:
+L2 distance from `r_B` → identification accuracy vs chance), the confusion matrix, the distinctiveness
+threshold, and a plain-language verdict (graded-fidelity + threshold vs flat-null) + recommended next move.
+
 ## Status
 Status: ready-to-merge
 
-## Verification
+## Verification (Phase 4)
+- Build: pass (`tsc -b` clean) · Boundaries: pass · Tests: pass (281, unchanged — runs have no `.test.ts`)
+- Lint: changed files clean
+- Ident run: DONE — subscription-only, `--strict-mcp-config` (no MCP boot), arms=sonnet/judge=haiku,
+  6 personas × 6 prompts × k=3 + 18 controls, blind 7-way line-up. Numbers in `IDENT-FINDINGS.md`.
+- CPU fix: committed (`cd020c3`) — headless calls never boot MCP servers; 8-wide holds load ~4.
+- Scope kept: yes.
+
+## Verification (Phase 3 — historical)
 - Build: pass (`tsc -b` clean)
 - Tests: pass (281 — fakeJudge suite + merged mcp; the A/B + salience + live judge have no `.test.ts`, never run in CI)
 - Boundaries: pass (`pnpm check:boundaries` clean — harness never imports `plugin`)

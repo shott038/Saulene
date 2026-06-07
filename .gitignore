@@ -23,6 +23,9 @@ coverage/
 # Max-contrast diagnostic run artifacts (subscription) — non-deterministic; never committed
 .diagnostic-run.json
 .diagnostic-run.log
+# Identification-gradient run artifacts (subscription) — non-deterministic; never committed
+.ident-run.json
+.ident-run.log
 
 # Local working context (not shared)
 CLAUDE.md

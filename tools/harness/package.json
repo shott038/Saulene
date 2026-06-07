@@ -12,7 +12,8 @@
     "calibrate": "node dist/calibrate.js",
     "ab": "node dist/abrun.js",
     "salience": "node dist/salience.js",
-    "diagnostic": "node dist/diagnostic-run.js"
+    "diagnostic": "node dist/diagnostic-run.js",
+    "ident": "node dist/ident-run.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",
