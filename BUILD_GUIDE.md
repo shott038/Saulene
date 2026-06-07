@@ -188,10 +188,14 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 ## Phase 5 — Registry / token (separate track — design locked, see `docs/registry-website-plan.md`)
 Claim mechanism LOCKED: ed25519 keypair (Solana-compatible → token wallet later, no rework).
 Opt-in; public fingerprint only (private soul never leaves the machine).
-- [ ] **Plugin side (this repo):** ed25519 keypair at setup (`~/.saulene/key.json`) + `/ul claim` +
-      opt-in signed reporter (heartbeat + lifecycle events). The foundation everything else needs.
-- [ ] **Registry (new repo):** Next.js + Supabase; signature-verifying ingest API; `uls`/`events`
-      schema; daily death-sweep cron.
+- [x] **Plugin side (this repo) — DONE:** ed25519 keypair at setup (`~/.saulene/key.json`, base58
+      public ID, `sign`/`verify`) + the opt-in signed reporter (`src/reporter/`) — heartbeat on
+      SessionStart, `stage_change`/`rupture` events on Stop, `born` at setup; public-fingerprint-only,
+      fire-and-forget, inert until `SAULENE_REGISTRY_URL` is set. (`/ul claim` web handshake still TODO
+      with the registry.) 338 tests green.
+- [~] **Registry (new repo):** Next.js + Supabase. **DB schema DONE** — Supabase project
+      `slmvnyxtkkomotflalqn`, tables `uls` + `events` with RLS (public read, service-role writes).
+      Still TODO: the signature-verifying ingest API + daily death-sweep cron.
 - [ ] **Gallery website:** the wall of real sprites (renderer is pure JS → reuse on web), alive/dead
       counts, nursery/graveyard/dormant, MBTI spread, claim flow.
 - [ ] **Solana birth-certificate (opt-in) + Saulene token** (paid restore for neglect-death) — off
