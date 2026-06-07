@@ -53,5 +53,19 @@ The keypair + `sign()` already exist (`packages/plugin/src/identity/`). The DB s
   fingerprint-only, fire-and-forget, no-op when opted out or unconfigured. Tests cover payload shape,
   signing, opt-in gating, and graceful failure (injected transport, no real IO). `pnpm check` green.
 
+## Key files
+- `packages/plugin/src/reporter/reporter.ts` — new: FetchFn transport, signFingerprint, reportHeartbeat, reportEvent
+- `packages/plugin/src/hooks/config.ts` — extended LevelConfig with reporterEnabled + bornAt
+- `packages/plugin/src/setup/wizard.ts` — added step 4 opt-in prompt + born event
+- `packages/plugin/src/hooks/session-start.ts` — fires reportHeartbeat fire-and-forget
+- `packages/plugin/src/hooks/stop.ts` — detects stage_change/rupture + fires events
+- `packages/plugin/test/reporter.test.ts` — new: 19 tests with injected fetch
+
+## Verification
+- Build: pass
+- Tests: pass (338 passed, 19 new reporter tests)
+- Scope kept: yes — only plugin-edge files touched; core/renderer/storage untouched
+- Summary: opt-in reporter fires signed heartbeat on SessionStart + lifecycle events on Stop/wizard; no-op when unset; 19 tests cover shape, signing, gating, graceful failure
+
 ## Status
-Status: in-progress
+Status: ready-to-merge
