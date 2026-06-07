@@ -315,13 +315,13 @@ The goal: simulate millions of synthetic lives cheaply by paying for real-CLI tr
 - **`live.ts`** — gated behind `SAULENE_LIVE=1`; builds a real corpus. Run: `SAULENE_LIVE=1 pnpm --filter @saulene/life-sim corpus`.
 - **19 new tests** in `tools/life-sim/test/` + 6 new perception signals tests. `pnpm check` green (397 tests).
 
-### Layer C — Population runner (DONE ✅, `tools/life-sim-pop`)
+### Layer A — Population runner (DONE ✅, `tools/life-sim-pop`)
 `@saulene/life-sim-pop` imports the `LedgerSource` contract, drives millions of lives through `core`,
 measures empirical distributions. `EmpiricalLedgerSource` (deterministic corpus sampling, injected
-RNG), `population()` runner (N seeds × M scripts × K knob-sets), experiment-design toolkit (CRN
-paired, frozen-soul A/B, Latin-hypercube, power analysis), a runnable 4,000-life sweep (2.2s, 100%
-deterministic), and `FINDINGS.md`. 38 new tests. Boundary: `["core","perception","simulator"]`.
-TODO(merge-W1): swap the local `ledgerToSignals` in `empirical-source.ts` for the shared pure fn.
+RNG; uses the shared `ledgerToSignals` from `@saulene/perception`), `population()` runner (N seeds ×
+M scripts × K knob-sets), experiment-design toolkit (CRN paired, frozen-soul A/B, Latin-hypercube,
+power analysis), a runnable 4,000-life sweep (2.2s, 100% deterministic), and `FINDINGS.md`. 38 new
+tests. Boundary: `["core","perception","simulator"]`.
 
 ### Layer D — Golden closed-loop validation (DONE ✅, `tools/life-sim`)
 Real sessions through the full pipeline; four validation metrics answer "does this feel like a person changing?"

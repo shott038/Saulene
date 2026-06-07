@@ -5,55 +5,16 @@
  * Deterministic: same (corpus, seed, soul, sessionIndex) → identical ScriptedSession.
  * No IO — the corpus is pre-loaded and passed in.
  *
- * TODO(merge-W1): swap `ledgerToSignals` below with the shared pure fn from @saulene/life-sim.
+ * The observation → practice/fit conversion is the shared pure `ledgerToSignals` from
+ * @saulene/perception (one source of truth, also used by the plugin's Stop hook).
  */
 
-import { ASPECTS } from "@saulene/core";
-import type { Aspect, AspectVector, Soul } from "@saulene/core";
+import type { Soul } from "@saulene/core";
 import { projectMbti, stageFromMp } from "@saulene/core";
-import type { Observation } from "@saulene/perception";
+import { ledgerToSignals } from "@saulene/perception";
 import type { ScriptedSession } from "@saulene/simulator";
 import { hashPair, makeRng } from "./rng.js";
 import type { CorpusRecord, LedgerSource } from "./types.js";
-
-// ── Signal conversion (mirrors packages/plugin/src/hooks/stop.ts §3) ─────────
-
-/**
- * Convert a perception ledger row into a ScriptedSession for the pure engine.
- *
- * practice ordinal 0–3 → 0–1 (divide by 3).
- * fit ordinal −3..+3 → −1..+1 (divide by 3).
- * Same aspect appearing in multiple observations → average.
- *
- * TODO(merge-W1): replace with the shared `ledgerToSignals` pure fn from @saulene/life-sim.
- */
-function ledgerToSignals(
-  observations: Observation[],
-  sessionSignificance: number,
-): ScriptedSession {
-  const practiceSums: Partial<AspectVector> = {};
-  const fitSums: Partial<AspectVector> = {};
-  const counts: Partial<Record<Aspect, number>> = {};
-
-  for (const obs of observations) {
-    const a = obs.aspect;
-    practiceSums[a] = (practiceSums[a] ?? 0) + obs.practice / 3;
-    fitSums[a] = (fitSums[a] ?? 0) + obs.fit / 3;
-    counts[a] = (counts[a] ?? 0) + 1;
-  }
-
-  const practice: Partial<AspectVector> = {};
-  const fit: Partial<AspectVector> = {};
-  for (const a of ASPECTS) {
-    const n = counts[a];
-    if (n) {
-      practice[a] = (practiceSums[a] ?? 0) / n;
-      fit[a] = (fitSums[a] ?? 0) / n;
-    }
-  }
-
-  return { practice, fit, significance: sessionSignificance };
-}
 
 // ── EmpiricalLedgerSource ─────────────────────────────────────────────────────
 
@@ -92,7 +53,8 @@ export class EmpiricalLedgerSource implements LedgerSource {
     const record = bucket[rng.int(bucket.length)];
     if (!record) throw new Error("EmpiricalLedgerSource: empty bucket after selection");
 
-    return ledgerToSignals(record.ledger.observations, record.ledger.session_significance);
+    const signals = ledgerToSignals(record.ledger.observations);
+    return { ...signals, significance: record.ledger.session_significance };
   }
 
   private selectBucket(
