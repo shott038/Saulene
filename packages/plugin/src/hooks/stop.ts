@@ -29,8 +29,7 @@ import {
   consolidate,
   stageFromMp,
 } from "@saulene/core";
-import type { Aspect, AspectVector } from "@saulene/core";
-import { PerceptionError, perceiveDetailed } from "@saulene/perception";
+import { PerceptionError, ledgerToSignals, perceiveDetailed } from "@saulene/perception";
 import type { LlmClient } from "@saulene/perception";
 import { appendDiary, appendLedger, defaultRoot, loadSoul, saveSoul } from "@saulene/storage";
 import { type ReporterOpts, reportEvent } from "../reporter/reporter.js";
@@ -102,29 +101,8 @@ export async function stop(opts: StopOpts): Promise<void> {
   }
 
   // ── 3. Signal conversion ──────────────────────────────────────────────────────
-  // Aggregate per-aspect practice and fit from the sparse observation list.
-  // practice ordinal 0–3 → normalize to 0–1; fit ordinal -3..+3 → normalize to -1..+1.
-  // Same aspect can appear in both "task" and "interaction" modes → average across modes.
-  const practiceSums: Partial<AspectVector> = {};
-  const fitSums: Partial<AspectVector> = {};
-  const counts: Partial<Record<Aspect, number>> = {};
-
-  for (const obs of judgment.observations) {
-    const a = obs.aspect;
-    practiceSums[a] = (practiceSums[a] ?? 0) + obs.practice / 3;
-    fitSums[a] = (fitSums[a] ?? 0) + obs.fit / 3;
-    counts[a] = (counts[a] ?? 0) + 1;
-  }
-
-  const practiceSignal: Partial<AspectVector> = {};
-  const fitSignal: Partial<AspectVector> = {};
-  for (const a of ASPECTS) {
-    const n = counts[a];
-    if (n) {
-      practiceSignal[a] = (practiceSums[a] ?? 0) / n;
-      fitSignal[a] = (fitSums[a] ?? 0) / n;
-    }
-  }
+  // Delegate to the shared ledgerToSignals (one source of truth with tools/life-sim).
+  const { practice: practiceSignal, fit: fitSignal } = ledgerToSignals(judgment.observations);
 
   // ── 4. Fast loops ─────────────────────────────────────────────────────────────
   // charge: practice IS the drive signal (how much the aspect was exercised this session).
