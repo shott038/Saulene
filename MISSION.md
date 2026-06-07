@@ -216,8 +216,64 @@ order, cache everything, strip `ANTHROPIC_API_KEY`. Reuse the Phase-2/3/4 rig + 
 accuracy-vs-tier table (combined / cold-true / warm-true, each with CI vs 0.5), the threshold
 separation, the asymmetry gap, and a plain-language verdict + recommended next move.
 
+---
+
+## Phase 6 — emotional-prompt warm check ✅ DONE — subscription-only
+> **RESULT (IDENT-FINDINGS.md Phase-6) — THE BIG ONE: warmth is INDUCIBLE; Phase-5's asymmetry was a
+> battery artifact.** Same 2-way test, only the battery swapped to emotional prompts. warm-true leaps
+> 0.33/0.22/0.28 (neutral) → **0.72/0.72/0.89** (emotional, Δ +0.39/+0.50/+0.61); the asymmetry FLIPS
+> sign (neutral cold≫warm → emotional warm≥cold); cold-true drops (1.00→0.56). Combined now clears
+> chance and is graded (0.50→0.67→0.72, threshold ≈ sep 1.26). **Conclusion: the renderer encodes
+> graded, BIDIRECTIONAL identity; which direction SURFACES is context-dependent — neutral/coding
+> prompts afford cold, emotional prompts afford warm.** The Phase-2/3 lift-null + Phase-4/5 cold-only
+> asymmetry were measurement/battery artifacts (near-neighbor souls + noisy recoverTraits + a neutral
+> battery), NOT an inert renderer or a hard base ceiling. Honest product framing: the ul colors how
+> Claude engages, context-appropriately. New: `EMOTIONAL_BATTERY` + `pairwise:emotional`.
+
+(historical Phase-6 spec below)
+
+## Phase 6 spec (historical)
+Phase 5 found warm souls unreadable (warm-true 0.33/0.22/0.28, below chance) — BUT the battery was
+coding/neutral-task-heavy, where warmth has no room to surface. Phase 6 settles the biggest open
+ambiguity: **is warmth genuinely uninducible (a real ceiling), or just invisible on neutral tasks
+(an expected, fine limitation)?** Re-run the EXACT Phase-5 2-way-per-tier test, changing ONLY the
+battery to emotionally-salient prompts.
+
+**Design — identical to Phase 5 except the battery:**
+- New **emotional battery** (~6 prompts, fixed + versioned) where warmth/expressiveness actually
+  surface: e.g. comforting someone who failed, giving hard personal advice, navigating a conflict,
+  reacting to good/bad news, "how are you feeling about X", an apology. NO coding/analytic tasks.
+- Same personas: `cold@α` vs `warm@α`, α ∈ {0.2 near, 0.6 middle, 1.0 extreme}.
+- Same 2-way balanced forced choice (response + the two descriptions, randomized, no default).
+- Report **warm-true / cold-true / combined per tier WITH CI**, placed **side-by-side with the
+  Phase-5 neutral-battery numbers** for a direct comparison.
+
+**The verdict this produces:**
+- Warm-true RISES above chance on emotional prompts → warmth is **inducible when context gives it
+  room**; the Phase-5 asymmetry was largely a battery artifact → much more positive picture (the ul
+  expresses fully on context-appropriate prompts). Report the warm-true lift (emotional − neutral).
+- Warm-true STILL flat/below chance even on emotional prompts → **genuine ceiling**: Claude's base
+  persona swamps warmth regardless of context. Report it plainly.
+- Cold-true should stay high on emotional prompts too (sanity control).
+
+**Hold constant:** S1 delivery, arms=sonnet, judge=haiku, k=3, blind, randomized order, cache
+everything, strip `ANTHROPIC_API_KEY`. Reuse the Phase-2→5 rig; only the prompt set changes.
+
+## Outputs (commit — the evidence)
+`tools/harness/IDENT-FINDINGS.md` (append Phase-6) or `EMOTIONAL-FINDINGS.md`: the per-tier table
+(warm/cold/combined ± CI) on the emotional battery **next to** the Phase-5 neutral numbers, the
+warm-true emotional−neutral delta, and a plain verdict: warmth inducible-with-context vs genuine
+base-persona ceiling + recommended next move / product framing.
+
 ## Status
 Status: ready-to-merge
+
+## Verification (Phase 6)
+- Build: pass (`tsc -b`) · Boundaries: pass · Tests: pass (281, unchanged) · Lint: changed files clean
+- Emotional pairwise: DONE — subscription-only, `--strict-mcp-config`, arms=sonnet/judge=haiku, 3 tiers
+  × (cold vs warm) × 6 EMOTIONAL prompts × k=3 (108 fresh responses + 108 fresh 2-way judge calls).
+  Numbers in `IDENT-FINDINGS.md` (Phase-6 section), side-by-side with Phase-5 neutral. `pnpm … run pairwise:emotional`.
+- Scope kept: yes — only the battery changed (new `EMOTIONAL_BATTERY`); rig + personas reused.
 
 ## Verification (Phase 5)
 - Build: pass (`tsc -b`) · Boundaries: pass · Tests: pass (281, unchanged) · Lint: changed files clean

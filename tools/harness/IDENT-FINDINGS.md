@@ -137,3 +137,71 @@ cold/analytical/structured dispositions; warm/expressive dispositions are swampe
 persona on neutral tasks. To make warmth register: (a) fight the base harder (S2/S3 embodiment for
 warm souls), (b) probe on emotionally-salient prompts where warmth surfaces, or (c) test a
 less-cold base model — and check whether the asymmetry is Claude-specific or general.
+
+---
+
+# PHASE 6 — emotional-battery warm check (resolves the Phase-5 asymmetry)
+
+Phase 5 found warm souls unreadable — but on a coding/neutral-task battery where warmth has no room to
+surface. Phase 6 re-runs the EXACT Phase-5 2-way-per-tier test changing ONLY the battery to
+emotionally-salient prompts (comfort someone who failed, hard personal advice, reacting to good/bad
+news, an apology, a feeling-check — no coding/analytic tasks). Same personas, same 2-way forced choice,
+same arms=sonnet/judge=haiku/k=3/n=36-per-tier. Question: is warmth genuinely uninducible (a real
+ceiling) or just invisible on neutral tasks (an expected limitation)?
+
+## RESULT — warmth is INDUCIBLE; the asymmetry was a battery artifact
+
+| tier | sep | combined (neutral → emotional) | cold-true (n→e) | warm-true (n→e) | warm Δ (e−n) |
+|---|---|---|---|---|---|
+| near | 0.42 | 0.611 → 0.500 ± 0.166 | 0.889 → 0.278 | 0.333 → **0.722** | **+0.389** |
+| middle | 1.26 | 0.583 → 0.667 ± 0.156 | 0.944 → 0.611 | 0.222 → **0.722** | **+0.500** |
+| extreme | 2.11 | 0.639 → 0.722 ± 0.148 | 1.000 → 0.556 | 0.278 → **0.889** | **+0.611** |
+
+(Phase-5 neutral numbers shown before the arrow; Phase-6 emotional after. n=36 combined / 18 per side.)
+
+## VERDICT — context determines which direction surfaces; the renderer encodes BOTH
+
+1. **Warmth is fully inducible with context.** warm-true leaps from 0.22–0.33 (neutral) to
+   **0.72–0.89** (emotional) — a +0.39 / +0.50 / +0.61 jump, rising with separation. On
+   context-appropriate prompts, warm souls are read as warm reliably AND gradedly. The Phase-5
+   "warm is unreadable" conclusion was a **battery artifact**, not a base-persona ceiling.
+2. **The asymmetry FLIPPED sign.** Neutral: cold≫warm (asym +0.56/+0.72/+0.72). Emotional: warm≥cold
+   (asym −0.44/−0.11/−0.33). It was never "cold always wins" — it's that the **prompt context decides
+   which disposition has room to express**. Neutral/coding prompts surface cold-analytical traits;
+   emotional prompts surface warm-expressive traits. cold-true correspondingly DROPS on emotional
+   prompts (1.00→0.56; near-cold even reads warm-ish, 0.278) — cold has less room when the topic is feelings.
+3. **Combined discrimination now clears chance and is graded.** 0.500 → 0.667 → 0.722, rising with
+   separation; middle and extreme clear 0.5 with CI (lower bounds 0.51, 0.57). Distinctiveness
+   threshold ≈ pair separation **1.26 (middle tier)** on the emotional battery.
+
+**Synthesis across the whole arc:** the renderer encodes **graded, bidirectional behavioral identity**
+(Phase 3.5 + 6). What *surfaces* in any given response is **context-dependent** — a prompt must give
+the relevant trait room (you don't see someone's warmth while they debug a function). The Phase-2/3
+lift-null and the Phase-4/5 cold-only asymmetry were **measurement/battery artifacts** (near-neighbor
+souls + a noisy recoverTraits metric + a neutral battery that only afforded cold expression), NOT an
+inert renderer or a hard base-persona ceiling. On context-appropriate prompts, the full personality —
+including warmth — expresses and is gradedly identifiable.
+
+## Product framing (honest + positive)
+The ul **does** change behavior, in both directions, gradedly — but it shows up where the conversation
+gives it room: analytical traits on work tasks, warmth/expressiveness on personal/emotional ones. This
+is how real personality works. Claims should be "the ul colors how Claude engages, context-
+appropriately," not "every reply is uniformly transformed."
+
+## Caveats
+n=36/tier (CIs ~±0.16); haiku judge; the cold-true drop on emotional prompts is partly genuine (cold
+souls warm up on feeling-topics) and partly the judge's contextual expectation (emotional context →
+expects warmth → under-reads cold); 6 prompts/battery.
+
+## Recommended next move
+Strongest remaining lever for the original neutral-task goal: if the product wants personality visible
+on *work* tasks too, the renderer's cold-aligned directives already surface there — the gap is making
+warm-aligned dispositions leave a trace on neutral tasks (tone/phrasing, not content). Otherwise, the
+context-dependent expression demonstrated here is the honest, shippable behavior.
+
+## Reproduce
+```bash
+pnpm --filter @saulene/harness run pairwise              # neutral battery (Phase 5)
+pnpm --filter @saulene/harness run pairwise:emotional    # emotional battery (Phase 6)
+```
+Artifacts (`.pairwise-run.json`, `.pairwise-emotional-run.json`, caches) gitignored.

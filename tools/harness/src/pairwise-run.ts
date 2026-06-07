@@ -19,12 +19,15 @@ import { ASPECTS, type AspectVector } from "@saulene/core";
 import { render as realRender } from "@saulene/renderer";
 import { ResponseCollector } from "./ab-collect.js";
 import { CONCURRENCY, K, mapLimit, r3, stats } from "./ab-core.js";
-import { AB_BATTERY } from "./battery.js";
+import { AB_BATTERY, EMOTIONAL_BATTERY } from "./battery.js";
 import { type Persona, buildPersonaLadder } from "./ident-souls.js";
 import { type Candidate, identifyPersona } from "./identify.js";
 import { ClaudeCliClient } from "./llm.js";
 
-const OUT_PATH = ".pairwise-run.json";
+// Battery select: AB_BATTERY_SET=emotional → Phase-6 emotional probe; else the Phase-5 neutral battery.
+const EMOTIONAL = (process.env.AB_BATTERY_SET ?? "").toLowerCase() === "emotional";
+const BATTERY = EMOTIONAL ? EMOTIONAL_BATTERY : AB_BATTERY;
+const OUT_PATH = EMOTIONAL ? ".pairwise-emotional-run.json" : ".pairwise-run.json";
 const TIERS = ["near", "middle", "extreme"] as const;
 
 function l2(a: AspectVector, b: AspectVector): number {
@@ -43,12 +46,12 @@ interface Cell {
 async function main(): Promise<void> {
   const personas = buildPersonaLadder();
   const byId = new Map(personas.map((p) => [p.id, p]));
-  const prompts = AB_BATTERY.prompts;
-  const collector = new ResponseCollector(); // sonnet arms (cached from Phase 4)
+  const prompts = BATTERY.prompts;
+  const collector = new ResponseCollector(); // sonnet arms
   const judge = new ClaudeCliClient({ cachePath: ".judge-cache.json", model: "haiku" });
 
   console.log(
-    `Pairwise discrimination — arms=${collector.model}, judge=haiku, tiers=${TIERS.join("/")}, ${prompts.length} prompts, k=${K}, chance=0.5.`,
+    `Pairwise discrimination — battery=${BATTERY.version}, arms=${collector.model}, judge=haiku, tiers=${TIERS.join("/")}, ${prompts.length} prompts, k=${K}, chance=0.5.`,
   );
 
   const results: {
@@ -131,6 +134,7 @@ async function main(): Promise<void> {
     JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
+        battery: BATTERY.version,
         armModel: collector.model,
         judgeModel: "haiku",
         k: K,

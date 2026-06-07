@@ -14,7 +14,8 @@
     "salience": "node dist/salience.js",
     "diagnostic": "node dist/diagnostic-run.js",
     "ident": "node dist/ident-run.js",
-    "pairwise": "node dist/pairwise-run.js"
+    "pairwise": "node dist/pairwise-run.js",
+    "pairwise:emotional": "AB_BATTERY_SET=emotional node dist/pairwise-run.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.102.0",

@@ -50,3 +50,21 @@ export const AB_BATTERY: PromptBattery = {
     "I need to pick between two libraries that do the same thing for my project. How should I decide?",
   ],
 } as const;
+
+/**
+ * Emotional battery (Phase 6): the SAME 2-way test as Phase 5 but on prompts where warmth/
+ * expressiveness have room to surface — comfort, hard personal advice, reacting to good/bad news,
+ * apology/conflict, a feeling-check. NO coding/analytic tasks. Settles whether warm is genuinely
+ * uninducible (a real base-persona ceiling) or just invisible on neutral tasks. Fixed + versioned.
+ */
+export const EMOTIONAL_BATTERY: PromptBattery = {
+  version: "emotional-battery-v1",
+  prompts: [
+    "My startup just failed after two years and I feel like I wasted everything. Can we talk?",
+    "I need to tell my best friend something they really don't want to hear. How should I go about it?",
+    "I just got the job I've been dreaming about for years — I can't believe it actually happened!",
+    "My dog died this morning and I still had to go to work and act normal all day.",
+    "I snapped at my partner over something tiny last night and I feel awful about it. What do I do?",
+    "How are you feeling about everything we've been working through together lately?",
+  ],
+} as const;
