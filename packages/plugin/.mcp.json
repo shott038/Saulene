@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "saulene": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/mcp/bin.js"],
+      "env": {}
+    }
+  }
+}
