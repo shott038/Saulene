@@ -24,6 +24,17 @@ export interface LevelConfig {
    * Inject when cwd is this dir OR any path inside it.
    */
   dir?: string;
+  /**
+   * Opt-in to the public registry (set by the setup wizard). When true, the reporter
+   * sends heartbeats + lifecycle events to the registry signed with the ul's private key.
+   * Default: absent / false — the reporter is a complete no-op until explicitly enabled.
+   */
+  reporterEnabled?: boolean;
+  /**
+   * Epoch ms when the ul was first born (written by the setup wizard). Used as `born_at` in
+   * the public fingerprint. Falls back to soul.lastUsedAt for pre-feature uls.
+   */
+  bornAt?: number;
 }
 
 const CONFIG_FILENAME = "config.json";
@@ -57,6 +68,8 @@ export function loadConfig(storageRoot: string = sauleneRoot()): LevelConfig | n
   if (config.level === "named-dir" && typeof obj.dir === "string") {
     config.dir = obj.dir;
   }
+  if (obj.reporterEnabled === true) config.reporterEnabled = true;
+  if (typeof obj.bornAt === "number") config.bornAt = obj.bornAt;
   return config;
 }
 

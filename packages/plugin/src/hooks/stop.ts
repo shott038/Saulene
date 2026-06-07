@@ -33,6 +33,7 @@ import type { Aspect, AspectVector } from "@saulene/core";
 import { PerceptionError, perceiveDetailed } from "@saulene/perception";
 import type { LlmClient } from "@saulene/perception";
 import { appendDiary, appendLedger, defaultRoot, loadSoul, saveSoul } from "@saulene/storage";
+import { type ReporterOpts, reportEvent } from "../reporter/reporter.js";
 
 export interface StopOpts {
   /** The full session transcript — handed to perception for judgment. */
@@ -51,6 +52,11 @@ export interface StopOpts {
   now?: number;
   /** Session ID for history records; auto-generated (uuid v4) when omitted. */
   sessionId?: string;
+  /**
+   * Override reporter transport/URL (for tests). In production the reporter reads
+   * SAULENE_REGISTRY_URL from the env. Omitting this does not affect hook behavior.
+   */
+  reporterOpts?: Pick<ReporterOpts, "registryUrl" | "fetch">;
 }
 
 /**
@@ -68,6 +74,7 @@ export async function stop(opts: StopOpts): Promise<void> {
   // ── 1. Soul presence ─────────────────────────────────────────────────────────
   let soul = loadSoul(root);
   if (!soul) return; // not born yet — nothing to consolidate
+  const priorMp = soul.mp; // snapshot before aging (for stage-change detection)
 
   // ── 2. Perceive ───────────────────────────────────────────────────────────────
   // LLM reads the transcript and emits a bounded, evidence-cited judgment. PerceptionError
@@ -134,7 +141,9 @@ export async function stop(opts: StopOpts): Promise<void> {
   // ── 6. Consolidation ──────────────────────────────────────────────────────────
   // Stage is recomputed at the NEW age (per-ul jittered bands). Breaking points fire inside
   // core after the normal update — the ONLY thing that moves set points.
-  const stage = stageFromMp(soul.mp, soul);
+  const priorStage = stageFromMp(priorMp, soul); // stage before this session's aging
+  const stage = stageFromMp(soul.mp, soul); // stage at the new age (post-accrual)
+  const preRefractory = { ...soul.refractory }; // snapshot before consolidate to detect ruptures
   soul = consolidate(soul, DEFAULT_KNOBS, stage);
 
   // ── 7. Persist ────────────────────────────────────────────────────────────────
@@ -163,4 +172,22 @@ export async function stop(opts: StopOpts): Promise<void> {
     timestamp: now,
     text: judgment.diary,
   });
+
+  // ── 8. Lifecycle events (fire-and-forget) ─────────────────────────────────────
+  // Detect stage_change and rupture from the consolidated soul and report them. No-op
+  // when not opted in or SAULENE_REGISTRY_URL is unset. Never blocks or throws.
+  const reporterBase: ReporterOpts = { storageRoot: root, now, ...opts.reporterOpts };
+
+  if (priorStage !== stage) {
+    void reportEvent(reporterBase, "stage_change", { from: priorStage, to: stage });
+  }
+
+  // A rupture fired on an aspect when its refractory counter jumped UP (was reset to the
+  // fresh-break value by consolidate). Without a break the counter can only decrease.
+  for (const aspect of ASPECTS) {
+    const expectedWithoutBreak = Math.max(0, preRefractory[aspect] - 1);
+    if (soul.refractory[aspect] > expectedWithoutBreak) {
+      void reportEvent(reporterBase, "rupture", { aspect });
+    }
+  }
 }

@@ -16,8 +16,11 @@
 
 import { render } from "@saulene/renderer";
 import { defaultRoot, loadSoul, readVoiceSamples, saveSoul } from "@saulene/storage";
+import { reportHeartbeat } from "../reporter/reporter.js";
 import { isGated, loadConfig } from "./config.js";
 import { writeSessionCache } from "./session-cache.js";
+
+import type { ReporterOpts } from "../reporter/reporter.js";
 
 export interface SessionStartOpts {
   /** The working directory of the new session — the gating key. */
@@ -29,6 +32,11 @@ export interface SessionStartOpts {
   storageRoot?: string;
   /** Unix timestamp (ms) — injected by the caller, never read from Date.now() inside. */
   now?: number;
+  /**
+   * Override reporter transport/URL (for tests). In production the reporter reads
+   * SAULENE_REGISTRY_URL from the env. Omitting this does not affect hook behavior.
+   */
+  reporterOpts?: Pick<ReporterOpts, "registryUrl" | "fetch">;
 }
 
 /** 90-day neglect-death clock in milliseconds (flat + predictable per SPEC). */
@@ -92,6 +100,11 @@ export function sessionStart(opts: SessionStartOpts): null {
   // ── 7. Bump lastUsedAt + save ─────────────────────────────────────────────────
   // Reset the 90-day death clock. Atomic save (rename over old file on POSIX).
   saveSoul(root, { ...soul, lastUsedAt: now });
+
+  // ── 8. Heartbeat (fire-and-forget) ────────────────────────────────────────────
+  // Signals the ul is alive + upserts its current public state on the server.
+  // No-op when not opted in or SAULENE_REGISTRY_URL is unset. Never blocks or throws.
+  void reportHeartbeat({ storageRoot: root, now, ...opts.reporterOpts });
 
   return null;
 }
