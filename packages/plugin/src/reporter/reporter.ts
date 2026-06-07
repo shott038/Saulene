@@ -20,9 +20,12 @@
  */
 
 import { ASPECTS, type Aspect, projectMbti, stageFromMp } from "@saulene/core";
-import { defaultRoot, loadSoul } from "@saulene/storage";
+import { soulHash } from "@saulene/renderer";
+import { STORAGE_SCHEMA_VERSION, defaultRoot, loadSoul } from "@saulene/storage";
 import { type LevelConfig, loadConfig } from "../hooks/config.js";
 import { loadKeypair, sign } from "../identity/index.js";
+
+const PLUGIN_VERSION = "0.0.0";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -63,6 +66,16 @@ export interface PublicFingerprint {
   sex: string; // "male" | "female"
   status: string; // "alive" (dead uls don't report — session-start gates them out)
   born_at: number; // epoch ms — from config.bornAt (written by the wizard at birth)
+  // ── full public soul math (v2) ────────────────────────────────────────────
+  set_points: Record<Aspect, number>; // soul.s ×100 rounded — birth baseline
+  disuse_anchor: Record<Aspect, number>; // soul.disuseAnchor ×100 rounded
+  stubbornness: number; // raw 0–1
+  tension: Record<Aspect, number>; // raw dynamical magnitude per aspect
+  beta_gain: Record<Aspect, number>; // raw per aspect
+  migration_budget: number; // raw
+  soul_hash: string; // FNV-1a/32 over v — changes iff rendered output could change
+  plugin_version: string; // package.json version
+  schema_version: number; // wire schema version (mirrors STORAGE_SCHEMA_VERSION)
 }
 
 /** Wire format for heartbeat POSTs. */
@@ -130,7 +143,17 @@ function buildFingerprint(
   const stage = stageFromMp(soul.mp, soul);
   const mbti = projectMbti(soul.v);
   const aspects = {} as Record<Aspect, number>;
-  for (const a of ASPECTS) aspects[a] = Math.round(soul.v[a] * 100);
+  const setPoints = {} as Record<Aspect, number>;
+  const disuseAnchor = {} as Record<Aspect, number>;
+  const tension = {} as Record<Aspect, number>;
+  const betaGain = {} as Record<Aspect, number>;
+  for (const a of ASPECTS) {
+    aspects[a] = Math.round(soul.v[a] * 100);
+    setPoints[a] = Math.round(soul.s[a] * 100);
+    disuseAnchor[a] = Math.round(soul.disuseAnchor[a] * 100);
+    tension[a] = soul.tension[a];
+    betaGain[a] = soul.betaGain[a];
+  }
 
   // born_at: from config (written by wizard at birth). Fall back to lastUsedAt for uls
   // born before this feature was added (they won't have bornAt in config).
@@ -145,6 +168,15 @@ function buildFingerprint(
     sex: soul.sex,
     status: "alive",
     born_at: bornAt,
+    set_points: setPoints,
+    disuse_anchor: disuseAnchor,
+    stubbornness: soul.stubbornness,
+    tension,
+    beta_gain: betaGain,
+    migration_budget: soul.migrationBudget,
+    soul_hash: soulHash(soul),
+    plugin_version: PLUGIN_VERSION,
+    schema_version: STORAGE_SCHEMA_VERSION,
   };
 }
 

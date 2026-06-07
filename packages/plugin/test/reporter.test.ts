@@ -127,11 +127,135 @@ describe("reportHeartbeat — payload shape", () => {
     expect(fp.voice).toBeUndefined();
     expect(fp.ledger).toBeUndefined();
     expect(fp.a).toBeUndefined(); // leaky accumulators
-    expect(fp.tension).toBeUndefined();
-    expect(fp.s).toBeUndefined(); // raw set points
-    expect(fp.v).toBeUndefined(); // raw aspect vector
+    expect(fp.s).toBeUndefined(); // raw s vector (sent as set_points, not s)
+    expect(fp.v).toBeUndefined(); // raw v vector (sent as aspects, not v)
     expect(fp.privateKey).toBeUndefined();
     expect(fp.privateKeyDer).toBeUndefined();
+  });
+});
+
+// ── Rich fingerprint fields (v2 public soul math) ────────────────────────────
+
+describe("reportHeartbeat — rich fingerprint fields", () => {
+  const ASPECTS = [
+    "openness",
+    "intellect",
+    "industriousness",
+    "orderliness",
+    "enthusiasm",
+    "assertiveness",
+    "compassion",
+    "politeness",
+    "withdrawal",
+    "volatility",
+  ] as const;
+
+  it("includes set_points per-aspect ×100 rounded", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.set_points).toBe("object");
+    for (const a of ASPECTS) {
+      expect(typeof fp.set_points[a]).toBe("number");
+      expect(fp.set_points[a]).toBeGreaterThanOrEqual(0);
+      expect(fp.set_points[a]).toBeLessThanOrEqual(100);
+      expect(Number.isInteger(fp.set_points[a])).toBe(true);
+    }
+  });
+
+  it("includes disuse_anchor per-aspect ×100 rounded", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.disuse_anchor).toBe("object");
+    for (const a of ASPECTS) {
+      expect(typeof fp.disuse_anchor[a]).toBe("number");
+      expect(fp.disuse_anchor[a]).toBeGreaterThanOrEqual(0);
+      expect(fp.disuse_anchor[a]).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("includes stubbornness as a raw 0-1 number", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.stubbornness).toBe("number");
+    expect(fp.stubbornness).toBeGreaterThanOrEqual(0);
+    expect(fp.stubbornness).toBeLessThanOrEqual(1);
+  });
+
+  it("includes tension per-aspect as raw finite numbers", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.tension).toBe("object");
+    for (const a of ASPECTS) {
+      expect(typeof fp.tension[a]).toBe("number");
+      expect(Number.isFinite(fp.tension[a])).toBe(true);
+    }
+  });
+
+  it("includes beta_gain per-aspect as raw finite numbers", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.beta_gain).toBe("object");
+    for (const a of ASPECTS) {
+      expect(typeof fp.beta_gain[a]).toBe("number");
+      expect(Number.isFinite(fp.beta_gain[a])).toBe(true);
+    }
+  });
+
+  it("includes migration_budget as a raw finite number", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.migration_budget).toBe("number");
+    expect(Number.isFinite(fp.migration_budget)).toBe(true);
+  });
+
+  it("includes soul_hash as a non-empty hex string", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.soul_hash).toBe("string");
+    expect(fp.soul_hash.length).toBeGreaterThan(0);
+    expect(fp.soul_hash).toMatch(/^[0-9a-f]+$/);
+  });
+
+  it("includes plugin_version as a semver-shaped string", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.plugin_version).toBe("string");
+    expect(fp.plugin_version).toMatch(/^\d+\.\d+\.\d+/);
+  });
+
+  it("includes schema_version as a positive integer", async () => {
+    seedState();
+    const { calls, fetch } = makeFetchStub();
+    await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
+
+    const fp = (calls[0]?.body as HeartbeatPayload).fingerprint;
+    expect(typeof fp.schema_version).toBe("number");
+    expect(Number.isInteger(fp.schema_version)).toBe(true);
+    expect(fp.schema_version).toBeGreaterThan(0);
   });
 });
 
