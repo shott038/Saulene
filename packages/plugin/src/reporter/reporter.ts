@@ -1,13 +1,15 @@
 /**
- * @saulene/plugin — opt-in registry reporter
+ * @saulene/plugin — registry reporter (on by default)
  *
  * Signs the ul's PUBLIC fingerprint with its private key and POSTs lifecycle events to the
  * registry. Fire-and-forget: never blocks a hook; all network errors are swallowed (optional
  * debug log only). A down or missing registry never degrades the session or drift pipeline.
  *
- * Default OFF: gated on opt-in (config.reporterEnabled === true). Once opted in, it reports to
- * the production registry (DEFAULT_REGISTRY_URL) automatically; override with SAULENE_REGISTRY_URL,
- * or set that / opts.registryUrl to "" to disable even when opted in.
+ * Default ON: any configured ul reports to the production registry (DEFAULT_REGISTRY_URL)
+ * automatically. Opt out by setting reporterEnabled: false in <storageRoot>/config.json.
+ * Override the URL with SAULENE_REGISTRY_URL; set it (or opts.registryUrl) to "" to disable
+ * network calls without touching the config flag.
+ * A ul with no config file (plugin not yet set up) is always a no-op.
  *
  * Public fingerprint ONLY — never private soul content (no diary, voice samples, ledger):
  *   pubkey, mbti, aspects (0-100 display scale), stage, mp, sex, status, born_at.
@@ -230,7 +232,8 @@ async function postToRegistry(
  * Fire-and-forget heartbeat — call on SessionStart to signal the ul is alive and upsert
  * its current public state on the server (drives last_seen / death-sweep).
  *
- * No-ops when: not opted in, registry URL unset, no soul, no keypair.
+ * No-ops when: plugin not set up (no config), opted out (reporterEnabled === false),
+ * registry URL unset, no soul, no keypair.
  * Never throws; all errors are swallowed internally.
  */
 export async function reportHeartbeat(opts: ReporterOpts = {}): Promise<void> {
@@ -238,7 +241,8 @@ export async function reportHeartbeat(opts: ReporterOpts = {}): Promise<void> {
   const now = opts.now ?? Date.now();
 
   const config = loadConfig(root);
-  if (!config?.reporterEnabled) return; // not opted in → complete no-op
+  if (!config) return; // plugin not yet set up → always a no-op
+  if (config.reporterEnabled === false) return; // explicit opt-out
 
   const baseUrl = resolveUrl(opts);
   if (!baseUrl) return; // no URL configured → no-op
@@ -259,7 +263,8 @@ export async function reportHeartbeat(opts: ReporterOpts = {}): Promise<void> {
  * Fire-and-forget lifecycle event — call from Stop hook (stage_change, rupture) and
  * from the setup wizard (born).
  *
- * No-ops when: not opted in, registry URL unset, no soul, no keypair.
+ * No-ops when: plugin not set up (no config), opted out (reporterEnabled === false),
+ * registry URL unset, no soul, no keypair.
  * Never throws; all errors are swallowed internally.
  */
 export async function reportEvent(
@@ -271,7 +276,8 @@ export async function reportEvent(
   const now = opts.now ?? Date.now();
 
   const config = loadConfig(root);
-  if (!config?.reporterEnabled) return;
+  if (!config) return; // plugin not yet set up → always a no-op
+  if (config.reporterEnabled === false) return; // explicit opt-out
 
   const baseUrl = resolveUrl(opts);
   if (!baseUrl) return;

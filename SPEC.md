@@ -312,8 +312,10 @@ NOT restorable. Gone for good. This keeps the emotional weight: walk away too lo
 *can* buy it back, but actively kill it and it's truly over.
 
 **Layer 2 — the registry / gallery (a website, light).**
-At birth an ul *optionally* publishes its public fingerprint + current MBTI readout +
-age + phase to a public site — "a place to see a bunch of uls." A living wall:
+At birth an ul publishes its public fingerprint + current MBTI readout + age + phase to
+a public site by default — "a place to see a bunch of uls." Only the public fingerprint
+is shared (type, aspects, stage, public key); private soul content never leaves the machine.
+Opt out by setting `reporterEnabled: false` in `~/.saulene/config.json`. A living wall:
 nursery of newborns swinging wildly, uls mid-crystallization, mature uls barely
 drifting, a **graveyard** of permanently-dead (deleted) uls (tombstones), and possibly a
 separate **dormant/dying** state for neglect-dead uls awaiting paid restore.

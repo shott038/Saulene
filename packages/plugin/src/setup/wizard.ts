@@ -144,18 +144,16 @@ export async function runWizard(opts: WizardOpts): Promise<void> {
     config = { level: "global", bornAt: now };
   }
 
-  // ── Step 4: Registry opt-in ───────────────────────────────────────────────
-  // Explicit consent: explain what's shared (public fingerprint only, private soul never
-  // leaves), that it's public (will appear in the gallery), and that opting in is optional.
-  write(`\n${BOLD}  Public gallery (optional)${RESET}\n`);
+  // ── Step 4: Disclosure notice (reporting is ON by default; press o to opt out) ─────────
+  write(`\n${BOLD}  Public gallery — you're in by default${RESET}\n`);
   write(
-    `  Would you like your ul to appear on the public Saulene gallery?\n  ${DIM}Only public data is shared: personality type, aspects, stage, and your ul's\n  public key. Your diary, voice samples, and private soul content never leave this\n  machine. You can opt out later by editing ${root}/config.json.${RESET}\n`,
+    `  Your ul will appear on the public Saulene gallery automatically.\n  ${BOLD}What is shared:${RESET} personality type, aspects, stage, and your ul's public key.\n  ${BOLD}What never leaves this machine:${RESET} diary, voice samples, private soul content.\n  ${DIM}To opt out later: set ${BOLD}reporterEnabled: false${DIM} in ${root}/config.json${RESET}\n`,
   );
-  write(`\n  Type ${BOLD}yes${RESET} to opt in (anything else = no): `);
+  write(`\n  Press ${BOLD}o${RESET} to opt out now, or anything else to continue: `);
 
-  const registryAck = (await readline()).trim().toLowerCase();
-  if (registryAck === "yes") {
-    config = { ...config, reporterEnabled: true };
+  const optOut = (await readline()).trim().toLowerCase();
+  if (optOut === "o") {
+    config = { ...config, reporterEnabled: false };
   }
 
   saveConfig(root, config);
@@ -163,7 +161,7 @@ export async function runWizard(opts: WizardOpts): Promise<void> {
   write(`\n  ${BOLD}Your ul is alive.${RESET} The 90-day clock is running.\n\n`);
 
   // ── Step 5: Born event (fire-and-forget) ──────────────────────────────────
-  // Only fires if the user opted in above. Reporter is a complete no-op otherwise.
+  // Fires by default (reporting is on); skipped only if the user opted out above.
   const reporterBase: ReporterOpts = {
     storageRoot: root,
     now,

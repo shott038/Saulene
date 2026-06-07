@@ -171,6 +171,41 @@ describe("level config", () => {
   });
 });
 
+// ── Registry disclosure + opt-out ────────────────────────────────────────────
+
+describe("registry disclosure", () => {
+  it("shows the disclosure notice (what is shared, what never leaves)", async () => {
+    const { output, opts } = mkOpts(["yes", "1", ""]); // empty = continue, no opt-out
+    await runWizard(opts);
+    const full = output.map(stripAnsi).join("");
+    expect(full).toContain("Public gallery");
+    expect(full).toContain("What is shared");
+    expect(full).toContain("never leaves this machine");
+    expect(full).toContain("reporterEnabled");
+  });
+
+  it("default (continue) → reporterEnabled is not false (reporting on)", async () => {
+    const { opts } = mkOpts(["yes", "1", ""]); // empty = continue
+    await runWizard(opts);
+    const cfg = loadConfig(root);
+    expect(cfg?.reporterEnabled).not.toBe(false);
+  });
+
+  it("pressing 'o' → reporterEnabled: false in config", async () => {
+    const { opts } = mkOpts(["yes", "1", "o"]);
+    await runWizard(opts);
+    const cfg = loadConfig(root);
+    expect(cfg?.reporterEnabled).toBe(false);
+  });
+
+  it("non-'o' input (anything else) keeps reporting on", async () => {
+    const { opts } = mkOpts(["yes", "1", "n"]);
+    await runWizard(opts);
+    const cfg = loadConfig(root);
+    expect(cfg?.reporterEnabled).not.toBe(false);
+  });
+});
+
 // ── 90-day neglect-death clock coherence ─────────────────────────────────────
 
 describe("neglect-death clock", () => {
