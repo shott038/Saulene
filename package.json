@@ -19,7 +19,8 @@
     "format": "biome check --write .",
     "check:boundaries": "node scripts/check-boundaries.mjs",
     "check": "pnpm check:boundaries && pnpm lint && pnpm typecheck && pnpm test",
-    "demo": "pnpm --filter @saulene/demo build && node tools/demo/dist/index.js"
+    "demo": "pnpm --filter @saulene/demo build && node tools/demo/dist/index.js",
+    "demo:html": "pnpm --filter @saulene/demo build && node tools/demo/dist/html.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
