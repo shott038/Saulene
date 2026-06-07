@@ -21,8 +21,8 @@ import {
   COMPACTION_SCAN,
   COMPACTION_TICKS,
   ERROR_FRAMES,
-  GESTURE_NAMES,
   GESTURES,
+  GESTURE_NAMES,
   SWAP_TICKS,
   TWINKLE_CHANCE,
   TWINKLE_LEN,
@@ -38,19 +38,19 @@ import {
 
 /** Events the director accepts from real Claude Code hook signals. */
 export type DirectorEvent =
-  | "prompt"        // UserPromptSubmit: user hits enter
-  | "thinking"      // PreToolUse / generation start: Claude is working
-  | "thinking-end"  // thinking finished (superseded by success/error pulses)
-  | "filling"       // context window actively receiving a large chunk
-  | "filling-end"   // intake done → revert to previous mode
-  | "success"       // PostToolUse success: a big win
-  | "error"         // PostToolUse error
-  | "retry"         // tool retry attempt
-  | "response"      // response text finished streaming
-  | "compaction"    // context compaction started (exclusive mode)
-  | "compaction-end"// compaction done early (optional; auto-expires via ticks)
-  | "ctx-high"      // context window > 80% full
-  | "ctx-normal";   // context back to normal
+  | "prompt" // UserPromptSubmit: user hits enter
+  | "thinking" // PreToolUse / generation start: Claude is working
+  | "thinking-end" // thinking finished (superseded by success/error pulses)
+  | "filling" // context window actively receiving a large chunk
+  | "filling-end" // intake done → revert to previous mode
+  | "success" // PostToolUse success: a big win
+  | "error" // PostToolUse error
+  | "retry" // tool retry attempt
+  | "response" // response text finished streaming
+  | "compaction" // context compaction started (exclusive mode)
+  | "compaction-end" // compaction done early (optional; auto-expires via ticks)
+  | "ctx-high" // context window > 80% full
+  | "ctx-normal"; // context back to normal
 
 /** The frame output: what to render this tick. */
 export interface AnimFrame {
@@ -72,7 +72,11 @@ interface PulseSpec {
 }
 
 const PULSE_PRIORITY: Record<PulseName, number> = {
-  error: 5, success: 4, prompt: 3, retry: 2, response: 1,
+  error: 5,
+  success: 4,
+  prompt: 3,
+  retry: 2,
+  response: 1,
 };
 
 // ── Pulse frame sequences ─────────────────────────────────────────────────────

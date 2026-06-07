@@ -3,20 +3,29 @@
  * Visual proof of the terminal sprite: state frames, palettes, and a mock statusline.
  * The HTML renders one div per pixel, which is exactly what the ANSI half-blocks show.
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { rasterize, toHtml, PALS } from "./ul-terminal.mjs";
+import { PALS, rasterize, toHtml } from "./ul-terminal.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const HERO = 34, MINI = 18;
+const HERO = 34;
+const MINI = 18;
 
 const states = ["idle", "blink", "success", "stress"];
-const stateCards = states.map((s) =>
-  `<figure class="card dark">${toHtml(rasterize(s, PALS.sky, HERO), 6)}<figcaption>${s}</figcaption></figure>`).join("");
+const stateCards = states
+  .map(
+    (s) =>
+      `<figure class="card dark">${toHtml(rasterize(s, PALS.sky, HERO), 6)}<figcaption>${s}</figcaption></figure>`,
+  )
+  .join("");
 
-const palCards = Object.entries(PALS).map(([n, c]) =>
-  `<figure class="card dark">${toHtml(rasterize("idle", c, HERO), 6)}<figcaption>${n}</figcaption></figure>`).join("");
+const palCards = Object.entries(PALS)
+  .map(
+    ([n, c]) =>
+      `<figure class="card dark">${toHtml(rasterize("idle", c, HERO), 6)}<figcaption>${n}</figcaption></figure>`,
+  )
+  .join("");
 
 // mock statusline rows: sprite (mini) beside terminal-ish text
 function statusline(label, state, pal, lines) {
@@ -26,9 +35,18 @@ function statusline(label, state, pal, lines) {
     <span class="sltag">${label}</span>
   </div>`;
 }
-const slIdle = statusline("idle", "idle", PALS.sky, ["<b>saulene</b> · INTJ ul", "~/project  ⎇ main  ctx&nbsp;32%"]);
-const slBusy = statusline("tool success", "success", PALS.mint, ["<b>saulene</b> · INTJ ul ✓", "~/project  ⎇ main  ctx&nbsp;41%"]);
-const slStress = statusline("context stress", "stress", PALS.ember, ["<b>saulene</b> · INTJ ul", "~/project  ⎇ main  <span style='color:#e2584a'>ctx&nbsp;91%</span>"]);
+const slIdle = statusline("idle", "idle", PALS.sky, [
+  "<b>saulene</b> · INTJ ul",
+  "~/project  ⎇ main  ctx&nbsp;32%",
+]);
+const slBusy = statusline("tool success", "success", PALS.mint, [
+  "<b>saulene</b> · INTJ ul ✓",
+  "~/project  ⎇ main  ctx&nbsp;41%",
+]);
+const slStress = statusline("context stress", "stress", PALS.ember, [
+  "<b>saulene</b> · INTJ ul",
+  "~/project  ⎇ main  <span style='color:#e2584a'>ctx&nbsp;91%</span>",
+]);
 
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/><title>ul — terminal sprite</title>

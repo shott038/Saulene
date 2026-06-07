@@ -9,8 +9,8 @@
 import { ASPECTS, type AspectVector, type Soul, seedFromEntropy } from "@saulene/core";
 import { spriteParams } from "@saulene/renderer";
 import { describe, expect, it } from "vitest";
-import { AnimDirector } from "../src/statusline/director.js";
 import { birthFrames, renderBirthFrame } from "../src/statusline/birth.js";
+import { AnimDirector } from "../src/statusline/director.js";
 import {
   CHAR_ROWS,
   type PixelGrid,
@@ -40,7 +40,8 @@ function soulOf(
   opts: { stubbornness?: number; mp?: number; sex?: "male" | "female" } = {},
 ): Soul {
   const v = vec(base);
-  for (const [a, val] of Object.entries(overrides)) (v as Record<string, number>)[a] = val as number;
+  for (const [a, val] of Object.entries(overrides))
+    (v as Record<string, number>)[a] = val as number;
   return {
     v,
     s: vec(0.5),
@@ -174,10 +175,13 @@ describe("compose", () => {
     const grid0 = compose(colors, WISP_ORIGINAL, { win: 0 }, 0);
     const grid3 = compose(colors, WISP_ORIGINAL, { win: 3 }, 0);
     const leftCols = (g: PixelGrid) =>
-      g.flat().slice(0, W * H / 2).filter(
-        (p): p is [number, number, number] => p !== null &&
-          JSON.stringify(p) === JSON.stringify(colors.wisp),
-      ).length;
+      g
+        .flat()
+        .slice(0, (W * H) / 2)
+        .filter(
+          (p): p is [number, number, number] =>
+            p !== null && JSON.stringify(p) === JSON.stringify(colors.wisp),
+        ).length;
     // Fewer left wisps with win=3 (they slide toward center)
     expect(leftCols(grid3)).toBeLessThanOrEqual(leftCols(grid0));
   });
@@ -217,7 +221,9 @@ describe("pixelGridToAnsi", () => {
   it("produces exactly CHAR_ROWS lines (H/2 = 4)", () => {
     expect(CHAR_ROWS).toBe(4);
     const grid = compose(colors, WISP_ORIGINAL, {}, 0);
-    const lines = pixelGridToAnsi(grid).split("\n").filter((l) => l.length > 0);
+    const lines = pixelGridToAnsi(grid)
+      .split("\n")
+      .filter((l) => l.length > 0);
     expect(lines).toHaveLength(CHAR_ROWS);
   });
 
@@ -520,6 +526,7 @@ describe("birthFrames", () => {
 describe("renderBirthFrame", () => {
   it("returns a non-empty ANSI string", () => {
     const frames = birthFrames();
+    // biome-ignore lint/style/noNonNullAssertion: birthFrames() always returns non-empty frames
     const ansi = renderBirthFrame(frames[0]!, DEFAULT_PARAMS, "dark");
     expect(typeof ansi).toBe("string");
     expect(ansi.length).toBeGreaterThan(0);
@@ -527,6 +534,7 @@ describe("renderBirthFrame", () => {
 
   it("renders CHAR_ROWS lines", () => {
     const frames = birthFrames();
+    // biome-ignore lint/style/noNonNullAssertion: birthFrames() always returns non-empty frames
     const ansi = renderBirthFrame(frames[frames.length - 1]!, DEFAULT_PARAMS, "dark");
     const lines = ansi.split("\n").filter((l) => l.length > 0);
     expect(lines).toHaveLength(CHAR_ROWS);
@@ -534,10 +542,12 @@ describe("renderBirthFrame", () => {
 
   it("condensing frame with limited visibleRows produces fewer non-null pixels than full frame", () => {
     const allFrames = birthFrames();
+    // biome-ignore lint/style/noNonNullAssertion: birthFrames() always returns non-empty frames
     const fullFrame = allFrames[allFrames.length - 1]!;
     const partialFrame = allFrames.find((f) => f.visibleRows?.size === 2);
     if (!partialFrame) return; // if not found, skip gracefully
     // Full has more colored pixels than partial
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matches ANSI truecolor ESC sequences
     const countEscapes = (s: string) => (s.match(/\x1b\[38;2;/g) ?? []).length;
     expect(countEscapes(renderBirthFrame(fullFrame, DEFAULT_PARAMS, "dark"))).toBeGreaterThan(
       countEscapes(renderBirthFrame(partialFrame, DEFAULT_PARAMS, "dark")),

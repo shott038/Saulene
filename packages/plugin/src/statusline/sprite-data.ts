@@ -84,10 +84,18 @@ function sym(cells: Cell[]): Cell[] {
 }
 
 // Base wisp cells (default idle look — 2 strokes / side = 4 wisps total)
-export const WISP_ORIGINAL = sym([[3, 3], [3, 4], [5, 4], [5, 5]]);
+export const WISP_ORIGINAL = sym([
+  [3, 3],
+  [3, 4],
+  [5, 4],
+  [5, 5],
+]);
 
 // Extra stroke for high-enthusiasm souls (wispCount=6 → 3 strokes/side)
-export const WISP_EXTRA = sym([[1, 3], [1, 4]]);
+export const WISP_EXTRA = sym([
+  [1, 3],
+  [1, 4],
+]);
 
 export interface WispVariant {
   key: string;
@@ -98,41 +106,71 @@ export interface WispVariant {
 export const WISP_VARIANTS: readonly WispVariant[] = [
   {
     key: "original",
-    cells: sym([[3, 3], [3, 4], [5, 4], [5, 5]]),
+    cells: sym([
+      [3, 3],
+      [3, 4],
+      [5, 4],
+      [5, 5],
+    ]),
     w: 15,
   },
   {
     key: "short-top",
-    cells: sym([[3, 4], [5, 4], [5, 5]]),
+    cells: sym([
+      [3, 4],
+      [5, 4],
+      [5, 5],
+    ]),
     w: 15,
   },
   {
     key: "short-bottom",
-    cells: sym([[3, 3], [3, 4], [5, 5]]),
+    cells: sym([
+      [3, 3],
+      [3, 4],
+      [5, 5],
+    ]),
     w: 15,
   },
   {
     key: "clip-top-right",
-    cells: sym([[3, 3], [3, 4], [5, 4], [5, 5]]).filter(
-      ([r, c]) => !(r === 3 && c === W - 3),
-    ),
+    cells: sym([
+      [3, 3],
+      [3, 4],
+      [5, 4],
+      [5, 5],
+    ]).filter(([r, c]) => !(r === 3 && c === W - 3)),
     w: 15,
   },
   {
     key: "clip-top-left",
-    cells: sym([[3, 3], [3, 4], [5, 4], [5, 5]]).filter(
-      ([r, c]) => !(r === 3 && c === 3),
-    ),
+    cells: sym([
+      [3, 3],
+      [3, 4],
+      [5, 4],
+      [5, 5],
+    ]).filter(([r, c]) => !(r === 3 && c === 3)),
     w: 15,
   },
   {
     key: "two-stubs",
-    cells: sym([[2, 3], [2, 4], [4, 3], [4, 4]]),
+    cells: sym([
+      [2, 3],
+      [2, 4],
+      [4, 3],
+      [4, 4],
+    ]),
     w: 13,
   },
   {
     key: "baby-clouds",
-    cells: sym([[2, 1], [2, 2], [3, 0], [3, 1], [3, 2]]),
+    cells: sym([
+      [2, 1],
+      [2, 2],
+      [3, 0],
+      [3, 1],
+      [3, 2],
+    ]),
     w: 8,
   },
   {

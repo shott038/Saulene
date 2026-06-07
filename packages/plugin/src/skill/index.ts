@@ -145,7 +145,9 @@ function format(snap: UlSnapshot): string {
       const avgP = (agg.practice / agg.count).toFixed(1);
       const avgF = agg.fit / agg.count;
       const fitStr = avgF >= 0.5 ? `+${avgF.toFixed(1)}` : avgF.toFixed(1);
-      lines.push(`  ${(ASPECT_LABELS[aspect] ?? aspect).padEnd(16)} practice ${avgP}/3  fit ${fitStr}`);
+      lines.push(
+        `  ${(ASPECT_LABELS[aspect] ?? aspect).padEnd(16)} practice ${avgP}/3  fit ${fitStr}`,
+      );
     }
     lines.push("");
   }

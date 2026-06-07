@@ -126,7 +126,7 @@ async function main(): Promise<void> {
   const asymmetric = results.every((r) => r.coldTrue.mean - r.warmTrue.mean > 0.2);
   const anyDiscriminates = results.some((r) => r.combined.mean - r.combined.ci95 > 0.5);
   const verdict = anyDiscriminates
-    ? `GRADED + REAL — combined accuracy clears chance from separation ≈ ${threshold ? r3(threshold.pairSeparation) + ` (${threshold.tier})` : "—"}.${asymmetric ? " Cold≫warm at every tier — base-persona asymmetry confirmed as the dominant ceiling." : ""}`
+    ? `GRADED + REAL — combined accuracy clears chance from separation ≈ ${threshold ? `${r3(threshold.pairSeparation)} (${threshold.tier})` : "—"}.${asymmetric ? " Cold≫warm at every tier — base-persona asymmetry confirmed as the dominant ceiling." : ""}`
     : `NO CLEAN DISCRIMINATION — even balanced 2-way combined accuracy never clears 0.5 with CI${asymmetric ? "; cold≫warm throughout (modal bias, not discrimination)" : ""}.`;
 
   writeFileSync(

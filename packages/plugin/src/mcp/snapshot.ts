@@ -12,7 +12,7 @@
 
 import { ASPECTS, type Aspect, type Soul, type Stage, stageFromMp } from "@saulene/core";
 import { type MbtiLabel, projectMbti } from "@saulene/core";
-import { defaultRoot, type LedgerRow, loadSoul, readLedger } from "@saulene/storage";
+import { type LedgerRow, defaultRoot, loadSoul, readLedger } from "@saulene/storage";
 
 /** 90-day neglect-death clock in milliseconds (SPEC: flat, wall-clock only). */
 const NEGLECT_DEATH_MS = 90 * 24 * 60 * 60 * 1000;

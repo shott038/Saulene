@@ -21,7 +21,7 @@ const payload = JSON.parse(raw) as {
 const transcriptPath = payload.transcript_path;
 if (!transcriptPath) {
   // No transcript path — nothing to consolidate.
-  process.stdout.write(JSON.stringify({ continue: true }) + "\n");
+  process.stdout.write(`${JSON.stringify({ continue: true })}\n`);
   process.exit(0);
 }
 
@@ -30,7 +30,7 @@ try {
   transcript = readFileSync(transcriptPath, "utf8");
 } catch {
   // Transcript unreadable — bail silently rather than surface an error to the session.
-  process.stdout.write(JSON.stringify({ continue: true }) + "\n");
+  process.stdout.write(`${JSON.stringify({ continue: true })}\n`);
   process.exit(0);
 }
 
@@ -43,4 +43,4 @@ await stop({
   ...(payload.session_id ? { sessionId: payload.session_id } : {}),
 });
 
-process.stdout.write(JSON.stringify({ continue: true }) + "\n");
+process.stdout.write(`${JSON.stringify({ continue: true })}\n`);

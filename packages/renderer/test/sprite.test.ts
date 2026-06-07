@@ -17,12 +17,16 @@ function vec(fill: number): AspectVector {
   return Object.fromEntries(ASPECTS.map((a) => [a, fill])) as AspectVector;
 }
 
-function soulOf(base: number, overrides: Partial<AspectVector> = {}, opts: {
-  stubbornness?: number;
-  mp?: number;
-  sex?: "male" | "female";
-  s?: Partial<AspectVector>;
-} = {}): Soul {
+function soulOf(
+  base: number,
+  overrides: Partial<AspectVector> = {},
+  opts: {
+    stubbornness?: number;
+    mp?: number;
+    sex?: "male" | "female";
+    s?: Partial<AspectVector>;
+  } = {},
+): Soul {
   const v = vec(base);
   for (const [a, val] of Object.entries(overrides)) v[a as Aspect] = val as number;
   const s = vec(0.5);
@@ -52,18 +56,22 @@ describe("spriteParams — determinism / golden file", () => {
   });
 
   it("matches the golden snapshot for a fixed soul", () => {
-    const soul = soulOf(0.5, {
-      openness: 0.82,
-      intellect: 0.71,
-      industriousness: 0.78,
-      orderliness: 0.25,
-      enthusiasm: 0.6,
-      assertiveness: 0.7,
-      compassion: 0.68,
-      politeness: 0.3,
-      withdrawal: 0.4,
-      volatility: 0.55,
-    }, { stubbornness: 0.35, mp: 0 });
+    const soul = soulOf(
+      0.5,
+      {
+        openness: 0.82,
+        intellect: 0.71,
+        industriousness: 0.78,
+        orderliness: 0.25,
+        enthusiasm: 0.6,
+        assertiveness: 0.7,
+        compassion: 0.68,
+        politeness: 0.3,
+        withdrawal: 0.4,
+        volatility: 0.55,
+      },
+      { stubbornness: 0.35, mp: 0 },
+    );
     expect(spriteParams(soul)).toMatchSnapshot();
   });
 
@@ -74,13 +82,26 @@ describe("spriteParams — determinism / golden file", () => {
   it("all expected fields are present in the output", () => {
     const params = spriteParams(soulOf(0.5));
     const expected: (keyof SpriteParams)[] = [
-      "hue", "saturation", "lightness",
-      "bodyScaleX", "bodyScaleY",
-      "puffJitter", "topBulge", "bottomBulge",
-      "eyeRadius", "eyeSpacingFactor", "eyeDropY", "blush", "mouthCurve",
-      "wispCount", "wispLengthFactor", "aura",
-      "shimmer", "tilt",
-      "stage", "stageScale",
+      "hue",
+      "saturation",
+      "lightness",
+      "bodyScaleX",
+      "bodyScaleY",
+      "puffJitter",
+      "topBulge",
+      "bottomBulge",
+      "eyeRadius",
+      "eyeSpacingFactor",
+      "eyeDropY",
+      "blush",
+      "mouthCurve",
+      "wispCount",
+      "wispLengthFactor",
+      "aura",
+      "shimmer",
+      "tilt",
+      "stage",
+      "stageScale",
       "seed",
     ];
     for (const f of expected) expect(params).toHaveProperty(f);
@@ -99,7 +120,10 @@ describe("spriteParams — ablation locality", () => {
   const BASELINE_V = 0.5;
   const PERTURB = 0.3;
 
-  for (const [aspect, ownedFields] of Object.entries(SPRITE_EXCLUSIVE) as [Aspect, readonly (keyof SpriteParams)[]][]) {
+  for (const [aspect, ownedFields] of Object.entries(SPRITE_EXCLUSIVE) as [
+    Aspect,
+    readonly (keyof SpriteParams)[],
+  ][]) {
     it(`perturbing ${aspect} changes its exclusively-owned params (${ownedFields.join(", ")})`, () => {
       const base = spriteParams(soulOf(BASELINE_V));
       const perturbed = spriteParams(soulOf(BASELINE_V, { [aspect]: BASELINE_V + PERTURB }));
@@ -112,7 +136,10 @@ describe("spriteParams — ablation locality", () => {
       const base = spriteParams(soulOf(BASELINE_V));
       const perturbed = spriteParams(soulOf(BASELINE_V, { [aspect]: BASELINE_V + PERTURB }));
 
-      for (const [otherAspect, otherFields] of Object.entries(SPRITE_EXCLUSIVE) as [Aspect, readonly (keyof SpriteParams)[]][]) {
+      for (const [otherAspect, otherFields] of Object.entries(SPRITE_EXCLUSIVE) as [
+        Aspect,
+        readonly (keyof SpriteParams)[],
+      ][]) {
         if (otherAspect === aspect) continue;
         for (const field of otherFields) {
           expect(perturbed[field]).toEqual(base[field]);
@@ -140,7 +167,11 @@ describe("spriteParams — ablation locality", () => {
 // ── monotonicity ──────────────────────────────────────────────────────────────
 
 describe("spriteParams — monotonicity", () => {
-  function valuesFor(aspect: Aspect, param: keyof SpriteParams, steps: number[] = [0.1, 0.3, 0.5, 0.7, 0.9]) {
+  function valuesFor(
+    aspect: Aspect,
+    param: keyof SpriteParams,
+    steps: number[] = [0.1, 0.3, 0.5, 0.7, 0.9],
+  ) {
     return steps.map((v) => spriteParams(soulOf(0.5, { [aspect]: v }))[param] as number);
   }
 
@@ -250,8 +281,16 @@ describe("spriteParams — birth-entropy seed", () => {
   it("different tilt for uls with same v but different s (birth-entropy jitter)", () => {
     // The tilt direction is fixed by the birth seed. Two uls with the same aspect values
     // but different set points may have different tilt directions.
-    const soulA = soulOf(0.6, { volatility: 0.8 }, { s: { openness: 0.9, assertiveness: 0.8 } as Partial<AspectVector> });
-    const soulB = soulOf(0.6, { volatility: 0.8 }, { s: { openness: 0.1, assertiveness: 0.2 } as Partial<AspectVector> });
+    const soulA = soulOf(
+      0.6,
+      { volatility: 0.8 },
+      { s: { openness: 0.9, assertiveness: 0.8 } as Partial<AspectVector> },
+    );
+    const soulB = soulOf(
+      0.6,
+      { volatility: 0.8 },
+      { s: { openness: 0.1, assertiveness: 0.2 } as Partial<AspectVector> },
+    );
     // With these different seeds, tilts must differ (they use a deterministic RNG, not truly random)
     expect(spriteParams(soulA).seed).not.toBe(spriteParams(soulB).seed);
     // If seeds differ, tiltUnit will differ → tilts should differ

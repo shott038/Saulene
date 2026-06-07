@@ -9,5 +9,5 @@ import { ulText } from "../skill/index.js";
 
 const text = ulText();
 if (text) {
-  process.stdout.write(text + "\n");
+  process.stdout.write(`${text}\n`);
 }

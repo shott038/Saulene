@@ -34,7 +34,7 @@ function hueFromBlend(t: number): number {
   // shortest-arc lerp (handles hue wrap at 360°)
   const diff = b - a;
   const adj = Math.abs(diff) > 180 ? (diff > 0 ? diff - 360 : diff + 360) : diff;
-  return ((a + adj * f) + 360) % 360;
+  return (a + adj * f + 360) % 360;
 }
 
 /**

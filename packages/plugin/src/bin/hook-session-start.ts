@@ -17,4 +17,4 @@ sessionStart({
   now: Date.now(),
 });
 
-process.stdout.write(JSON.stringify({ continue: true }) + "\n");
+process.stdout.write(`${JSON.stringify({ continue: true })}\n`);

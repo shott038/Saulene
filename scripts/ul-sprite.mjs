@@ -8,7 +8,7 @@
  * This is the same rasterizer a Saulene statusline command would call, picking a frame
  * from session state (e.g. context% → stress) + a time-based blink.
  */
-import { rasterize, toAnsi, PALS } from "./ul-terminal.mjs";
+import { PALS, rasterize, toAnsi } from "./ul-terminal.mjs";
 
 const [, , palArg, stateArg] = process.argv;
 const pal = PALS[palArg] ?? PALS.sky;

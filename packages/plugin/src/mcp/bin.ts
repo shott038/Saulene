@@ -12,7 +12,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { defaultRoot } from "@saulene/storage";
 import { createMcpServer } from "./server.js";
 
-const root = process.env["SAULENE_ROOT"] ?? defaultRoot();
+const root = process.env.SAULENE_ROOT ?? defaultRoot();
 const server = createMcpServer({ storageRoot: root });
 const transport = new StdioServerTransport();
 await server.connect(transport);

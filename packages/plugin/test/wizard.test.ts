@@ -5,7 +5,7 @@
  * The real home directory (~/.saulene) is NEVER touched.
  */
 
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadSoul } from "@saulene/storage";
@@ -27,6 +27,7 @@ afterEach(() => {
 });
 
 /** Collected write() calls (strips ANSI escape codes for assertion clarity). */
+// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matches ANSI ESC sequences
 const stripAnsi = (s: string): string => s.replace(/\x1b\[[0-9;]*m/g, "");
 
 /** Build an opts object with a scripted readline queue and a no-op sleep. */

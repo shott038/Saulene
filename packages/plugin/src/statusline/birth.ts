@@ -10,7 +10,15 @@
  */
 
 import type { SpriteParams } from "@saulene/renderer";
-import { CHAR_ROWS, type OverlayFlags, type PixelGrid, type RgbColor, colorsFromParams, compose, pixelGridToAnsi } from "./rasterizer.js";
+import {
+  CHAR_ROWS,
+  type OverlayFlags,
+  type PixelGrid,
+  type RgbColor,
+  colorsFromParams,
+  compose,
+  pixelGridToAnsi,
+} from "./rasterizer.js";
 
 // Safe write to pixel grid (see rasterizer.ts — noUncheckedIndexedAccess guard)
 function paint(px: PixelGrid, rr: number, cc: number, color: RgbColor): void {
@@ -28,8 +36,8 @@ import {
   EYES,
   H,
   TICK_MS,
-  WISP_ORIGINAL,
   W,
+  WISP_ORIGINAL,
   breatheDy,
 } from "./sprite-data.js";
 
@@ -51,9 +59,9 @@ export interface BirthFrame {
 // ── Puff row sets (pixel row → body row index) ────────────────────────────────
 // Body art: 6 rows (0–5). Center puff appears first, then upper ring, then lower ring.
 const PUFF_PHASES: ReadonlyArray<readonly number[]> = [
-  [2, 3],    // center puff (body art rows 2+3 = the wide middle section)
-  [1, 0],    // upper ring (rows 1+0)
-  [4, 5],    // lower ring (rows 4+5)
+  [2, 3], // center puff (body art rows 2+3 = the wide middle section)
+  [1, 0], // upper ring (rows 1+0)
+  [4, 5], // lower ring (rows 4+5)
 ] as const;
 
 // ── Pure birth frame sequence ─────────────────────────────────────────────────

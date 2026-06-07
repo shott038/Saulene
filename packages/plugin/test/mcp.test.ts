@@ -11,8 +11,8 @@ import { join } from "node:path";
 import { type Soul, seedFromEntropy } from "@saulene/core";
 import { appendLedger, saveSoul } from "@saulene/storage";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { snapshot } from "../src/mcp/snapshot.js";
 import { createMcpServer } from "../src/mcp/server.js";
+import { snapshot } from "../src/mcp/snapshot.js";
 import { ulText } from "../src/skill/index.js";
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ describe("snapshot", () => {
     saveSoul(root, mintSoul());
     const snap = snapshot({ storageRoot: root, now: NOW });
     expect(snap).not.toBeNull();
-    for (const val of Object.values(snap!.aspects)) {
+    for (const val of Object.values(snap?.aspects)) {
       expect(val).toBeGreaterThanOrEqual(0);
       expect(val).toBeLessThanOrEqual(100);
     }
@@ -152,7 +152,7 @@ describe("ulText", () => {
     const text = ulText({ storageRoot: root, now: NOW });
     expect(text).not.toBeNull();
     expect(typeof text).toBe("string");
-    expect(text!.length).toBeGreaterThan(0);
+    expect(text?.length).toBeGreaterThan(0);
   });
 
   it("includes MBTI, stage, and aspects section", () => {

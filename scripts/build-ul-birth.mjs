@@ -12,17 +12,24 @@
  *
  *   node scripts/build-ul-birth.mjs   →   docs/ul-birth.html
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { WISPS, INK, BODY, EYES, ORIGIN, INK_COLOR, PAPER } from "./ul-geometry.mjs";
+import { BODY, EYES, INK, INK_COLOR, ORIGIN, PAPER, WISPS } from "./ul-geometry.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 function birthSvg(uid, size = 440) {
-  const inkPuffs = INK.map(([x, y, r], i) => `<circle class="p" style="--i:${i}" cx="${x}" cy="${y}" r="${r}"/>`).join("");
-  const bodyPuffs = BODY.map(([x, y, r], i) => `<circle class="p" style="--i:${i}" cx="${x}" cy="${y}" r="${r}"/>`).join("");
-  const wisps = WISPS.map(([x1, x2, y, dir], i) => `<line style="--i:${i};--dir:${dir}" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}"/>`).join("");
+  const inkPuffs = INK.map(
+    ([x, y, r], i) => `<circle class="p" style="--i:${i}" cx="${x}" cy="${y}" r="${r}"/>`,
+  ).join("");
+  const bodyPuffs = BODY.map(
+    ([x, y, r], i) => `<circle class="p" style="--i:${i}" cx="${x}" cy="${y}" r="${r}"/>`,
+  ).join("");
+  const wisps = WISPS.map(
+    ([x1, x2, y, dir], i) =>
+      `<line style="--i:${i};--dir:${dir}" x1="${x1}" y1="${y}" x2="${x2}" y2="${y}"/>`,
+  ).join("");
   const eyes = EYES.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6"/>`).join("");
 
   const css = `
@@ -44,7 +51,7 @@ function birthSvg(uid, size = 440) {
     #${uid} .cloud{transform-box:fill-box;transform-origin:${ORIGIN};animation:${uid}-breath 1s ease both, ${uid}-float 3.6s ease-in-out infinite;animation-delay:2.7s, 4s}
     @media (prefers-reduced-motion:reduce){#${uid} *{animation-duration:.01s!important;animation-delay:0s!important}}`;
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" id="${uid}" viewBox="0 0 300 200" width="${size}" height="${Math.round(size * 200 / 300)}" role="img" aria-label="an ul is born">
+  return `<svg xmlns="http://www.w3.org/2000/svg" id="${uid}" viewBox="0 0 300 200" width="${size}" height="${Math.round((size * 200) / 300)}" role="img" aria-label="an ul is born">
   <style>${css}</style>
   <defs><filter id="${uid}-b" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="11"/></filter></defs>
   <circle class="glow" cx="150" cy="108" r="42" fill="#ffce86" filter="url(#${uid}-b)"/>
@@ -97,4 +104,4 @@ const html = `<!doctype html>
 const out = resolve(root, "docs/ul-birth.html");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, html);
-console.log("wrote", out, "(" + html.length + " bytes)");
+console.log("wrote", out, `(${html.length} bytes)`);

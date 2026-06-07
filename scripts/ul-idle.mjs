@@ -43,7 +43,8 @@ const BODY_CTXHIGH = [
 ];
 // context-filling: no eyes, top opens — two grey nubs pulse apart (frame 1 → frame 2)
 const BODY_OPEN = [
-  [ // frame 1 — nubs closer
+  [
+    // frame 1 — nubs closer
     "........c..c.......",
     ".......cffffc......",
     "......cffffffc.....",
@@ -51,7 +52,8 @@ const BODY_OPEN = [
     ".......ccffcc......",
     ".........cc........",
   ],
-  [ // frame 2 — nubs wider apart
+  [
+    // frame 2 — nubs wider apart
     ".......c....c......",
     ".......cffffc......",
     "......cffffffc.....",
@@ -60,87 +62,164 @@ const BODY_OPEN = [
     ".........cc........",
   ],
 ];
-const W = 19, H = 8, BASE = 1; // BASE = resting row offset → leaves 1px headroom for the prompt hop
-const EYES = [[2, 8], [2, 11]];
-const HEX = { c: "#b8b8b8", f: "#ffffff", e: "#161310" }, WISP = "#ffffff";
+const W = 19;
+const H = 8;
+const BASE = 1; // BASE = resting row offset → leaves 1px headroom for the prompt hop
+const EYES = [
+  [2, 8],
+  [2, 11],
+];
+const HEX = { c: "#b8b8b8", f: "#ffffff", e: "#161310" };
+const WISP = "#ffffff";
 const BG = "#1e1e1e";
 
 // breathing: 1px float for part of a ~68-tick cycle (~2x gap between breaths)
-const breatheDy = (t) => { const p = t % 68; return p >= 14 && p < 26 ? 1 : 0; };
+const breatheDy = (t) => {
+  const p = t % 68;
+  return p >= 14 && p < 26 ? 1 : 0;
+};
 
 // gesture = per-tick overlay frames {blink, eye(shift), dx}
 const G = {
-  blink:  [{ blink: 1 }, { blink: 1 }],
+  blink: [{ blink: 1 }, { blink: 1 }],
   double: [{ blink: 1 }, { blink: 1 }, {}, {}, { blink: 1 }, { blink: 1 }],
-  lookL:  Array(7).fill({ eye: -1 }),
-  lookR:  Array(7).fill({ eye: 1 }),
-  swayL:  Array(13).fill({ dx: -1 }), // drift left and hold ~1s
-  swayR:  Array(13).fill({ dx: 1 }),  // drift right and hold ~1s
+  lookL: Array(7).fill({ eye: -1 }),
+  lookR: Array(7).fill({ eye: 1 }),
+  swayL: Array(13).fill({ dx: -1 }), // drift left and hold ~1s
+  swayR: Array(13).fill({ dx: 1 }), // drift right and hold ~1s
 };
 const GESTURES = ["blink", "double", "lookL", "lookR", "swayL", "swayR"];
 
 // REACTIVE — error: fast jerk left→right→left→center; wisps vanish for the whole shake
 const ERROR = [
-  { dx: -2, noWisps: 1 }, { dx: -2, noWisps: 1 },
-  { dx: 2, noWisps: 1 }, { dx: 2, noWisps: 1 },
-  { dx: -2, noWisps: 1 }, { dx: -2, noWisps: 1 },
-  { dx: 0, noWisps: 1 }, { dx: 0, noWisps: 1 },
+  { dx: -2, noWisps: 1 },
+  { dx: -2, noWisps: 1 },
+  { dx: 2, noWisps: 1 },
+  { dx: 2, noWisps: 1 },
+  { dx: -2, noWisps: 1 },
+  { dx: -2, noWisps: 1 },
+  { dx: 0, noWisps: 1 },
+  { dx: 0, noWisps: 1 },
 ];
 
 // idle wisp variants (mirror axis col 9.5 → 19-c).
 // w = % chance on each swap roll (sums to 100); absolute roll, may re-land on the same one.
 const sym = (cells) => cells.concat(cells.map(([r, c]) => [r, 19 - c]));
-const ORIGINAL = sym([[3, 3], [3, 4], [5, 4], [5, 5]]);
+const ORIGINAL = sym([
+  [3, 3],
+  [3, 4],
+  [5, 4],
+  [5, 5],
+]);
 const VARIANTS = [
-  { key: "original",       cells: ORIGINAL, w: 15 },
-  { key: "short top",      cells: sym([[3, 4], [5, 4], [5, 5]]), w: 15 },
-  { key: "short bottom",   cells: sym([[3, 3], [3, 4], [5, 5]]), w: 15 },
+  { key: "original", cells: ORIGINAL, w: 15 },
+  {
+    key: "short top",
+    cells: sym([
+      [3, 4],
+      [5, 4],
+      [5, 5],
+    ]),
+    w: 15,
+  },
+  {
+    key: "short bottom",
+    cells: sym([
+      [3, 3],
+      [3, 4],
+      [5, 5],
+    ]),
+    w: 15,
+  },
   { key: "clip top-right", cells: ORIGINAL.filter(([r, c]) => !(r === 3 && c === 16)), w: 15 },
-  { key: "clip top-left",  cells: ORIGINAL.filter(([r, c]) => !(r === 3 && c === 3)), w: 15 },
-  { key: "two stubs",      cells: sym([[2, 3], [2, 4], [4, 3], [4, 4]]), w: 13 },
-  { key: "baby clouds",    cells: sym([[2, 1], [2, 2], [3, 0], [3, 1], [3, 2]]), w: 8 },
-  { key: "minimal",        cells: sym([[3, 4]]), w: 4 },
+  { key: "clip top-left", cells: ORIGINAL.filter(([r, c]) => !(r === 3 && c === 3)), w: 15 },
+  {
+    key: "two stubs",
+    cells: sym([
+      [2, 3],
+      [2, 4],
+      [4, 3],
+      [4, 4],
+    ]),
+    w: 13,
+  },
+  {
+    key: "baby clouds",
+    cells: sym([
+      [2, 1],
+      [2, 2],
+      [3, 0],
+      [3, 1],
+      [3, 2],
+    ]),
+    w: 8,
+  },
+  { key: "minimal", cells: sym([[3, 4]]), w: 4 },
 ];
 const POOL = VARIANTS.flatMap((v, i) => Array(v.w).fill(i)); // length 100
 const rollVariant = () => POOL[Math.floor(Math.random() * POOL.length)];
 const SWAP_MS = 135000; // 2:15
-const TWINK = sym([[-1, 5], [5, 5]]);  // four corner sparkle dots (super-rare twinkle easter egg)
-const TWINKLE_CHANCE = 0.0025;         // 0.25% at each 2:15 roll
-const TWINKLE_LEN = 18;                // fast strobe length (ticks)
+const TWINK = sym([
+  [-1, 5],
+  [5, 5],
+]); // four corner sparkle dots (super-rare twinkle easter egg)
+const TWINKLE_CHANCE = 0.0025; // 0.25% at each 2:15 roll
+const TWINKLE_LEN = 18; // fast strobe length (ticks)
 
 /** Compose one frame → 2D array of hex|null. Body bobs with dy; wisps take dx only. */
-function compose(wisps, { dx = 0, blink = 0, eye = 0, eyeDy = 0, open = 0, wdy = 0, ctx = 0, win = 0, success = 0 } = {}, dy = 0) {
+function compose(
+  wisps,
+  { dx = 0, blink = 0, eye = 0, eyeDy = 0, open = 0, wdy = 0, ctx = 0, win = 0, success = 0 } = {},
+  dy = 0,
+) {
   const px = Array.from({ length: H }, () => Array(W).fill(null));
   const body = open ? BODY_OPEN[open - 1] : success ? BODY_SUCCESS : ctx ? BODY_CTXHIGH : BODY;
-  for (let r = 0; r < body.length; r++) for (let c = 0; c < W; c++) {
-    const ch = body[r][c];
-    if (ch === ".") continue;
-    const rr = r + BASE + dy, cc = c + dx;
-    if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = ch === "e" ? HEX.f : HEX[ch];
-  }
-  if (!blink && !open) for (const [er, ec] of EYES) {
-    const rr = er + BASE + dy + eyeDy, cc = ec + eye + dx;
-    if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = HEX.e;
-  }
-  for (const [r, c] of wisps) {  // wisps: own vertical offset (wdy); win pulls them inward (thinking)
-    const inward = c < 9.5 ? win : -win;          // both sides slide toward center
-    const rr = r + BASE + wdy, cc = c + inward + dx;
+  for (let r = 0; r < body.length; r++)
+    for (let c = 0; c < W; c++) {
+      const ch = body[r][c];
+      if (ch === ".") continue;
+      const rr = r + BASE + dy;
+      const cc = c + dx;
+      if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = ch === "e" ? HEX.f : HEX[ch];
+    }
+  if (!blink && !open)
+    for (const [er, ec] of EYES) {
+      const rr = er + BASE + dy + eyeDy;
+      const cc = ec + eye + dx;
+      if (rr >= 0 && rr < H && cc >= 0 && cc < W) px[rr][cc] = HEX.e;
+    }
+  for (const [r, c] of wisps) {
+    // wisps: own vertical offset (wdy); win pulls them inward (thinking)
+    const inward = c < 9.5 ? win : -win; // both sides slide toward center
+    const rr = r + BASE + wdy;
+    const cc = c + inward + dx;
     if (rr >= 0 && rr < H && cc >= 0 && cc < W && !px[rr][cc]) px[rr][cc] = WISP; // absorbed when it reaches the body
   }
   return px;
 }
 
 // ── ANSI half-blocks ──
-const rgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
-const fg = (h) => { const [r, g, b] = rgb(h); return `\x1b[38;2;${r};${g};${b}m`; };
-const bg = (h) => { const [r, g, b] = rgb(h); return `\x1b[48;2;${r};${g};${b}m`; };
+const rgb = (h) => [
+  Number.parseInt(h.slice(1, 3), 16),
+  Number.parseInt(h.slice(3, 5), 16),
+  Number.parseInt(h.slice(5, 7), 16),
+];
+const fg = (h) => {
+  const [r, g, b] = rgb(h);
+  return `\x1b[38;2;${r};${g};${b}m`;
+};
+const bg = (h) => {
+  const [r, g, b] = rgb(h);
+  return `\x1b[48;2;${r};${g};${b}m`;
+};
 const RESET = "\x1b[0m";
 function toAnsi(px, indent = "  ") {
   let out = "";
   for (let r = 0; r < H; r += 2) {
     out += indent;
     for (let c = 0; c < W; c++) {
-      const t = px[r][c], b = r + 1 < H ? px[r + 1][c] : null;
+      const t = px[r][c];
+      const b = r + 1 < H ? px[r + 1][c] : null;
       if (!t && !b) out += `${RESET} `;
       else if (t && b) out += `${fg(t)}${bg(b)}▀${RESET}`;
       else if (t) out += `${fg(t)}▀${RESET}`;
@@ -154,9 +233,11 @@ const CHAR_ROWS = Math.ceil(H / 2);
 
 if (process.argv.includes("--export-twinkle")) {
   // super-rare twinkle easter egg: corner sparkle dots strobe fast, then back to idle
-  const frames = [], cells = ORIGINAL;
+  const frames = [];
+  const cells = ORIGINAL;
   for (let t = 0; t < 6; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
-  for (let i = 0; i < TWINKLE_LEN; i++) frames.push({ d: 55, p: compose(i % 2 === 0 ? TWINK : [], {}, breatheDy(6 + i)) });
+  for (let i = 0; i < TWINKLE_LEN; i++)
+    frames.push({ d: 55, p: compose(i % 2 === 0 ? TWINK : [], {}, breatheDy(6 + i)) });
   for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
   const out = fileURLToPath(new URL("../docs/ul-twinkle-frames.json", import.meta.url));
   writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
@@ -167,51 +248,98 @@ if (process.argv.includes("--export-twinkle")) {
   // Pulses (one-shot, preempt by priority): error > success > prompt > retry > response.
   const CUR = ORIGINAL;
   const PULSE = {
-    prompt:   [{ ov: { wdy: 1 }, dy: -1 }, { ov: { wdy: 1 }, dy: -1 }],
-    success:  Array.from({ length: 14 }, () => ({ ov: { success: 1 }, dy: -1 })),
-    error:    ERROR.map((o) => ({ ov: o, dy: 0 })),                       // ERROR frames carry noWisps
-    retry:    Array.from({ length: 5 }, () => ({ ov: { noWisps: 1 }, dy: 0 })),
+    prompt: [
+      { ov: { wdy: 1 }, dy: -1 },
+      { ov: { wdy: 1 }, dy: -1 },
+    ],
+    success: Array.from({ length: 14 }, () => ({ ov: { success: 1 }, dy: -1 })),
+    error: ERROR.map((o) => ({ ov: o, dy: 0 })), // ERROR frames carry noWisps
+    retry: Array.from({ length: 5 }, () => ({ ov: { noWisps: 1 }, dy: 0 })),
     response: Array.from({ length: 9 }, () => ({ ov: { win: -1 }, dy: 0 })),
   };
   const PRIO = { error: 5, success: 4, prompt: 3, retry: 2, response: 1 };
   const SCAN = [-1, 0, 1, 0];
 
-  let th = false, fl = false, comp = 0, ctxHigh = false;      // mode inputs
-  let pulse = null, pi = 0, gest = null, gi = 0, gcool = 24, scan = 0;
-  const fire = (n) => { if (comp <= 0 && (!pulse || PRIO[n] > PRIO[pulse])) { pulse = n; pi = 0; } };
-  const at = {                                               // tick → event (a full turn + edge cases)
-    12: () => fire("prompt"),        // user hits enter
-    16: () => { th = true; },        // thinking starts
-    30: () => { fl = true; },        // context starts filling (preempts thinking visually)
-    52: () => { fl = false; },       // intake stops → back to thinking
-    64: () => { th = false; fire("success"); }, // generation done + success
-    86: () => fire("response"),      // response finished
-    100: () => fire("error"),        // a command errored
-    114: () => fire("retry"),        // retry attempt
-    126: () => { comp = 40; },       // context compaction (exclusive)
-    172: () => { ctxHigh = true; },  // context now >80% → full-cloud rest, swap off
-    188: () => fire("prompt"),       // a hop on the full cloud
+  let th = false;
+  let fl = false;
+  let comp = 0;
+  let ctxHigh = false; // mode inputs
+  let pulse = null;
+  let pi = 0;
+  let gest = null;
+  let gi = 0;
+  let gcool = 24;
+  let scan = 0;
+  const fire = (n) => {
+    if (comp <= 0 && (!pulse || PRIO[n] > PRIO[pulse])) {
+      pulse = n;
+      pi = 0;
+    }
+  };
+  const at = {
+    // tick → event (a full turn + edge cases)
+    12: () => fire("prompt"), // user hits enter
+    16: () => {
+      th = true;
+    }, // thinking starts
+    30: () => {
+      fl = true;
+    }, // context starts filling (preempts thinking visually)
+    52: () => {
+      fl = false;
+    }, // intake stops → back to thinking
+    64: () => {
+      th = false;
+      fire("success");
+    }, // generation done + success
+    86: () => fire("response"), // response finished
+    100: () => fire("error"), // a command errored
+    114: () => fire("retry"), // retry attempt
+    126: () => {
+      comp = 40;
+    }, // context compaction (exclusive)
+    172: () => {
+      ctxHigh = true;
+    }, // context now >80% → full-cloud rest, swap off
+    188: () => fire("prompt"), // a hop on the full cloud
   };
 
   const frames = [];
   for (let t = 0; t < 212; t++) {
     if (at[t]) at[t]();
     let p;
-    if (comp > 0) {                                          // EXCLUSIVE — nothing else runs
+    if (comp > 0) {
+      // EXCLUSIVE — nothing else runs
       pulse = gest = null;
-      p = compose([], { eyeDy: 1, eye: SCAN[scan++ % 4] }, 0); comp--;
-    } else if (pulse) {                                      // a one-shot is playing
+      p = compose([], { eyeDy: 1, eye: SCAN[scan++ % 4] }, 0);
+      comp--;
+    } else if (pulse) {
+      // a one-shot is playing
       const f = PULSE[pulse][pi++];
       p = compose(f.ov.noWisps ? [] : CUR, f.ov, f.dy);
-      if (pi >= PULSE[pulse].length) { pulse = null; gcool = 22; }
-    } else if (fl) {                                         // context filling (mode > thinking)
+      if (pi >= PULSE[pulse].length) {
+        pulse = null;
+        gcool = 22;
+      }
+    } else if (fl) {
+      // context filling (mode > thinking)
       p = compose(CUR, { blink: 1, open: 2 }, 1);
-    } else if (th) {                                         // thinking — wisps pulled in
+    } else if (th) {
+      // thinking — wisps pulled in
       p = compose(CUR, { win: 5 }, 0);
-    } else {                                                 // idle / ctxHigh rest: breathe + gestures
+    } else {
+      // idle / ctxHigh rest: breathe + gestures
       let ov = {};
-      if (gest) { ov = G[gest][gi++]; if (gi >= G[gest].length) { gest = null; gcool = 24; } }
-      else if (--gcool <= 0) { gest = GESTURES[t % GESTURES.length]; gi = 0; }
+      if (gest) {
+        ov = G[gest][gi++];
+        if (gi >= G[gest].length) {
+          gest = null;
+          gcool = 24;
+        }
+      } else if (--gcool <= 0) {
+        gest = GESTURES[t % GESTURES.length];
+        gi = 0;
+      }
       if (ctxHigh) ov = { ...ov, ctx: 1 };
       p = compose(CUR, ov, breatheDy(t));
     }
@@ -222,28 +350,32 @@ if (process.argv.includes("--export-twinkle")) {
   console.log(`wrote ${frames.length} frames → ${out}`);
 } else if (process.argv.includes("--export-response")) {
   // response finished: wisps push out 1px on both sides, then back to default
-  const frames = [], cells = ORIGINAL;
+  const frames = [];
+  const cells = ORIGINAL;
   for (let t = 0; t < 6; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });
   for (let i = 0; i < 9; i++) frames.push({ d: 80, p: compose(cells, { win: -1 }, 0) }); // out 1px
-  for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });          // back
+  for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, 0) }); // back
   const out = fileURLToPath(new URL("../docs/ul-response-frames.json", import.meta.url));
   writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
   console.log(`wrote ${frames.length} frames → ${out}`);
 } else if (process.argv.includes("--export-compaction")) {
   // context compaction: eyes drop 1px, then scan left → middle → right → middle (loop)
-  const seq = [-1, 0, 1, 0];                       // wisps gone for the whole compaction
+  const seq = [-1, 0, 1, 0]; // wisps gone for the whole compaction
   const frames = [];
-  for (let t = 0; t < 4; t++) frames.push({ d: 60, p: compose([], {}, 0) });           // eyes centered, wisps gone
+  for (let t = 0; t < 4; t++) frames.push({ d: 60, p: compose([], {}, 0) }); // eyes centered, wisps gone
   for (let t = 0; t < 3; t++) frames.push({ d: 60, p: compose([], { eyeDy: 1 }, 0) }); // eyes drop down
-  for (let n = 0; n < 48; n++) frames.push({ d: 45, p: compose([], { eyeDy: 1, eye: seq[n % 4] }, 0) }); // fast scan (1 tick/pos)
+  for (let n = 0; n < 48; n++)
+    frames.push({ d: 45, p: compose([], { eyeDy: 1, eye: seq[n % 4] }, 0) }); // fast scan (1 tick/pos)
   const out = fileURLToPath(new URL("../docs/ul-compaction-frames.json", import.meta.url));
   writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
   console.log(`wrote ${frames.length} frames → ${out}`);
 } else if (process.argv.includes("--export-retry")) {
   // retry: wisps vanish then reappear, once per retry attempt
-  const frames = [], cells = ORIGINAL;
+  const frames = [];
+  const cells = ORIGINAL;
   for (let t = 0; t < 6; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });
-  for (let r = 0; r < 3; r++) {                                       // three retries
+  for (let r = 0; r < 3; r++) {
+    // three retries
     for (let i = 0; i < 5; i++) frames.push({ d: 80, p: compose([], {}, 0) });
     for (let i = 0; i < 8; i++) frames.push({ d: 80, p: compose(cells, {}, 0) });
   }
@@ -252,16 +384,18 @@ if (process.argv.includes("--export-twinkle")) {
   console.log(`wrote ${frames.length} frames → ${out}`);
 } else if (process.argv.includes("--export-success")) {
   // success: pop body up 1px into the white-cap "success" body, hold, settle back. wisps kept.
-  const frames = [], cells = ORIGINAL;
-  for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });             // default position
+  const frames = [];
+  const cells = ORIGINAL;
+  for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, 0) }); // default position
   for (let i = 0; i < 14; i++) frames.push({ d: 80, p: compose(cells, { success: 1 }, -1) }); // up 1px + success body
-  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });            // back to default
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) }); // back to default
   const out = fileURLToPath(new URL("../docs/ul-success-frames.json", import.meta.url));
   writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
   console.log(`wrote ${frames.length} frames → ${out}`);
 } else if (process.argv.includes("--export-thinking")) {
   // thinking: wisps slide into the body and vanish, held while thinking, then slide back out
-  const frames = [], cells = ORIGINAL;
+  const frames = [];
+  const cells = ORIGINAL;
   for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });
   for (let w = 1; w <= 5; w++) frames.push({ d: 60, p: compose(cells, { win: w }, 0) });
   for (let t = 0; t < 24; t++) frames.push({ d: 80, p: compose(cells, { win: 5 }, 0) }); // thinking (no wisps)
@@ -272,23 +406,25 @@ if (process.argv.includes("--export-twinkle")) {
   console.log(`wrote ${frames.length} frames → ${out}`);
 } else if (process.argv.includes("--export-ctxhigh")) {
   // context > 80% default: the "full" body, idle anims still play (breathe + blink + look), no swap
-  const frames = [], cells = ORIGINAL;
+  const frames = [];
+  const cells = ORIGINAL;
   const push = (ov, dy) => frames.push({ d: 80, p: compose(cells, { ctx: 1, ...ov }, dy) });
-  for (let t = 0; t < 16; t++) push({}, breatheDy(t));                 // breathing
-  G.blink.forEach(() => push({ blink: 1 }, 1));                         // blink
+  for (let t = 0; t < 16; t++) push({}, breatheDy(t)); // breathing
+  for (const _ of G.blink) push({ blink: 1 }, 1); // blink
   for (let t = 0; t < 10; t++) push({}, breatheDy(t));
-  G.lookL.forEach(() => push({ eye: -1 }, 1));                          // glance left
+  for (const _ of G.lookL) push({ eye: -1 }, 1); // glance left
   for (let t = 0; t < 8; t++) push({}, 0);
-  G.lookR.forEach(() => push({ eye: 1 }, 1));                           // glance right
+  for (const _ of G.lookR) push({ eye: 1 }, 1); // glance right
   for (let t = 0; t < 12; t++) push({}, breatheDy(t));
   const out = fileURLToPath(new URL("../docs/ul-ctxhigh-frames.json", import.meta.url));
   writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
   console.log(`wrote ${frames.length} frames → ${out}`);
 } else if (process.argv.includes("--export-prompt")) {
   // user submits a prompt: quick 1px hop up, then back down. wisps stay put.
-  const frames = [], cells = ORIGINAL;
+  const frames = [];
+  const cells = ORIGINAL;
   for (let t = 0; t < 8; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
-  frames.push({ d: 60, p: compose(cells, { wdy: 1 }, -1) });   // body up, wisps down
+  frames.push({ d: 60, p: compose(cells, { wdy: 1 }, -1) }); // body up, wisps down
   frames.push({ d: 60, p: compose(cells, { wdy: 1 }, -1) });
   for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, breatheDy(t)) });
   const out = fileURLToPath(new URL("../docs/ul-prompt-frames.json", import.meta.url));
@@ -297,11 +433,12 @@ if (process.argv.includes("--export-twinkle")) {
 } else if (process.argv.includes("--export-ctx")) {
   // context-filling demo: idle → drop down (breathing dip), eyes off, hold frame 2 while taking
   // in context → frame 1 as it closes → back to default. wisps kept.
-  const frames = [], cells = ORIGINAL;
-  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });                  // default position
+  const frames = [];
+  const cells = ORIGINAL;
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) }); // default position
   for (let i = 0; i < 24; i++) frames.push({ d: 90, p: compose(cells, { blink: 1, open: 2 }, 1) }); // taking in → hold frame 2
-  frames.push({ d: 55, p: compose(cells, { blink: 1, open: 1 }, 1) });  // closing → quick frame 1 (in-between beat)
-  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) });                  // back to default
+  frames.push({ d: 55, p: compose(cells, { blink: 1, open: 1 }, 1) }); // closing → quick frame 1 (in-between beat)
+  for (let t = 0; t < 10; t++) frames.push({ d: 80, p: compose(cells, {}, 0) }); // back to default
   const out = fileURLToPath(new URL("../docs/ul-ctx-frames.json", import.meta.url));
   writeFileSync(out, JSON.stringify({ w: W, h: H, bg: BG, frames }));
   console.log(`wrote ${frames.length} frames → ${out}`);
@@ -318,10 +455,23 @@ if (process.argv.includes("--export-twinkle")) {
 } else if (process.argv.includes("--export")) {
   // deterministic ~12s timeline for the GIF: gestures + a couple of variant swaps
   const N = 150;
-  const gscript = [[16, "blink"], [40, "lookL"], [64, "double"], [90, "swayL"], [116, "swayR"]];
+  const gscript = [
+    [16, "blink"],
+    [40, "lookL"],
+    [64, "double"],
+    [90, "swayL"],
+    [116, "swayR"],
+  ];
   const overlays = Array.from({ length: N }, () => ({}));
-  for (const [at, type] of gscript) G[type].forEach((f, i) => { if (at + i < N) overlays[at + i] = f; });
-  const vswaps = [[0, 0], [52, 5], [104, 6]]; // tick → variant index (original → two stubs → baby clouds)
+  for (const [at, type] of gscript)
+    G[type].forEach((f, i) => {
+      if (at + i < N) overlays[at + i] = f;
+    });
+  const vswaps = [
+    [0, 0],
+    [52, 5],
+    [104, 6],
+  ]; // tick → variant index (original → two stubs → baby clouds)
   const frames = [];
   let vi = 0;
   for (let t = 0; t < N; t++) {
@@ -334,21 +484,43 @@ if (process.argv.includes("--export-twinkle")) {
 } else {
   // live player: breathing + random gestures + occasional variant swap
   process.stdout.write("\x1b[?25l");
-  let active = null, gi = 0, cooldown = 30, tick = 0, first = true;
-  let variant = 0, lastSwap = Date.now(), twinkle = 0;
-  const cleanup = () => { process.stdout.write("\x1b[?25h\n"); process.exit(0); };
+  let active = null;
+  let gi = 0;
+  let cooldown = 30;
+  let tick = 0;
+  let first = true;
+  let variant = 0;
+  let lastSwap = Date.now();
+  let twinkle = 0;
+  const cleanup = () => {
+    process.stdout.write("\x1b[?25h\n");
+    process.exit(0);
+  };
   process.on("SIGINT", cleanup);
   const timer = setInterval(() => {
-    if (Date.now() - lastSwap >= SWAP_MS && !active && twinkle <= 0) {  // 2:15 roll
+    if (Date.now() - lastSwap >= SWAP_MS && !active && twinkle <= 0) {
+      // 2:15 roll
       lastSwap = Date.now();
-      if (Math.random() < TWINKLE_CHANCE) twinkle = TWINKLE_LEN;        // super-rare sparkle
+      if (Math.random() < TWINKLE_CHANCE)
+        twinkle = TWINKLE_LEN; // super-rare sparkle
       else variant = rollVariant();
     }
-    let ov = {}, wisps;
-    if (twinkle > 0) { wisps = (twinkle-- % 2 === 0) ? TWINK : []; }   // normal wisps gone — only sparkles
+    let ov = {};
+    let wisps;
+    if (twinkle > 0) {
+      wisps = twinkle-- % 2 === 0 ? TWINK : [];
+    } // normal wisps gone — only sparkles
     else {
-      if (active) { ov = active[gi++]; if (gi >= active.length) { active = null; cooldown = 25 + Math.floor(Math.random() * 45); } }
-      else if (--cooldown <= 0) { active = G[GESTURES[Math.floor(Math.random() * GESTURES.length)]]; gi = 0; }
+      if (active) {
+        ov = active[gi++];
+        if (gi >= active.length) {
+          active = null;
+          cooldown = 25 + Math.floor(Math.random() * 45);
+        }
+      } else if (--cooldown <= 0) {
+        active = G[GESTURES[Math.floor(Math.random() * GESTURES.length)]];
+        gi = 0;
+      }
       wisps = ov.noWisps ? [] : VARIANTS[variant].cells;
     }
     const frame = toAnsi(compose(wisps, ov, breatheDy(tick++)));

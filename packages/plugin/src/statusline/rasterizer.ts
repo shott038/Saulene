@@ -15,21 +15,12 @@
  */
 
 import type { SpriteParams } from "@saulene/renderer";
-import {
-  BASE,
-  BODY,
-  BODY_CTXHIGH,
-  BODY_OPEN,
-  BODY_SUCCESS,
-  EYES,
-  H,
-  W,
-} from "./sprite-data.js";
+import { BASE, BODY, BODY_CTXHIGH, BODY_OPEN, BODY_SUCCESS, EYES, H, W } from "./sprite-data.js";
 
 // ── Color types ───────────────────────────────────────────────────────────────
 
 export type RgbColor = readonly [number, number, number]; // [r, g, b] each 0–255
-export type PixelGrid = (RgbColor | null)[][];            // [row][col]
+export type PixelGrid = (RgbColor | null)[][]; // [row][col]
 
 export interface RasterizerColors {
   fill: RgbColor;
@@ -41,16 +32,16 @@ export interface RasterizerColors {
 // ── Animation overlay flags (same semantics as compose() in scripts/ul-idle.mjs) ──
 
 export interface OverlayFlags {
-  dx?: number;     // body + wisp horizontal shift (px)
-  blink?: 1;       // hide eyes
-  eye?: number;    // eye horizontal shift (pixels, relative to dx)
-  eyeDy?: number;  // eye vertical shift (compaction scan drops eyes 1px)
-  open?: 1 | 2;    // context-filling body: 1=frame1 (nubs closer), 2=frame2 (wider)
-  wdy?: number;    // wisp-only vertical offset (prompt hop: wisps go down when body goes up)
-  ctx?: 1;         // context >80% body variant
-  win?: number;    // wisp slide: positive=inward (thinking), negative=outward (response puff)
-  success?: 1;     // success body variant
-  noWisps?: 1;     // suppress all wisps (error shake, retry)
+  dx?: number; // body + wisp horizontal shift (px)
+  blink?: 1; // hide eyes
+  eye?: number; // eye horizontal shift (pixels, relative to dx)
+  eyeDy?: number; // eye vertical shift (compaction scan drops eyes 1px)
+  open?: 1 | 2; // context-filling body: 1=frame1 (nubs closer), 2=frame2 (wider)
+  wdy?: number; // wisp-only vertical offset (prompt hop: wisps go down when body goes up)
+  ctx?: 1; // context >80% body variant
+  win?: number; // wisp slide: positive=inward (thinking), negative=outward (response puff)
+  success?: 1; // success body variant
+  noWisps?: 1; // suppress all wisps (error shake, retry)
 }
 
 // ── HSL → RGB ─────────────────────────────────────────────────────────────────
@@ -213,8 +204,8 @@ export function pixelGridToAnsi(grid: PixelGrid, indent = ""): string {
     for (let c = 0; c < W; c++) {
       const topRow = grid[r];
       const botRow = r + 1 < H ? grid[r + 1] : undefined;
-      const top = topRow ? topRow[c] ?? null : null;
-      const bot = botRow ? botRow[c] ?? null : null;
+      const top = topRow ? (topRow[c] ?? null) : null;
+      const bot = botRow ? (botRow[c] ?? null) : null;
       if (!top && !bot) {
         out += `${RESET} `;
       } else if (top && bot) {

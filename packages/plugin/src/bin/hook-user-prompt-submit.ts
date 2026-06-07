@@ -21,14 +21,14 @@ const injection = userPromptSubmit({
 
 if (injection) {
   process.stdout.write(
-    JSON.stringify({
+    `${JSON.stringify({
       continue: true,
       hookSpecificOutput: {
         hookEventName: "UserPromptSubmit",
         additionalContext: injection.text,
       },
-    }) + "\n",
+    })}\n`,
   );
 } else {
-  process.stdout.write(JSON.stringify({ continue: true }) + "\n");
+  process.stdout.write(`${JSON.stringify({ continue: true })}\n`);
 }

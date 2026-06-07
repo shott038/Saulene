@@ -13,13 +13,13 @@
  * `storageRoot` and `now` are injected so tests use no real IO or clock.
  */
 
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   CallToolRequestSchema,
+  ErrorCode,
   ListToolsRequestSchema,
   McpError,
-  ErrorCode,
 } from "@modelcontextprotocol/sdk/types.js";
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { snapshot } from "./snapshot.js";
 
 export interface McpServerOpts {
@@ -83,9 +83,8 @@ export function createMcpServer(opts: McpServerOpts = {}): Server {
     const args = (request.params.arguments ?? {}) as Record<string, unknown>;
 
     // Build the injected opts, omitting storageRoot if not provided (exactOptionalPropertyTypes).
-    const snapBase = opts.storageRoot !== undefined
-      ? { storageRoot: opts.storageRoot, now }
-      : { now };
+    const snapBase =
+      opts.storageRoot !== undefined ? { storageRoot: opts.storageRoot, now } : { now };
 
     if (tool === "ul_snapshot") {
       const driftRows =
@@ -102,8 +101,7 @@ export function createMcpServer(opts: McpServerOpts = {}): Server {
     }
 
     if (tool === "ul_drift") {
-      const rows =
-        typeof args.rows === "number" ? Math.min(100, Math.max(0, args.rows)) : 20;
+      const rows = typeof args.rows === "number" ? Math.min(100, Math.max(0, args.rows)) : 20;
       const snap = snapshot({ ...snapBase, driftRows: rows });
       if (snap === null) {
         return { content: [{ type: "text", text: "null" }] };

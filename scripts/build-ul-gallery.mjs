@@ -10,10 +10,10 @@
  *
  *   node scripts/build-ul-gallery.mjs   →   docs/ul-gallery.html
  */
-import { writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { WISPS, INK, BODY, EYES, ORIGIN } from "./ul-geometry.mjs";
+import { BODY, EYES, INK, ORIGIN, WISPS } from "./ul-geometry.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -21,7 +21,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const ink = "#161310";
 const light = "#f4f1ea";
 const P = (name, body, opts = {}) => ({
-  name, body,
+  name,
+  body,
   outline: opts.outline ?? ink,
   eye: opts.eye ?? (opts.dark ? light : ink),
   wisp: opts.wisp ?? (opts.dark ? "#6b7488" : ink),
@@ -47,12 +48,12 @@ const PALETTES = [
 // ── animations ────────────────────────────────────────────────────────────────
 // each entry returns the CSS rules for a given uid. all keep the wisps drifting (ambient).
 const ANIMS = {
-  idle:    { label: "Idle", motion: "float", dur: 3.6, blink: true },
+  idle: { label: "Idle", motion: "float", dur: 3.6, blink: true },
   breathe: { label: "Breathe", motion: "breathe", dur: 3.4, blink: false },
-  sway:    { label: "Sway", motion: "sway", dur: 4.0, blink: false },
-  bob:     { label: "Bob", motion: "bob", dur: 2.6, blink: false },
-  bounce:  { label: "Bounce", motion: "bounce", dur: 1.9, blink: false },
-  blink:   { label: "Blink", motion: "none", dur: 0, blink: true },
+  sway: { label: "Sway", motion: "sway", dur: 4.0, blink: false },
+  bob: { label: "Bob", motion: "bob", dur: 2.6, blink: false },
+  bounce: { label: "Bounce", motion: "bounce", dur: 1.9, blink: false },
+  blink: { label: "Blink", motion: "none", dur: 0, blink: true },
 };
 
 function keyframes(uid) {
@@ -70,7 +71,9 @@ function cloudSvg(pal, animKey, uid, size = 170) {
   const a = ANIMS[animKey];
   const inkPuffs = INK.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join("");
   const bodyPuffs = BODY.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join("");
-  const wisps = WISPS.map(([x1, x2, y], i) => `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" style="--i:${i}"/>`).join("");
+  const wisps = WISPS.map(
+    ([x1, x2, y], i) => `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" style="--i:${i}"/>`,
+  ).join("");
   const eyes = EYES.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6"/>`).join("");
 
   const motionCss =
@@ -81,7 +84,7 @@ function cloudSvg(pal, animKey, uid, size = 170) {
     ? `#${uid} .eyes{transform-origin:${ORIGIN};transform-box:fill-box;animation:${uid}-blink 5s ease-in-out infinite}`
     : "";
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" id="${uid}" viewBox="0 0 300 200" width="${size}" height="${Math.round(size * 200 / 300)}" role="img" aria-label="ul — ${pal.name}">
+  return `<svg xmlns="http://www.w3.org/2000/svg" id="${uid}" viewBox="0 0 300 200" width="${size}" height="${Math.round((size * 200) / 300)}" role="img" aria-label="ul — ${pal.name}">
   <style>${keyframes(uid)}
     #${uid} .wisp line{transform-box:fill-box;animation:${uid}-drift 3s ease-in-out infinite;animation-delay:calc(var(--i) * .18s)}
     ${motionCss}
@@ -107,16 +110,24 @@ const palCards = PALETTES.map((p) => {
     <figcaption><strong>${p.name}</strong><span class="sw" style="background:${p.body}"></span></figcaption></figure>`;
 }).join("");
 
-const animCards = Object.entries(ANIMS).map(([k, a]) => {
-  return `<figure class="card"><div class="art">${cloudSvg(PALETTES[0], k, uid(), 180)}</div>
+const animCards = Object.entries(ANIMS)
+  .map(([k, a]) => {
+    return `<figure class="card"><div class="art">${cloudSvg(PALETTES[0], k, uid(), 180)}</div>
     <figcaption><strong>${a.label}</strong></figcaption></figure>`;
-}).join("");
+  })
+  .join("");
 
 // a few palettes shown across the animation set (palette × animation matrix, small)
-const matrixPals = ["Sky", "Ember", "Dusk", "Midnight"].map((n) => PALETTES.find((p) => p.name === n));
-const matrix = matrixPals.map((p) =>
-  Object.keys(ANIMS).map((k) => `<div class="cell">${cloudSvg(p, k, uid(), 120)}</div>`).join(""),
-).join("");
+const matrixPals = ["Sky", "Ember", "Dusk", "Midnight"].map((n) =>
+  PALETTES.find((p) => p.name === n),
+);
+const matrix = matrixPals
+  .map((p) =>
+    Object.keys(ANIMS)
+      .map((k) => `<div class="cell">${cloudSvg(p, k, uid(), 120)}</div>`)
+      .join(""),
+  )
+  .join("");
 
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"/>
@@ -167,4 +178,12 @@ const html = `<!doctype html>
 const out = resolve(root, "docs/ul-gallery.html");
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, html);
-console.log("wrote", out, "(" + html.length + " bytes,", PALETTES.length, "palettes,", Object.keys(ANIMS).length, "animations)");
+console.log(
+  "wrote",
+  out,
+  `(${html.length} bytes,`,
+  PALETTES.length,
+  "palettes,",
+  Object.keys(ANIMS).length,
+  "animations)",
+);

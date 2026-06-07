@@ -9,7 +9,9 @@
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-const W = 19, H = 10, DY = 2; // DY = body offset, leaving rows above the head + below for wisps
+const W = 19;
+const H = 10;
+const DY = 2; // DY = body offset, leaving rows above the head + below for wisps
 // fixed body on a 19-wide canvas (3-col pad each side); walls at 6/13, eyes at 8/11
 const BODY = [
   ".........cc........",
@@ -29,40 +31,167 @@ const COLORS = {
 const mirror = (cells) => cells.map(([r, c]) => [r, W - c]); // body symmetric about col 9.5
 
 // the side-wisp styles Samuel kept
-const ORIGINAL = [[3, 3], [3, 4], [5, 4], [5, 5]];
-const ORIG_SHORT_TOP = [[3, 4], [5, 4], [5, 5]];        // top stub trimmed to 1px (outer removed)
-const ORIG_SHORT_BOTTOM = [[3, 3], [3, 4], [5, 5]];     // bottom stub trimmed to 1px (outer removed)
+const ORIGINAL = [
+  [3, 3],
+  [3, 4],
+  [5, 4],
+  [5, 5],
+];
+const ORIG_SHORT_TOP = [
+  [3, 4],
+  [5, 4],
+  [5, 5],
+]; // top stub trimmed to 1px (outer removed)
+const ORIG_SHORT_BOTTOM = [
+  [3, 3],
+  [3, 4],
+  [5, 5],
+]; // bottom stub trimmed to 1px (outer removed)
 // asymmetric trims — full original on both sides (mirror cols: 3↔16, 4↔15, 5↔14), one pixel removed
-const ORIG_FULL = [[3, 3], [3, 4], [5, 4], [5, 5], [3, 16], [3, 15], [5, 15], [5, 14]];
+const ORIG_FULL = [
+  [3, 3],
+  [3, 4],
+  [5, 4],
+  [5, 5],
+  [3, 16],
+  [3, 15],
+  [5, 15],
+  [5, 14],
+];
 const ORIG_CLIP_TR = ORIG_FULL.filter(([r, c]) => !(r === 3 && c === 16)); // top-right: drop right px
-const ORIG_CLIP_TL = ORIG_FULL.filter(([r, c]) => !(r === 3 && c === 3));  // top-left: drop left px
-const STUBS = [[2, 3], [2, 4], [4, 3], [4, 4]];
-const SPEED = [[1, 3], [1, 4], [2, 2], [2, 3], [2, 4], [3, 3], [3, 4]];
+const ORIG_CLIP_TL = ORIG_FULL.filter(([r, c]) => !(r === 3 && c === 3)); // top-left: drop left px
+const STUBS = [
+  [2, 3],
+  [2, 4],
+  [4, 3],
+  [4, 4],
+];
+const SPEED = [
+  [1, 3],
+  [1, 4],
+  [2, 2],
+  [2, 3],
+  [2, 4],
+  [3, 3],
+  [3, 4],
+];
 const MINIMAL = [[3, 4]];
-const STAGGERED = [[2, 1], [2, 2], [3, 3], [3, 4]];
+const STAGGERED = [
+  [2, 1],
+  [2, 2],
+  [3, 3],
+  [3, 4],
+];
 // asymmetric: three trailing wisps of varied length on the left, a tiny stub right
 const WINDSWEPT = [
-  [1, 2], [1, 3], [1, 4],                  // short (top)
-  [3, 0], [3, 1], [3, 2], [3, 3], [3, 4],  // long (mid)
-  [5, 1], [5, 2], [5, 3], [5, 4],          // medium (bottom)
+  [1, 2],
+  [1, 3],
+  [1, 4], // short (top)
+  [3, 0],
+  [3, 1],
+  [3, 2],
+  [3, 3],
+  [3, 4], // long (mid)
+  [5, 1],
+  [5, 2],
+  [5, 3],
+  [5, 4], // medium (bottom)
   [3, 16],
 ];
-const DRIZZLE = [[6, 7], [6, 10], [6, 13], [7, 8], [7, 11]]; // droplets under the body
+const DRIZZLE = [
+  [6, 7],
+  [6, 10],
+  [6, 13],
+  [7, 8],
+  [7, 11],
+]; // droplets under the body
 
 // All cells are BODY-RELATIVE: row 0 = top of cloud. Negative rows = above the head;
 // rows 6+ = below it. build() shifts everything down by DY into the canvas.
-const ANTENNAE = [[-2, 9], [-1, 9]];                                  // two nubs straight up
-const STEAM = [[-1, 9], [-2, 8]];                                     // staggered puffs rising
-const COMET = [[2, 3], [2, 4], [3, 0], [3, 1], [3, 2], [3, 3], [3, 4], [4, 3], [4, 4]]; // tail one side
-const BABYCLOUD = [[2, 1], [2, 2], [3, 0], [3, 1], [3, 2]];           // tiny detached cloud each side
-const WINGS = [[1, 4], [2, 3], [3, 2], [3, 1]];                       // swept-down wing
-const CURLS = [[3, 4], [3, 3], [3, 2], [2, 2], [1, 2]];               // hook curling up
-const LONGBREEZE = [[3, 0], [3, 1], [3, 2], [3, 3], [3, 4]];          // single long trail both sides
-const TWINKLE = [[-1, 5], [5, 5]];                                    // dots at the four corners
-const LIGHTNING = [[6, 10], [7, 9], [7, 10], [8, 9]];                 // jagged bolt below
-const HEAVYRAIN = [[6, 7], [7, 7], [6, 9], [7, 9], [6, 11], [7, 11], [6, 13], [7, 13]];
-const SNOW = [[6, 7], [7, 8], [6, 9], [7, 10], [6, 11], [7, 12], [6, 13]]; // offset flakes
-const TORNADO = [[6, 8], [6, 9], [6, 10], [6, 11], [7, 9], [7, 10], [8, 10]]; // funnel narrowing
+const ANTENNAE = [
+  [-2, 9],
+  [-1, 9],
+]; // two nubs straight up
+const STEAM = [
+  [-1, 9],
+  [-2, 8],
+]; // staggered puffs rising
+const COMET = [
+  [2, 3],
+  [2, 4],
+  [3, 0],
+  [3, 1],
+  [3, 2],
+  [3, 3],
+  [3, 4],
+  [4, 3],
+  [4, 4],
+]; // tail one side
+const BABYCLOUD = [
+  [2, 1],
+  [2, 2],
+  [3, 0],
+  [3, 1],
+  [3, 2],
+]; // tiny detached cloud each side
+const WINGS = [
+  [1, 4],
+  [2, 3],
+  [3, 2],
+  [3, 1],
+]; // swept-down wing
+const CURLS = [
+  [3, 4],
+  [3, 3],
+  [3, 2],
+  [2, 2],
+  [1, 2],
+]; // hook curling up
+const LONGBREEZE = [
+  [3, 0],
+  [3, 1],
+  [3, 2],
+  [3, 3],
+  [3, 4],
+]; // single long trail both sides
+const TWINKLE = [
+  [-1, 5],
+  [5, 5],
+]; // dots at the four corners
+const LIGHTNING = [
+  [6, 10],
+  [7, 9],
+  [7, 10],
+  [8, 9],
+]; // jagged bolt below
+const HEAVYRAIN = [
+  [6, 7],
+  [7, 7],
+  [6, 9],
+  [7, 9],
+  [6, 11],
+  [7, 11],
+  [6, 13],
+  [7, 13],
+];
+const SNOW = [
+  [6, 7],
+  [7, 8],
+  [6, 9],
+  [7, 10],
+  [6, 11],
+  [7, 12],
+  [6, 13],
+]; // offset flakes
+const TORNADO = [
+  [6, 8],
+  [6, 9],
+  [6, 10],
+  [6, 11],
+  [7, 9],
+  [7, 10],
+  [8, 10],
+]; // funnel narrowing
 
 // Each: left-side wisp cells (auto-mirrored unless sym:false); `extra` = literal cells.
 // group "idle" = the core default look (calm); "state" = reactive/weather moods.
@@ -94,24 +223,39 @@ const VARIATIONS = [
 
 function build(v) {
   const px = Array.from({ length: H }, () => Array(W).fill(null));
-  BODY.forEach((row, r) => { for (let c = 0; c < W; c++) { const col = COLORS[row[c]]; if (col) px[r + DY][c] = col; } });
+  BODY.forEach((row, r) => {
+    for (let c = 0; c < W; c++) {
+      const col = COLORS[row[c]];
+      if (col) px[r + DY][c] = col;
+    }
+  });
   const cells = (v.sym === false ? v.cells : v.cells.concat(mirror(v.cells))).concat(v.extra ?? []);
-  for (const [r, c] of cells) { const rr = r + DY; if (px[rr] && c >= 0 && c < W && !px[rr][c]) px[rr][c] = COLORS.w; }
+  for (const [r, c] of cells) {
+    const rr = r + DY;
+    if (px[rr] && c >= 0 && c < W && !px[rr][c]) px[rr][c] = COLORS.w;
+  }
   return { w: W, h: H, px };
 }
 
 function toHtml({ w, h, px }, cell = 13) {
   let cells = "";
-  for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
-    const p = px[r][c];
-    if (p) cells += `<i style="grid-row:${r + 1};grid-column:${c + 1};background:rgb(${p.r},${p.g},${p.b})"></i>`;
-  }
+  for (let r = 0; r < h; r++)
+    for (let c = 0; c < w; c++) {
+      const p = px[r][c];
+      if (p)
+        cells += `<i style="grid-row:${r + 1};grid-column:${c + 1};background:rgb(${p.r},${p.g},${p.b})"></i>`;
+    }
   return `<div class="px" style="display:grid;grid-template-columns:repeat(${w},${cell}px);grid-template-rows:repeat(${h},${cell}px)">${cells}</div>`;
 }
 
-const tile = (v) => `<div class="tile"><div class="px-wrap">${toHtml(build(v))}</div><div class="name">${v.name}</div></div>`;
+const tile = (v) =>
+  `<div class="tile"><div class="px-wrap">${toHtml(build(v))}</div><div class="name">${v.name}</div></div>`;
 const section = (title, sub, group) =>
-  `<h2>${title}<span>${sub}</span></h2><div class="grid">${VARIATIONS.filter((v) => v.group === group).map(tile).join("")}</div>`;
+  `<h2>${title}<span>${sub}</span></h2><div class="grid">${VARIATIONS.filter(
+    (v) => v.group === group,
+  )
+    .map(tile)
+    .join("")}</div>`;
 const html = `<!doctype html><meta charset="utf-8"><title>ul wisp palette</title>
 <style>
   body{margin:0;background:#1e1e1e;font:12px ui-sans-serif,system-ui;padding:24px}
