@@ -5,8 +5,9 @@
  * registry. Fire-and-forget: never blocks a hook; all network errors are swallowed (optional
  * debug log only). A down or missing registry never degrades the session or drift pipeline.
  *
- * Default OFF: does nothing unless config.reporterEnabled === true AND a registry URL is set
- * (via SAULENE_REGISTRY_URL env var or opts.registryUrl). If unset → complete no-op.
+ * Default OFF: gated on opt-in (config.reporterEnabled === true). Once opted in, it reports to
+ * the production registry (DEFAULT_REGISTRY_URL) automatically; override with SAULENE_REGISTRY_URL,
+ * or set that / opts.registryUrl to "" to disable even when opted in.
  *
  * Public fingerprint ONLY — never private soul content (no diary, voice samples, ledger):
  *   pubkey, mbti, aspects (0-100 display scale), stage, mp, sex, status, born_at.
@@ -92,12 +93,23 @@ function canonicalJson(value: unknown): string {
 }
 
 /**
- * Resolve the effective registry URL: explicit opt > env var > undefined (no-op).
- * Does NOT throw; returns undefined → caller no-ops.
+ * The production Saulene registry (a Supabase Edge Function; auth is the per-ul ed25519
+ * signature, not a Supabase key). Baked in so an opted-in ul reports automatically with no
+ * manual config. Override with `SAULENE_REGISTRY_URL`; set it (or opts.registryUrl) to "" to
+ * disable reporting entirely even when opted in.
+ */
+export const DEFAULT_REGISTRY_URL =
+  "https://slmvnyxtkkomotflalqn.supabase.co/functions/v1/registry";
+
+/**
+ * Resolve the effective registry URL: explicit opt > env var > baked-in default. An explicit
+ * empty string is an escape hatch that disables reporting (returns undefined → caller no-ops).
+ * Never throws.
  */
 function resolveUrl(opts: ReporterOpts): string | undefined {
-  const url = opts.registryUrl ?? process.env.SAULENE_REGISTRY_URL;
-  return url || undefined; // treat empty string as absent
+  const explicit = opts.registryUrl ?? process.env.SAULENE_REGISTRY_URL;
+  if (explicit === "") return undefined; // explicit disable
+  return explicit ?? DEFAULT_REGISTRY_URL;
 }
 
 /**

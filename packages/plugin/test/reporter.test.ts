@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { saveConfig } from "../src/hooks/config.js";
 import { loadOrCreateKeypair, verify } from "../src/identity/index.js";
 import {
+  DEFAULT_REGISTRY_URL,
   type EventPayload,
   type FetchFn,
   type HeartbeatPayload,
@@ -202,26 +203,26 @@ describe("opt-in gating", () => {
   });
 });
 
-// ── No-op when URL unset ──────────────────────────────────────────────────────
+// ── Registry URL resolution (default + explicit disable) ───────────────────────
 
-describe("no-op when registry URL unset", () => {
-  it("does not call fetch when registryUrl is not provided and env var is absent", async () => {
+describe("registry URL resolution", () => {
+  it("falls back to DEFAULT_REGISTRY_URL when none provided and env var is absent", async () => {
     seedState();
-    // Ensure env var is unset for this test
     const saved = process.env.SAULENE_REGISTRY_URL;
     // biome-ignore lint/performance/noDelete: env removal requires delete in Node.js
     delete process.env.SAULENE_REGISTRY_URL;
 
     const { calls, fetch } = makeFetchStub();
     try {
-      await reportHeartbeat({ storageRoot: root, now: NOW, fetch }); // no registryUrl
-      expect(calls).toHaveLength(0);
+      await reportHeartbeat({ storageRoot: root, now: NOW, fetch }); // no registryUrl → default
+      expect(calls).toHaveLength(1);
+      expect(calls[0]?.url).toBe(`${DEFAULT_REGISTRY_URL}/heartbeat`);
     } finally {
       if (saved !== undefined) process.env.SAULENE_REGISTRY_URL = saved;
     }
   });
 
-  it("does not call fetch when registryUrl is an empty string", async () => {
+  it("does not call fetch when registryUrl is an empty string (explicit disable)", async () => {
     seedState();
     const { calls, fetch } = makeFetchStub();
     await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: "", fetch });
