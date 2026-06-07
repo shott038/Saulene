@@ -8,5 +8,6 @@
 
 export * from "./hooks/index.js";
 export * from "./mcp/index.js";
+export * from "./setup/index.js";
 export * from "./skill/index.js";
 export * from "./statusline/index.js";

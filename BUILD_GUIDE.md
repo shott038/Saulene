@@ -214,8 +214,12 @@ Remaining bricks to ship:
    cache cheaply each turn. Gating/neglect-death/drift all intact. **Manifest must wire BOTH hooks**
    (SessionStart for side-effects only — do NOT use its return as additionalContext; UserPromptSubmit
    for the voice). 291/291 green.
-2. **Setup wizard** (reality warning → watch-only birth → pick level) + the 90d neglect-death clock.
-3. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback — wire the two hooks above.
+2. ✅ **Setup wizard (DONE)** — `plugin/src/setup/wizard.ts`: 3 beats (reality-warning + ack gate →
+   watch-only birth [seed soul → persist → birth animation] → pick level + `saveConfig`). 90d clock
+   coherent end to end (birth sets `lastUsedAt`; SessionStart checks/resets). `runWizard` exported
+   for the manifest. Fully dep-injected; 305/305 green.
+3. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback — wire SessionStart
+   (side-effects) + UserPromptSubmit (voice) + Stop (drift) + MCP + `/ul` skill + first-run `runWizard`.
 
 **Still open (lower priority, not blocking ship):** the `[~]` Phase-3 renderer items — text Layers
 3–5 (spine/framing/drift) + fingerprint, and the per-stage magnitude sweep. The harness + real
