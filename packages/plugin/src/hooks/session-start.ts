@@ -1,25 +1,23 @@
 /**
- * @saulene/plugin — SessionStart hook handler
+ * @saulene/plugin — SessionStart hook handler (S1 delivery)
  *
- * Fires at the start of every Claude Code session. The gating logic runs first (so the ul
- * is dormant inside project repos even though it's installed machine-wide). When the session
- * is at the ul's chosen level, we load the soul, render the current voice fresh from the live
- * 10-float state, and return the injection text for the system prompt.
- *
- * SPEC: "SessionStart → hook injects the ul's current personality into the system prompt
- * → guaranteed embodiment, no reliance on the agent choosing to load it."
+ * Fires at the start of every Claude Code session. Handles gating, birth, and neglect-death;
+ * when the session is live it renders the current voice from the soul state, writes it to the
+ * session cache, and bumps `lastUsedAt`. Returns null — the voice is NOT delivered here as
+ * system-prompt additionalContext (that was S0). The per-turn UserPromptSubmit hook reads the
+ * cache and delivers the voice alongside each user prompt (S1 / conversation-channel position).
  *
  * SPEC: "Reminder: personality is not a static system prompt. The SessionStart hook *computes*
  * the injected personality fresh each session from the live soul state (10 values + stage +
  * mood). Soul file = numbers + history; the words are written on the fly each session."
  *
- * Side-effect: bumps `lastUsedAt` and saves on successful inject (resets the 90-day death clock).
+ * Side-effects: writes session-injection.json (the UserPromptSubmit cache) + bumps `lastUsedAt`.
  */
 
 import { render } from "@saulene/renderer";
-import type { RenderedInjection } from "@saulene/renderer";
 import { defaultRoot, loadSoul, readVoiceSamples, saveSoul } from "@saulene/storage";
 import { isGated, loadConfig } from "./config.js";
+import { writeSessionCache } from "./session-cache.js";
 
 export interface SessionStartOpts {
   /** The working directory of the new session — the gating key. */
@@ -37,16 +35,18 @@ export interface SessionStartOpts {
 const NEGLECT_DEATH_MS = 90 * 24 * 60 * 60 * 1000;
 
 /**
- * SessionStart hook handler. Returns the full `RenderedInjection` (text + hash) when the ul
- * should express in this session, or `null` when dormant:
+ * SessionStart hook handler (S1 delivery). Returns `null` always — the voice is cached to disk
+ * for UserPromptSubmit to deliver per-turn, not injected into the system prompt here.
+ *
+ * Returns `null` when dormant:
  *   - gated out (wrong level / config absent)
  *   - not yet born (no soul file)
  *   - neglect-dead (> 90 days since last use at this level)
  *
- * The `text` field of the returned injection is what gets prepended to the system prompt by the
- * plugin manifest's hook wiring. `soulHash` is stamped into the transcript for exact replay.
+ * When live: renders the injection, writes session-injection.json (the UserPromptSubmit cache),
+ * bumps `lastUsedAt`. `soulHash` in the cache is stamped for exact replay.
  */
-export function sessionStart(opts: SessionStartOpts): RenderedInjection | null {
+export function sessionStart(opts: SessionStartOpts): null {
   const root = opts.storageRoot ?? defaultRoot();
   const now = opts.now ?? Date.now();
 
@@ -80,13 +80,18 @@ export function sessionStart(opts: SessionStartOpts): RenderedInjection | null {
   }));
 
   // ── 5. Render ─────────────────────────────────────────────────────────────────
-  // Pure: same (soul, opts) → byte-identical injection. The whole point is this is computed
-  // FRESH each session from the live state, not a static file.
+  // Pure: same (soul, opts) → byte-identical injection. Computed FRESH each session from the
+  // live state — soul doesn't change mid-session, so this cache is valid for the whole session.
   const injection = render(soul, { voiceSamples, corpusSize });
 
-  // ── 6. Bump lastUsedAt + save ─────────────────────────────────────────────────
+  // ── 6. Write session cache ────────────────────────────────────────────────────
+  // UserPromptSubmit reads this file each turn and delivers the voice as additionalContext
+  // alongside the user prompt (S1 / conversation-channel position). No re-rendering per turn.
+  writeSessionCache(root, injection);
+
+  // ── 7. Bump lastUsedAt + save ─────────────────────────────────────────────────
   // Reset the 90-day death clock. Atomic save (rename over old file on POSIX).
   saveSoul(root, { ...soul, lastUsedAt: now });
 
-  return injection;
+  return null;
 }

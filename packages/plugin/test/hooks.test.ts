@@ -17,8 +17,10 @@ import type { SessionJudgment } from "@saulene/perception";
 import { loadSoul, readDiary, readLedger, saveSoul } from "@saulene/storage";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { hasGitAncestor, isGated, loadConfig, sauleneRoot } from "../src/hooks/config.js";
+import { readSessionCache } from "../src/hooks/session-cache.js";
 import { sessionStart } from "../src/hooks/session-start.js";
 import { stop } from "../src/hooks/stop.js";
+import { userPromptSubmit } from "../src/hooks/user-prompt-submit.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Fixtures
@@ -225,32 +227,133 @@ describe("sessionStart", () => {
     expect(sessionStart({ cwd: plainCwd, storageRoot: root, now: NOW })).toBeNull();
   });
 
-  it("returns injection text when all conditions met (global, non-git cwd)", () => {
+  it("returns null and writes session cache when conditions met (global, non-git cwd)", () => {
     writeConfig(root, "global");
     saveSoul(root, mintSoul());
     const result = sessionStart({ cwd: plainCwd, storageRoot: root, now: NOW + 1000 });
-    expect(result).not.toBeNull();
-    expect(typeof result?.text).toBe("string");
-    expect(result?.text.length).toBeGreaterThan(0);
-    expect(typeof result?.soulHash).toBe("string");
+    // S1 delivery: sessionStart always returns null; voice goes through UserPromptSubmit.
+    expect(result).toBeNull();
+    const cache = readSessionCache(root);
+    expect(cache).not.toBeNull();
+    expect(typeof cache?.text).toBe("string");
+    expect(cache?.text.length).toBeGreaterThan(0);
+    expect(typeof cache?.soulHash).toBe("string");
   });
 
-  it("returns injection text when all conditions met (named-dir match)", () => {
+  it("returns null and writes session cache when conditions met (named-dir match)", () => {
     writeConfig(root, "named-dir", plainCwd);
     saveSoul(root, mintSoul());
     const result = sessionStart({ cwd: plainCwd, storageRoot: root, now: NOW + 1000 });
-    expect(result).not.toBeNull();
+    expect(result).toBeNull();
+    const cache = readSessionCache(root);
+    expect(cache).not.toBeNull();
     // The injection text contains the Layer-1 intro line.
-    expect(result?.text).toContain("working defaults");
+    expect(cache?.text).toContain("working defaults");
   });
 
-  it("bumps lastUsedAt on successful inject", () => {
+  it("does NOT write session cache when dormant (gated out)", () => {
+    writeConfig(root, "named-dir", "/some/other/dir");
+    saveSoul(root, mintSoul());
+    sessionStart({ cwd: plainCwd, storageRoot: root, now: NOW });
+    expect(readSessionCache(root)).toBeNull();
+  });
+
+  it("does NOT write session cache when neglect-dead", () => {
+    writeConfig(root, "global");
+    const ninety = 90 * 24 * 60 * 60 * 1000;
+    saveSoul(root, { ...mintSoul(), lastUsedAt: NOW - ninety - 1 });
+    sessionStart({ cwd: plainCwd, storageRoot: root, now: NOW });
+    expect(readSessionCache(root)).toBeNull();
+  });
+
+  it("bumps lastUsedAt on active session", () => {
     writeConfig(root, "global");
     saveSoul(root, mintSoul());
     const newNow = NOW + 5000;
     sessionStart({ cwd: plainCwd, storageRoot: root, now: newNow });
     const updated = loadSoul(root);
     expect(updated?.lastUsedAt).toBe(newNow);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// userPromptSubmit
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("userPromptSubmit", () => {
+  let plainCwd: string;
+  beforeEach(() => {
+    plainCwd = mkdtempSync(join(tmpdir(), "no-git-cwd-"));
+  });
+  afterEach(() => {
+    rmSync(plainCwd, { recursive: true, force: true });
+  });
+
+  /** Run SessionStart to populate the session cache (live session). */
+  function activateSession(cwd: string, now = NOW + 1000): void {
+    sessionStart({ cwd, storageRoot: root, now });
+  }
+
+  it("returns null when no config exists", () => {
+    expect(userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW })).toBeNull();
+  });
+
+  it("returns null when config exists but no soul", () => {
+    writeConfig(root, "global");
+    expect(userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW })).toBeNull();
+  });
+
+  it("returns null when gated out (named-dir, wrong cwd)", () => {
+    writeConfig(root, "named-dir", "/some/other/dir");
+    saveSoul(root, mintSoul());
+    expect(userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW })).toBeNull();
+  });
+
+  it("returns null when neglect-dead", () => {
+    writeConfig(root, "global");
+    const ninety = 90 * 24 * 60 * 60 * 1000;
+    saveSoul(root, { ...mintSoul(), lastUsedAt: NOW - ninety - 1 });
+    expect(userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW })).toBeNull();
+  });
+
+  it("returns null when session cache is absent (SessionStart never ran)", () => {
+    writeConfig(root, "global");
+    saveSoul(root, mintSoul());
+    // No activateSession — cache doesn't exist.
+    expect(userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW })).toBeNull();
+  });
+
+  it("returns the cached injection when all conditions met (global)", () => {
+    writeConfig(root, "global");
+    saveSoul(root, mintSoul());
+    activateSession(plainCwd);
+
+    const result = userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW + 2000 });
+    expect(result).not.toBeNull();
+    expect(typeof result?.text).toBe("string");
+    expect(result?.text.length).toBeGreaterThan(0);
+    expect(typeof result?.soulHash).toBe("string");
+  });
+
+  it("returns the cached injection when all conditions met (named-dir match)", () => {
+    writeConfig(root, "named-dir", plainCwd);
+    saveSoul(root, mintSoul());
+    activateSession(plainCwd);
+
+    const result = userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW + 2000 });
+    expect(result).not.toBeNull();
+    expect(result?.text).toContain("working defaults");
+  });
+
+  it("returns the same text that SessionStart cached (cache is stable)", () => {
+    writeConfig(root, "global");
+    saveSoul(root, mintSoul());
+    activateSession(plainCwd);
+
+    const fromCache1 = userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW + 100 });
+    const fromCache2 = userPromptSubmit({ cwd: plainCwd, storageRoot: root, now: NOW + 200 });
+    expect(fromCache1?.text).toBe(fromCache2?.text);
+    expect(fromCache1?.soulHash).toBe(fromCache2?.soulHash);
   });
 });
 
