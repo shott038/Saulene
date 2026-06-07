@@ -7,6 +7,7 @@
  */
 
 export * from "./hooks/index.js";
+export * from "./identity/index.js";
 export * from "./mcp/index.js";
 export * from "./setup/index.js";
 export * from "./skill/index.js";

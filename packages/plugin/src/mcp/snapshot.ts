@@ -13,6 +13,7 @@
 import { ASPECTS, type Aspect, type Soul, type Stage, stageFromMp } from "@saulene/core";
 import { type MbtiLabel, projectMbti } from "@saulene/core";
 import { type LedgerRow, defaultRoot, loadSoul, readLedger } from "@saulene/storage";
+import { loadKeypair } from "../identity/keypair.js";
 
 /** 90-day neglect-death clock in milliseconds (SPEC: flat, wall-clock only). */
 const NEGLECT_DEATH_MS = 90 * 24 * 60 * 60 * 1000;
@@ -58,6 +59,11 @@ export interface UlSnapshot {
   isDead: boolean;
   /** Recent ledger rows, newest-first. */
   recentDrift: LedgerRow[];
+  /**
+   * The ul's permanent public ID (base58 ed25519 pubkey). Present after first birth;
+   * absent for uls born before this feature was added.
+   */
+  publicId: string | null;
 }
 
 /**
@@ -93,6 +99,8 @@ export function snapshot(opts: SnapshotOpts = {}): UlSnapshot | null {
   const allLedger = readLedger(root);
   const recentDrift = allLedger.slice(-driftRows).reverse();
 
+  const keypair = loadKeypair(root);
+
   return {
     aspects: toDisplay(soul.v),
     setPoints: toDisplay(soul.s),
@@ -106,5 +114,6 @@ export function snapshot(opts: SnapshotOpts = {}): UlSnapshot | null {
     daysUntilDeath,
     isDead,
     recentDrift,
+    publicId: keypair?.publicId ?? null,
   };
 }
