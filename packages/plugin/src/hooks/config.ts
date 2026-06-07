@@ -9,10 +9,9 @@
  * If absent the plugin is dormant on every session (not yet set up).
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { sep } from "node:path";
-import { join } from "node:path";
+import { dirname, join, sep } from "node:path";
 
 /** The two levels a user can choose in the setup wizard. */
 export type LevelKind = "global" | "named-dir";
@@ -59,6 +58,16 @@ export function loadConfig(storageRoot: string = sauleneRoot()): LevelConfig | n
     config.dir = obj.dir;
   }
   return config;
+}
+
+/**
+ * Persist the level config to `<storageRoot>/config.json`.
+ * Creates the directory if needed. Called once by the setup wizard after the user picks a level.
+ */
+export function saveConfig(storageRoot: string, config: LevelConfig): void {
+  const file = join(storageRoot, CONFIG_FILENAME);
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, `${JSON.stringify(config, null, 2)}\n`, "utf8");
 }
 
 /**

@@ -17,7 +17,7 @@
  */
 
 export type { LevelKind, LevelConfig } from "./config.js";
-export { sauleneRoot, loadConfig, hasGitAncestor, isGated } from "./config.js";
+export { sauleneRoot, loadConfig, saveConfig, hasGitAncestor, isGated } from "./config.js";
 
 export { AnthropicLlmClient, DEFAULT_PERCEPTION_MODEL } from "./llm.js";
 
