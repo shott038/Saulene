@@ -216,7 +216,7 @@ describe("soulHash", () => {
     expect(before).not.toEqual(after);
   });
 
-  it("ignores non-rendered state (age does not move the floor)", () => {
+  it("soulHash covers the 10 aspect values only (mp and other state don't move it)", () => {
     const a = soulOf(0.5, { openness: 0.6 });
     const b: Soul = { ...a, mp: 999, lastUsedAt: 123456, tension: vec(0.5) };
     expect(soulHash(b)).toEqual(soulHash(a));

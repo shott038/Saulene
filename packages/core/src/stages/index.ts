@@ -154,6 +154,40 @@ export function stageFromMp(mp: number, soul?: Soul): Stage {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Presented age — smooth, monotonic MP→age in [13,65].
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Maps a soul's maturity points to a human-readable presented age in [13, 65].
+ * Continuous and monotonic — a 30 vs 35 differ slightly (no banding).
+ *
+ * Stage sub-ranges:
+ *   childhood [0, b0)          →  13–17  (sharp teen, not a toddler)
+ *   adolescence [b0, b1)       →  17–24  (real teen→young-adult)
+ *   early_adulthood [b1, b2)   →  25–40  (settling, driven, crystallizing)
+ *   old_adulthood [b2, ∞)      →  42–65  (seasoned; asymptotic, capped at 65)
+ *
+ * Pure: no IO, no clock, no entropy. Same soul → same age.
+ */
+export function presentedAge(soul: Soul): number {
+  const mp = soul.mp;
+  const [b0, b1, b2] = STAGE_BANDS;
+  if (mp < b0) {
+    return 13 + (mp / b0) * 4; // 13 → 17
+  }
+  if (mp < b1) {
+    return 17 + ((mp - b0) / (b1 - b0)) * 7; // 17 → 24
+  }
+  if (mp < b2) {
+    return 25 + ((mp - b1) / (b2 - b1)) * 15; // 25 → 40
+  }
+  // old_adulthood: asymptotic approach to 65, saturates by ~1500 MP total
+  const extra = mp - b2;
+  const sat = extra / 500; // half-saturation at 500 extra MP
+  return 42 + (sat / (1 + sat)) * 23; // 42 → 65 (Michaelis-Menten curve)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Aging — rate-capped MP accrual.
 // ─────────────────────────────────────────────────────────────────────────────
 

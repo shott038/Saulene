@@ -1,21 +1,23 @@
 /**
- * @saulene/renderer — Layer 1 render (the testable floor)
+ * @saulene/renderer — Layer 1 + Layer 3 render
  *
- * A pure, versioned `render(soul) → RenderedInjection`. Scope is Layer 1 only — the
- * behavioral-directive rulebook that works day-1 from the 10 numbers — plus the three
- * properties the verification harness requires: per-aspect fragments, no literal trait names,
- * a deterministic soul-hash. Layers 2–5 (few-shot retrieval, spine, anti-decay re-injection,
- * drift) need the memory store + LLM and are LATER — not built here.
+ * A pure, versioned `render(soul) → RenderedInjection`. Layer 1 is the behavioral-directive
+ * rulebook that works day-1 from the 10 numbers. Layer 3 (age voice) is ADDITIVE: when
+ * soul.mp > 0 it appends manner directives (cadence, decisiveness, reference-frame) that make
+ * an older ul sound more seasoned without touching competence. With mp=0 the output is
+ * byte-identical to the pre-age renderer — all existing Layer-1 golden tests continue to pass.
  *
  * PURE: imports only @saulene/core. No IO, no LLM, no clock/entropy. Same soul → byte-identical
  * injection (golden-file testable).
  */
 
 import { ASPECTS, type Aspect, type Soul } from "@saulene/core";
+import { AGE_LAYER_VERSION, buildAgeBlock } from "./age.js";
 import { INTENSITY_LADDER, INTERACTIONS, RENDERER_VERSION, RULEBOOK } from "./rulebook.js";
 import { type VoiceOpts, buildVoiceBlock } from "./voice.js";
 
 export { RENDERER_VERSION } from "./rulebook.js";
+export { AGE_LAYER_VERSION } from "./age.js";
 
 /** The SessionStart injection, decomposed for testability. */
 export interface RenderedInjection {
@@ -30,6 +32,12 @@ export interface RenderedInjection {
    * a separate field for testability; NOT a per-aspect fragment, so ablation locality is exact.
    */
   voiceBlock: string;
+  /**
+   * The Layer-3 age voice block folded into `text` (empty when soul.mp === 0). Three manner
+   * directives — cadence, decisiveness, reference-frame — in Layer-1 style. Kept as a separate
+   * field so age ablation is independently testable without affecting fragment-level ablation.
+   */
+  ageBlock: string;
 }
 
 /**
@@ -107,23 +115,26 @@ function assemble(fragments: Record<Aspect, string>, v: Record<Aspect, number>):
 /**
  * Concrete `RenderFn`. Pure + versioned: same (soul, opts) → byte-identical injection.
  *
- * Layer 2 is ADDITIVE. With no `voiceSamples`, `text` is exactly the Layer-1 floor and
- * `voiceBlock` is `""` — byte-identical to the pre-Layer-2 renderer. With samples, the
- * assembled few-shot voice block is appended to `text` only; `fragments` stay the pure
- * per-aspect Layer-1 fragments (ablation locality intact) and `soulHash` covers soul state
- * alone (samples/corpus are inputs, not state, so they don't move the replay hash).
+ * Layer 2 (voice) and Layer 3 (age) are both ADDITIVE.
+ * - Layer 2: with no `voiceSamples`, `voiceBlock` is `""` and `text` is the pure Layer-1 floor.
+ * - Layer 3: with `soul.mp === 0`, `ageBlock` is `""` and `text` is unchanged — existing
+ *   golden tests (all use mp=0) continue to pass byte-for-byte.
+ * Fragments stay the pure per-aspect Layer-1 fragments (ablation locality intact).
  */
 export function render(soul: Soul, opts: RenderOpts = {}): RenderedInjection {
   const fragments = Object.fromEntries(
     ASPECTS.map((a) => [a, renderFragment(a, soul.v[a])]),
   ) as Record<Aspect, string>;
   const layer1 = assemble(fragments, soul.v);
+  const ageBlock = buildAgeBlock(soul);
   const voiceBlock = buildVoiceBlock(soul, opts);
+  const blocks = [layer1, ageBlock, voiceBlock].filter(Boolean);
   return {
-    text: voiceBlock ? `${layer1}\n\n${voiceBlock}` : layer1,
+    text: blocks.join("\n\n"),
     fragments,
     soulHash: soulHash(soul),
     voiceBlock,
+    ageBlock,
   };
 }
 
@@ -141,3 +152,11 @@ export {
   CROSSFADE_HALF_SAT,
   OLD_MODEL_PENALTY,
 } from "./voice.js";
+export {
+  buildAgeBlock,
+  ageRung,
+  AGE_FRAMING,
+  CADENCE_LADDER,
+  DECISIVENESS_LADDER,
+  FRAME_LADDER,
+} from "./age.js";
