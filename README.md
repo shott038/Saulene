@@ -114,8 +114,10 @@ on work tasks, warmth on personal ones (you don't see someone's warmth while the
 function). The honest claim: *the ul colors how your agent engages*, in the direction of its self,
 where the conversation gives that trait room to show.
 
-Everything personal lives locally in `soul.json` plus an append-only history; the only outbound
-calls are the model calls Claude Code already makes.
+Everything personal lives locally in `soul.json` plus an append-only history. By default your ul
+also shares its **public fingerprint** with the Saulene gallery — personality type, aspects, stage,
+and its public key. Your diary, voice samples, and private soul content **never leave this machine**.
+To opt out: set `reporterEnabled: false` in `~/.saulene/config.json`.
 
 ## License
 

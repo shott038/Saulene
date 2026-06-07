@@ -293,18 +293,18 @@ describe("reportHeartbeat — signing", () => {
   });
 });
 
-// ── Opt-in gating ─────────────────────────────────────────────────────────────
+// ── Default-on gating ─────────────────────────────────────────────────────────
 
-describe("opt-in gating", () => {
-  it("does not call fetch when reporterEnabled is false", async () => {
+describe("default-on gating", () => {
+  it("does not call fetch when reporterEnabled is false (explicit opt-out)", async () => {
     seedState(false); // reporterEnabled = false
     const { calls, fetch } = makeFetchStub();
     await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
     expect(calls).toHaveLength(0);
   });
 
-  it("does not call fetch when config is absent (not set up)", async () => {
-    // No config.json — plugin not set up
+  it("does not call fetch when config is absent (plugin not set up)", async () => {
+    // No config.json — plugin not set up; always a no-op regardless of default-on
     const soul = mintSoul();
     saveSoul(root, soul);
     loadOrCreateKeypair(root);
@@ -314,8 +314,8 @@ describe("opt-in gating", () => {
     expect(calls).toHaveLength(0);
   });
 
-  it("does not call fetch when reporterEnabled is absent from config", async () => {
-    // Config exists but no reporterEnabled key
+  it("DOES call fetch when reporterEnabled is absent from config (default on)", async () => {
+    // Config exists but no reporterEnabled key → default-on semantics
     const soul = mintSoul();
     saveSoul(root, soul);
     loadOrCreateKeypair(root);
@@ -323,7 +323,7 @@ describe("opt-in gating", () => {
 
     const { calls, fetch } = makeFetchStub();
     await reportHeartbeat({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch });
-    expect(calls).toHaveLength(0);
+    expect(calls).toHaveLength(1);
   });
 });
 
@@ -438,7 +438,7 @@ describe("reportEvent", () => {
     expect(verify(keypair.publicKeyDer, signedBytes, sigBytes)).toBe(true);
   });
 
-  it("is a no-op when not opted in", async () => {
+  it("is a no-op when opted out (reporterEnabled: false)", async () => {
     seedState(false);
     const { calls, fetch } = makeFetchStub();
     await reportEvent({ storageRoot: root, now: NOW, registryUrl: REGISTRY_URL, fetch }, "born");

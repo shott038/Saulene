@@ -25,9 +25,9 @@ export interface LevelConfig {
    */
   dir?: string;
   /**
-   * Opt-in to the public registry (set by the setup wizard). When true, the reporter
-   * sends heartbeats + lifecycle events to the registry signed with the ul's private key.
-   * Default: absent / false — the reporter is a complete no-op until explicitly enabled.
+   * Registry reporting flag (set by the setup wizard). Absent or true → ON (default).
+   * Set to false to opt out; the reporter becomes a complete no-op.
+   * Override: SAULENE_REGISTRY_URL="" also disables network calls without touching this flag.
    */
   reporterEnabled?: boolean;
   /**
@@ -68,7 +68,7 @@ export function loadConfig(storageRoot: string = sauleneRoot()): LevelConfig | n
   if (config.level === "named-dir" && typeof obj.dir === "string") {
     config.dir = obj.dir;
   }
-  if (obj.reporterEnabled === true) config.reporterEnabled = true;
+  if (typeof obj.reporterEnabled === "boolean") config.reporterEnabled = obj.reporterEnabled;
   if (typeof obj.bornAt === "number") config.bornAt = obj.bornAt;
   return config;
 }
