@@ -56,4 +56,4 @@ GUARD IT:
   All subprocess IO is plugin-edge. `pnpm check:boundaries` green.
 
 ## Status
-Status: in-progress
+Status: ready-to-merge
