@@ -53,5 +53,18 @@ real LLM/perception calls, NO API key, free + instant).
 - One documented command runs the full narrated lifecycle with visible sprite + voice at each stage,
   deterministically, offline. `pnpm check` stays green (boundaries + lint + typecheck + tests).
 
+## Key files
+- `tools/demo/src/index.ts` — the full demo (694 lines: rasterizer, scripts, runner)
+- `tools/demo/package.json` — `@saulene/demo` package
+- `tools/demo/tsconfig.json` — references core, renderer, simulator
+- `package.json` — `pnpm demo` root script
+- `README.md` — documented in Develop section
+
+## Verification
+- Build: pass (`pnpm --filter @saulene/demo build`, typecheck clean)
+- Tests: pass (305 passed, no regressions)
+- Scope kept: yes — dev-only tool, boundaries clean, core/renderer untouched
+- Summary: `pnpm demo [--seed N] [--mode aligned|mismatched|both] [--fast]` — runs the full narrated lifecycle with truecolor sprite + voice at each stage, shows neglect-death and divergence summary
+
 ## Status
-Status: in-progress
+Status: ready-to-merge
