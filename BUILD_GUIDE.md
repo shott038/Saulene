@@ -190,12 +190,17 @@ Claim mechanism LOCKED: ed25519 keypair (Solana-compatible → token wallet late
 Opt-in; public fingerprint only (private soul never leaves the machine).
 - [x] **Plugin side (this repo) — DONE:** ed25519 keypair at setup (`~/.saulene/key.json`, base58
       public ID, `sign`/`verify`) + the opt-in signed reporter (`src/reporter/`) — heartbeat on
-      SessionStart, `stage_change`/`rupture` events on Stop, `born` at setup; public-fingerprint-only,
-      fire-and-forget, inert until `SAULENE_REGISTRY_URL` is set. (`/ul claim` web handshake still TODO
-      with the registry.) 338 tests green.
-- [~] **Registry (new repo):** Next.js + Supabase. **DB schema DONE** — Supabase project
-      `slmvnyxtkkomotflalqn`, tables `uls` + `events` with RLS (public read, service-role writes).
-      Still TODO: the signature-verifying ingest API + daily death-sweep cron.
+      SessionStart, `stage_change`/`rupture` events on Stop, `born` at setup. Sends the FULL public
+      fingerprint (aspects, set_points, stubbornness, tension, beta_gain, migration_budget,
+      disuse_anchor, soul_hash, mbti/stage/mp/sex, plugin/schema version); public-only,
+      fire-and-forget; defaults to the live registry (override `SAULENE_REGISTRY_URL`, `""` disables).
+      347 tests green. (Deferred, nullable cols: `seed`, `host_model`, `display_name`; `/ul claim` flow.)
+- [x] **Registry backend — DONE + verified live:** Supabase project `slmvnyxtkkomotflalqn`. Rich v2
+      schema (`uls` + `snapshots` time-series + `events` 13-kind vocab, all RLS public-read /
+      service-role-write). Ingest **Edge Function `registry`** (verify_jwt off; ed25519 auth;
+      recomputes the canonical message; upserts `uls` + appends `snapshots` + stamps `first_seen` +
+      logs events). Daily **death-sweep** (`pg_cron` 04:00 UTC → `sweep_neglect_deaths()`). End-to-end
+      proven: valid signed heartbeat → 200 + rows; tampered → 401.
 - [ ] **Gallery website:** the wall of real sprites (renderer is pure JS → reuse on web), alive/dead
       counts, nursery/graveyard/dormant, MBTI spread, claim flow.
 - [ ] **Solana birth-certificate (opt-in) + Saulene token** (paid restore for neglect-death) — off
