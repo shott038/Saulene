@@ -3,10 +3,10 @@
  *
  * Factory for the Saulene MCP server. Exposes three read-only identity tools:
  *
- *   ul_snapshot   — full soul state: aspects (0-100), set points, tension, stage, age,
- *                   MBTI, sex, stubbornness, neglect-death countdown, recent drift rows.
- *   ul_drift      — recent ledger history (aspect observations from past sessions),
- *                   N rows configurable per-call.
+ *   ul_snapshot   — SAFE soul state: MBTI, stage, age, sex, public ID, neglect-death
+ *                   countdown, and qualitative drift summary. Raw aspects, set-points,
+ *                   tension, and stubbornness are intentionally excluded (gallery only).
+ *   ul_drift      — qualitative summary of recent personality drift — no numeric values.
  *   ul_countdown  — focused neglect-death countdown (days remaining, isDead flag).
  *
  * All tools are READ-ONLY — no soul mutation here. Drift happens exclusively in the Stop hook.
@@ -40,13 +40,14 @@ export function createMcpServer(opts: McpServerOpts = {}): Server {
       {
         name: "ul_snapshot",
         description:
-          "Full identity snapshot of the ul: current 10 Big Five aspects (0–100 scale), innate set points (nature), tension per aspect, life stage, maturity age, MBTI readout, sex, stubbornness, neglect-death countdown, and recent ledger drift rows. Returns null when no ul exists yet (not born).",
+          "SAFE identity snapshot of the ul: MBTI, life stage, maturity age (mp), sex, public ID, neglect-death countdown, alive/dormant/dead status, and a qualitative drift summary. Raw aspect numbers, set-points, tension, and stubbornness are intentionally excluded — see the gallery for the full breakdown. Returns null when no ul exists yet (not born).",
         inputSchema: {
           type: "object",
           properties: {
             driftRows: {
               type: "number",
-              description: "How many recent ledger rows to include (default: 20).",
+              description:
+                "How many recent ledger rows to analyze for qualitative drift (default: 20).",
             },
           },
         },
@@ -54,13 +55,13 @@ export function createMcpServer(opts: McpServerOpts = {}): Server {
       {
         name: "ul_drift",
         description:
-          "Recent session ledger history — per-aspect observations (practice, fit, confidence, evidence) from the ul's past sessions. Newest rows first.",
+          "Qualitative summary of the ul's recent personality drift — plain language, no numbers. E.g. 'leaning more assertive lately'. For the full numeric breakdown, see the gallery.",
         inputSchema: {
           type: "object",
           properties: {
             rows: {
               type: "number",
-              description: "How many rows to return (default: 20, max: 100).",
+              description: "How many recent ledger rows to analyze (default: 20, max: 100).",
             },
           },
         },
@@ -106,13 +107,12 @@ export function createMcpServer(opts: McpServerOpts = {}): Server {
       if (snap === null) {
         return { content: [{ type: "text", text: "null" }] };
       }
+      const result =
+        snap.qualitativeDrift.length > 0
+          ? snap.qualitativeDrift.join("\n")
+          : "No notable drift in recent sessions.";
       return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(snap.recentDrift, null, 2),
-          },
-        ],
+        content: [{ type: "text", text: result }],
       };
     }
 

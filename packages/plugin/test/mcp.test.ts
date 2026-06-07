@@ -3,6 +3,9 @@
  *
  * Tests for the snapshot reader, MCP server tool handlers, and /ul skill formatter.
  * All IO uses temp dirs (never touches ~/.saulene). Timestamps are injected.
+ *
+ * Key invariant asserted here: no VALUABLE fields (aspects, setPoints, tension,
+ * stubbornness, raw drift numbers) leak through any plugin surface.
  */
 
 import { mkdtempSync, rmSync } from "node:fs";
@@ -38,23 +41,24 @@ describe("snapshot", () => {
     expect(snapshot({ storageRoot: root, now: NOW })).toBeNull();
   });
 
-  it("returns a full snapshot when a soul exists", () => {
+  it("returns a SAFE snapshot when a soul exists", () => {
     saveSoul(root, mintSoul());
     const snap = snapshot({ storageRoot: root, now: NOW });
     expect(snap).not.toBeNull();
     expect(snap?.mbti).toMatch(/^[EI][NS][FT][JP]$/);
     expect(snap?.stage).toMatch(/childhood|adolescence|early_adulthood|old_adulthood/);
     expect(snap?.mp).toBeGreaterThanOrEqual(0);
+    expect(snap?.qualitativeDrift).toBeInstanceOf(Array);
   });
 
-  it("scales aspects to 0-100 display range", () => {
+  it("exposes no VALUABLE numeric fields", () => {
     saveSoul(root, mintSoul());
-    const snap = snapshot({ storageRoot: root, now: NOW });
-    expect(snap).not.toBeNull();
-    for (const val of Object.values(snap?.aspects)) {
-      expect(val).toBeGreaterThanOrEqual(0);
-      expect(val).toBeLessThanOrEqual(100);
-    }
+    const snap = snapshot({ storageRoot: root, now: NOW }) as Record<string, unknown>;
+    expect(snap).not.toHaveProperty("aspects");
+    expect(snap).not.toHaveProperty("setPoints");
+    expect(snap).not.toHaveProperty("tension");
+    expect(snap).not.toHaveProperty("stubbornness");
+    expect(snap).not.toHaveProperty("recentDrift");
   });
 
   it("computes daysUntilDeath correctly", () => {
@@ -73,7 +77,7 @@ describe("snapshot", () => {
     expect(snap?.daysUntilDeath).toBeLessThan(0);
   });
 
-  it("returns recentDrift rows from ledger in newest-first order", () => {
+  it("returns qualitative drift from ledger rows", () => {
     const soul = mintSoul();
     saveSoul(root, soul);
     appendLedger(root, {
@@ -101,13 +105,38 @@ describe("snapshot", () => {
       salience: 2,
     });
     const snap = snapshot({ storageRoot: root, now: NOW, driftRows: 5 });
-    expect(snap?.recentDrift).toHaveLength(2);
-    // newest-first: intellect row (s2) should be first
-    expect(snap?.recentDrift[0]?.aspect).toBe("intellect");
-    expect(snap?.recentDrift[1]?.aspect).toBe("openness");
+    expect(snap?.qualitativeDrift).toBeInstanceOf(Array);
+    expect(snap?.qualitativeDrift.length).toBeGreaterThan(0);
+    // All entries are plain strings with no numeric aspect values.
+    for (const phrase of snap?.qualitativeDrift ?? []) {
+      expect(typeof phrase).toBe("string");
+      expect(phrase).not.toMatch(/\d+\/100/);
+      expect(phrase).not.toMatch(/practice\s+\d/);
+    }
   });
 
-  it("respects driftRows limit", () => {
+  it("qualitative drift contains no raw numeric aspect data", () => {
+    const soul = mintSoul();
+    saveSoul(root, soul);
+    for (let i = 0; i < 5; i++) {
+      appendLedger(root, {
+        sessionId: `s${i}`,
+        timestamp: NOW + i,
+        aspect: "assertiveness",
+        mode: "interaction",
+        practice: 3,
+        fit: -2,
+        confidence: "high",
+        evidenceQuote: "pushed back",
+        firstPersonNote: "stood ground",
+        salience: 2,
+      });
+    }
+    const snap = snapshot({ storageRoot: root, now: NOW });
+    expect(snap?.qualitativeDrift).toContain("leaning more collaborative in approach lately");
+  });
+
+  it("respects driftRows limit for qualitative analysis", () => {
     const soul = mintSoul();
     saveSoul(root, soul);
     for (let i = 0; i < 10; i++) {
@@ -125,7 +154,7 @@ describe("snapshot", () => {
       });
     }
     const snap = snapshot({ storageRoot: root, now: NOW, driftRows: 3 });
-    expect(snap?.recentDrift).toHaveLength(3);
+    expect(snap?.qualitativeDrift).toBeInstanceOf(Array);
   });
 });
 
@@ -155,14 +184,32 @@ describe("ulText", () => {
     expect(text?.length).toBeGreaterThan(0);
   });
 
-  it("includes MBTI, stage, and aspects section", () => {
+  it("includes MBTI, stage, and countdown", () => {
     saveSoul(root, mintSoul());
     const text = ulText({ storageRoot: root, now: NOW });
-    expect(text).toContain("##");
+    expect(text).toContain("ul —");
     expect(text).toContain("mp");
-    expect(text).toContain("Aspects");
-    expect(text).toContain("Openness");
-    expect(text).toContain("Industriousness");
+    expect(text).toContain("neglect-death");
+  });
+
+  it("includes gallery upsell", () => {
+    saveSoul(root, mintSoul());
+    const text = ulText({ storageRoot: root, now: NOW });
+    expect(text).toContain("saulene.app");
+    expect(text).toContain("full breakdown");
+  });
+
+  it("exposes no raw aspect numbers", () => {
+    saveSoul(root, mintSoul());
+    const text = ulText({ storageRoot: root, now: NOW }) ?? "";
+    // Must not contain aspect value patterns like "45/100" or "practice 2.0/3".
+    expect(text).not.toMatch(/\d+\/100/);
+    expect(text).not.toMatch(/practice\s+[\d.]+\/3/);
+    // Must not mention aspects table headers.
+    expect(text).not.toContain("Aspects");
+    expect(text).not.toContain("setPoint");
+    expect(text).not.toContain("stubbornness");
+    expect(text).not.toContain("tension");
   });
 
   it("shows death warning when approaching threshold", () => {
@@ -180,7 +227,7 @@ describe("ulText", () => {
     expect(text).toContain("Neglect-dead");
   });
 
-  it("shows drift section when ledger rows exist", () => {
+  it("shows qualitative drift section when ledger rows exist", () => {
     saveSoul(root, mintSoul());
     appendLedger(root, {
       sessionId: "sx",
@@ -188,14 +235,17 @@ describe("ulText", () => {
       aspect: "assertiveness",
       mode: "interaction",
       practice: 2,
-      fit: -1,
+      fit: 1,
       confidence: "med",
       evidenceQuote: "pushed back strongly",
       firstPersonNote: "I stood my ground.",
       salience: 2,
     });
     const text = ulText({ storageRoot: root, now: NOW });
-    expect(text).toContain("Recent drift");
-    expect(text).toContain("Assertiveness");
+    expect(text).toContain("Recently");
+    expect(text).toContain("assertive");
+    // Must not contain numeric drift values.
+    expect(text).not.toMatch(/practice\s+[\d.]+\/3/);
+    expect(text).not.toMatch(/fit\s+[+-][\d.]+/);
   });
 });
