@@ -2,7 +2,14 @@
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "organizeImports": { "enabled": true },
   "files": {
-    "ignore": ["dist", "node_modules", "*.tsbuildinfo", ".claude/worktrees", "docs/*-frames.json"]
+    "ignore": [
+      "dist",
+      "node_modules",
+      "*.tsbuildinfo",
+      ".claude/worktrees",
+      "docs/*-frames.json",
+      "tools/life-sim-pop/population-results.json"
+    ]
   },
   "formatter": {
     "enabled": true,

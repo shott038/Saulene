@@ -8,6 +8,7 @@
     { "path": "packages/plugin" },
     { "path": "tools/simulator" },
     { "path": "tools/harness" },
-    { "path": "tools/demo" }
+    { "path": "tools/demo" },
+    { "path": "tools/life-sim-pop" }
   ]
 }

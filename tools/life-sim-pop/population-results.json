@@ -1,0 +1,48 @@
+{
+  "summary": {
+    "n": 4000,
+    "breakRarity": 0.25,
+    "meanBreaksPerLife": 1.596,
+    "adultMbtiDist": {
+      "ENFP": 763,
+      "ISFJ": 220,
+      "INFP": 209,
+      "ESFP": 18,
+      "ENTJ": 427,
+      "ENFJ": 869,
+      "ESTJ": 125,
+      "ESFJ": 330,
+      "ENTP": 210,
+      "INFJ": 301,
+      "ISTJ": 184,
+      "INTJ": 227,
+      "INTP": 108,
+      "ISFP": 8,
+      "ESTP": 1
+    },
+    "meanDriftByScript": {
+      "aligned-developer": 0.4958710100266325,
+      "grind-developer": 0.4108914515696019,
+      "creative-writer": 0.38572089064037984,
+      "isolated-scholar": 0.5072986861281058
+    },
+    "meanMpAtAdulthoodByScript": {
+      "aligned-developer": 250.53200000000004,
+      "grind-developer": 251.13840000000062,
+      "creative-writer": 250.95840000000007,
+      "isolated-scholar": 250.532
+    }
+  },
+  "crn": {
+    "n": 200,
+    "meanDelta": 0.08421109928051665,
+    "varDelta": 0.0002493735896809183
+  },
+  "frozenAB": {
+    "n": 200,
+    "meanCausalDrift": 0.45484523830902907,
+    "varCausalDrift": 0.008864708976951467
+  },
+  "lhsSamples": 50,
+  "determinismCheck": true
+}

@@ -36,6 +36,7 @@ into the file that does everything.
 | `tools/simulator` | Drives synthetic lifetimes through `core` (scripted ledgers, no LLM). | `core`, `renderer`, `perception` | Dev-only. |
 | `tools/harness` | The 5 verification metrics + the real-LLM Judge / A/B behavioral-validation suite (subscription `claude -p`). | `core`, `renderer`, `perception`, `simulator` | Dev-only. |
 | `tools/demo` | Lifecycle visualization: `pnpm demo` (narrated terminal life) + `pnpm demo:html` (a whole life on one self-contained web page). | `core`, `renderer`, `simulator` | Dev-only. |
+| `tools/life-sim-pop` | Population-scale deterministic life simulation (Layer A): fans out millions of pure-engine lives via `population()`, plus an experiment-design toolkit (CRN paired designs, frozen-soul control A/B, Latin-hypercube sampling, power analysis) and a runnable multi-thousand-life sweep. Consumes the W1 perception-fingerprint corpus via the `LedgerSource` contract. | `core`, `perception`, `simulator` | Dev-only. |
 
 ## Why `core` is paranoid about purity
 

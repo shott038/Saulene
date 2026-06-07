@@ -26,6 +26,7 @@ const ALLOWED = {
   plugin: ["core", "renderer", "perception", "storage"],
   simulator: ["core", "renderer", "perception"],
   harness: ["core", "renderer", "perception", "simulator"],
+  "life-sim-pop": ["core", "perception", "simulator"],
 };
 
 const PKG_DIRS = [
@@ -36,6 +37,7 @@ const PKG_DIRS = [
   ["plugin", "packages/plugin"],
   ["simulator", "tools/simulator"],
   ["harness", "tools/harness"],
+  ["life-sim-pop", "tools/life-sim-pop"],
 ];
 
 const short = (name) => name.replace(/^@saulene\//, "");
