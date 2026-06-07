@@ -10,6 +10,9 @@
 
 import { readFileSync } from "node:fs";
 import { userPromptSubmit } from "../hooks/user-prompt-submit.js";
+import { guardIfPerception } from "./guard.js";
+
+guardIfPerception();
 
 const raw = readFileSync(0, "utf8");
 const payload = JSON.parse(raw) as { cwd?: string };

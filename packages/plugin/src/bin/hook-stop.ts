@@ -4,12 +4,18 @@
  * Claude Code passes a JSON payload on stdin including transcript_path. Reads the
  * session transcript and runs the full perceive → consolidate → persist drift pipeline.
  *
- * Uses ANTHROPIC_API_KEY from the environment (always set in a Claude Code session).
+ * Drift perception uses `claude -p` (the user's Claude Code login) by default — no
+ * ANTHROPIC_API_KEY required. Set SAULENE_PERCEPTION_API_KEY to use the Anthropic SDK
+ * instead (useful for CI or explicit key override).
  */
 
 import { readFileSync } from "node:fs";
+import { ClaudeCliClient } from "../hooks/cli-llm.js";
 import { AnthropicLlmClient } from "../hooks/llm.js";
 import { stop } from "../hooks/stop.js";
+import { guardIfPerception } from "./guard.js";
+
+guardIfPerception();
 
 const raw = readFileSync(0, "utf8");
 const payload = JSON.parse(raw) as {
@@ -34,7 +40,9 @@ try {
   process.exit(0);
 }
 
-const llm = new AnthropicLlmClient();
+const llm = process.env.SAULENE_PERCEPTION_API_KEY
+  ? new AnthropicLlmClient({ apiKey: process.env.SAULENE_PERCEPTION_API_KEY })
+  : new ClaudeCliClient();
 
 await stop({
   transcript,

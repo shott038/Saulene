@@ -353,6 +353,7 @@ hooks (see Delivery medium):
 ```
 SESSION START → hook injects the ul's current personality (10 aspects → behavior + MBTI + mood + STAGE)
 DURING / END  → session-end hook hands the transcript to the drift engine (observe what it lived)
+              → drift perception uses claude -p (user's Claude Code login, Haiku) — no API key needed
 CONSOLIDATION → engine integrates → commits change → ages → writes journal → re-derives MBTI → registry
 ```
 

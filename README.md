@@ -86,7 +86,9 @@ seeds, given two different lives, become two different selves.
 2. You work normally; the agent acts with that personality.
 3. **Stop** runs the drift pipeline: an LLM *perceives* the session into a sparse, evidence-cited
    ledger of observations, those observations feed the core's update rule, and the slightly-changed
-   soul is persisted.
+   soul is persisted. Perception uses **your existing Claude Code login** (`claude -p`, Haiku) —
+   no `ANTHROPIC_API_KEY` required, no per-call billing beyond your subscription, transcript stays
+   local.
 
 So each session is one heartbeat: *be seen → drift a little → remember.*
 
