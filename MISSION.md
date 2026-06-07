@@ -165,8 +165,66 @@ cache everything, strip `ANTHROPIC_API_KEY`. Reuse the Phase-2/3/3.5 rig.
 L2 distance from `r_B` → identification accuracy vs chance), the confusion matrix, the distinctiveness
 threshold, and a plain-language verdict (graded-fidelity + threshold vs flat-null) + recommended next move.
 
+---
+
+## Phase 5 — clean 2-way-per-tier discrimination ✅ DONE — subscription-only
+> **RESULT (IDENT-FINDINGS.md, Phase-5 section):** the behavioral signal is REAL but **one-directional**.
+> Balanced cold@α-vs-warm@α 2-way, n=36/tier: **combined accuracy never clears 0.5 with CI** (0.61/0.58/0.64,
+> lower bounds <0.5) — but the decomposition is decisive: **cold-true 0.89→0.94→1.00** (rises with
+> separation, genuine graded signal) vs **warm-true 0.33→0.22→0.28** (below chance, FLAT). The judge
+> reads almost everything as cold → the two directions cancel. This confirms Phase 4's asymmetry as the
+> ceiling: base Claude's own cold/analytical persona dominates; cold injections amplify it (read
+> strongly + gradedly), warm injections fight it and lose even at max separation. Phase 3.5's 100% was
+> small-n (k=1) on warmth-salient prompts; the robust n=36 picture over a neutral-task battery is
+> asymmetric. **Usable claim is coarse + direction-aware.** Next: fight the base for warm souls
+> (S2/S3 embodiment), probe emotionally-salient prompts, or test a less-cold base model.
+
+(historical Phase-5 spec below)
+
+## Phase 5 spec (historical)
+Phase 4's 7-way line-up was confounded (modal cold-bias + overlapping same-direction tiers), so it
+couldn't answer the actual threshold question. Phase 5 strips the confound to a clean **balanced
+binary**: at each distance tier, pit ONE cold soul against ONE warm soul and ask the blind judge
+which of the two produced the response. This isolates "how far apart must two souls sit before they're
+reliably told apart" AND cleanly exposes the warm/cold asymmetry.
+
+**Design — reuse the Phase-4 personas (cached):** `cold@α` vs `warm@α` for α ∈ {0.2 near, 0.6 middle,
+1.0 extreme}, where the pair SEPARATION grows with α (near = close pair → hard; extreme = far pair →
+easy). For each tier:
+- Collect S1 responses from BOTH souls (cached from Phase 4) over the 6-prompt battery, k=3.
+- **2-way forced choice ONLY** — judge sees the response + exactly the two persona descriptions
+  (cold@α, warm@α), independently worded from `JUDGE_DIMENSIONS` (not renderer prose), randomized
+  A/B order. No "default" option, no other distractors. Chance = 0.5.
+- **Report accuracy THREE ways per tier:** combined, **cold-true only**, and **warm-true only**. The
+  split is the whole point — pure modal bias would show as cold-true≈high / warm-true≈low / combined≈0.5;
+  genuine discrimination shows combined ≫ 0.5; residual asymmetry shows as a cold/warm gap even when
+  combined > 0.5.
+
+**What the curve gives:** accuracy-vs-tier (the **distinctiveness threshold** = the separation at
+which combined accuracy first clears chance with CI), plus the asymmetry gap per tier.
+
+**Verdict to produce:**
+- Combined rises above chance by some tier → fidelity is REAL and graded; report the threshold pair-
+  separation and whether typical birth-seeded souls clear it.
+- Cold-true ≫ warm-true throughout → the base-persona asymmetry is confirmed as the dominant ceiling.
+
+**Hold constant:** S1 delivery, arms=sonnet, judge=haiku, 6-prompt battery, k=3, blind, randomized
+order, cache everything, strip `ANTHROPIC_API_KEY`. Reuse the Phase-2/3/4 rig + cache.
+
+## Outputs (commit — the evidence)
+`tools/harness/IDENT-FINDINGS.md` (append a Phase-5 section) or `PAIRWISE-FINDINGS.md`: the
+accuracy-vs-tier table (combined / cold-true / warm-true, each with CI vs 0.5), the threshold
+separation, the asymmetry gap, and a plain-language verdict + recommended next move.
+
 ## Status
 Status: ready-to-merge
+
+## Verification (Phase 5)
+- Build: pass (`tsc -b`) · Boundaries: pass · Tests: pass (281, unchanged) · Lint: changed files clean
+- Pairwise run: DONE — subscription-only, `--strict-mcp-config`, arms=sonnet/judge=haiku, 3 tiers ×
+  (cold vs warm) × 6 prompts × k=3, balanced 2-way (responses reused from Phase-4 cache; only the ~108
+  2-way judge calls fresh). Numbers in `IDENT-FINDINGS.md` (Phase-5 section). `pnpm … run pairwise`.
+- Scope kept: yes. Reused the Phase-4 personas + `identifyPersona` + cache.
 
 ## Verification (Phase 4)
 - Build: pass (`tsc -b` clean) · Boundaries: pass · Tests: pass (281, unchanged — runs have no `.test.ts`)

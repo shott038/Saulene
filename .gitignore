@@ -26,6 +26,9 @@ coverage/
 # Identification-gradient run artifacts (subscription) — non-deterministic; never committed
 .ident-run.json
 .ident-run.log
+# Pairwise 2-way discrimination run artifacts (subscription) — non-deterministic; never committed
+.pairwise-run.json
+.pairwise-run.log
 
 # Local working context (not shared)
 CLAUDE.md

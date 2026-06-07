@@ -86,3 +86,54 @@ base, not just a weak judge.
 pnpm --filter @saulene/harness run ident   # personas + control reuse the cache; identifications fresh
 ```
 Artifacts (`.ident-run.json`, `.ab-cache.json`, `.judge-cache.json`) gitignored.
+
+---
+
+# PHASE 5 — clean balanced 2-way per tier (resolves Phase-4's confound)
+
+Phase 4's 7-way line-up was confounded (modal cold-bias + overlapping same-direction tiers). Phase 5
+strips it to a BALANCED BINARY: at each distance tier, `cold@α` vs `warm@α`, blind judge sees a
+response + exactly those two descriptions (randomized order, no "default", no distractors). Chance =
+0.5. Accuracy reported three ways so genuine discrimination separates from modal bias. Responses
+reused from the Phase-4 cache; arms=sonnet, judge=haiku, 6-prompt battery, k=3 (n=36 combined / 18 per
+side, per tier).
+
+## RESULT
+
+| tier | pair separation (L2) | combined ± CI95 | cold-true | warm-true | asymmetry |
+|---|---|---|---|---|---|
+| near | 0.42 | 0.611 ± 0.162 | 0.889 | 0.333 | +0.56 |
+| middle | 1.26 | 0.583 ± 0.163 | 0.944 | 0.222 | +0.72 |
+| extreme | 2.11 | 0.639 ± 0.159 | **1.000** | **0.278** | +0.72 |
+
+## VERDICT — the behavioral signal is REAL but ONE-DIRECTIONAL
+
+- **Combined accuracy never clears 0.5 with CI** at any tier (lower bounds 0.45 / 0.42 / 0.48). On a
+  balanced battery there is *no clean symmetric discrimination* — which is exactly what a
+  cold-attribution bias produces (the two sides cancel).
+- **The decomposition is decisive.** *Cold-true* is 0.889 → 0.944 → **1.000**, rising monotonically
+  with pair separation — a genuine, graded signal: the renderer reliably pushes a soul colder/more
+  analytical, and more so the farther it sits from base. *Warm-true* is 0.333 → 0.222 → 0.278 —
+  **below chance and flat**: warm souls are misread as cold regardless of how warm they are.
+- **This confirms the Phase-4 asymmetry as the dominant ceiling.** Base Claude's own persona (`r_B`:
+  orderly/analytical/calm/cold) dominates outputs. A cold injection *amplifies* the base → reads
+  strongly and gradedly. A warm injection must *fight* the base → loses, even at maximum separation
+  (the ENFP-warm soul that scored 3/3 in Phase 3.5's n=3 emotionally-charged probe is identified only
+  0.278 here at n=36 over a broader battery). Phase 3.5's 100% was small-n + warmth-salient prompts;
+  the robust picture is asymmetric.
+
+**So the "distinctiveness threshold" is direction-dependent:** for cold/base-aligned souls it's tiny —
+even the NEAR tier (sep 0.42) already hits 0.889. For warm/base-opposed souls there is no threshold in
+this regime — no separation makes them read warm.
+
+## Caveats
+n=36/tier → wide CIs (~±0.16); haiku judge; sonnet base; the 6-prompt battery includes neutral coding
+tasks where warmth barely surfaces (emotionally-charged prompts would favor warm — Phase 3.5 used
+those); descriptions synthesized from `JUDGE_DIMENSIONS`.
+
+## Recommended next move
+The usable claim is **coarse and direction-aware**: the ul reliably shifts behavior toward
+cold/analytical/structured dispositions; warm/expressive dispositions are swamped by Claude's base
+persona on neutral tasks. To make warmth register: (a) fight the base harder (S2/S3 embodiment for
+warm souls), (b) probe on emotionally-salient prompts where warmth surfaces, or (c) test a
+less-cold base model — and check whether the asymmetry is Claude-specific or general.
