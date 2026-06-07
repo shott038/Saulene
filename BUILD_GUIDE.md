@@ -93,14 +93,18 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       locally-pinned `RenderFn` (NOT a renderer import) + a fakeable `Judge` port; deterministic
       `fakeJudge` + fake renderers exercise each metric's pass AND fail path. 15 tests green.
       Thresholds are `// TUNABLE (Phase 3)` placeholders.
-- [ ] **A/B behavioral validation (the proof-of-life run)** — planned, build after the in-flight
-      worktrees land. Inject-equivalent A/B: same base model + battery, toggle only `render(soul)`
-      in the system prompt; soul-independent no-plugin **control** run once + reused. Blind LLM
-      Judge recovers traits from each arm's *responses* → **lift = dist(control,target) −
-      dist(treatment,target)**; the control also yields the *empirical* base-Claude persona that
-      replaces the assumed `BASELINE=0.5`. Dev-only harness runner; never in CI. Full plan +
-      design: `docs/ab-validation-plan.md`. Reuses the `Judge` from the `real-judge-tuning` brick
-      (held unmerged pending this).
+- [x] **A/B behavioral validation (the proof-of-life run)** — DONE, subscription-only (Claude Code
+      `claude -p`, no metered API). Real LLM Judge + A/B + salience + identification suite landed in
+      `tools/harness` (see `FINDINGS.md`, `AB-FINDINGS.md`, `SALIENCE-FINDINGS.md`, `IDENT-FINDINGS.md`).
+      **VERDICT: the central bet holds.** The renderer encodes graded, **bidirectional** behavioral
+      identity; what surfaces is **context-dependent** (analytical traits on work tasks, warmth on
+      emotional ones — warm-true 0.22–0.33 on neutral prompts → **0.72–0.89** on emotional prompts).
+      The early Phase-2 lift-null + Phase-4/5 "cold-only" were measurement/battery artifacts (noisy
+      `recoverTraits`, near-neighbor souls, a coding-heavy battery), NOT an inert renderer. Two
+      actionable wins: (1) **deliver at S1** (voice in the conversation channel) — noticeability
+      0.33→0.71 vs the current append-to-system; (2) **empirical base-Claude persona `r_B`** (not 0.5)
+      is the correct harness baseline (committed in `judge.ts`). Honest product framing: "the ul
+      colors how Claude engages, context-appropriately." Full design: `docs/ab-validation-plan.md`.
 - [~] Tune the ~9 globals + per-stage table against harness + simulator.
       **Engine/break knobs tuned against the simulator (done):** added a SPEC-mandated but
       previously-missing **plasticity-gated break threshold** (`θ_eff = θ/plasticity(stage)`), so
@@ -188,28 +192,25 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
 ---
 
 ### Right now
-**Next: Phase 4 · finish the shippable plugin** (the live ul in the terminal).
-Phases 1–3 are essentially complete: the pure engine, the simulator, the harness, and the
-renderer (text Layers 1–2 + the pure golden-tested **sprite** core) are all green. Phase 4's
-`perception` and `storage` packages landed earlier, and as of Jun 6 the **`plugin/hooks` IO edge
-is done** — SessionStart injects the ul's level-gated voice from live soul state, and Stop runs
-the full `perceive → core-consolidate → persist` drift pipeline behind a real `AnthropicLlmClient`.
-212/212 workspace tests green, boundaries clean, `core` still pure.
+**The central bet is VALIDATED — finish the shippable plugin.**
+The full engine + expression path is built and live behind real hooks (`perception`, `storage`,
+`plugin/hooks`, `plugin/statusline`, `plugin/mcp` + `/ul`), and as of Jun 6 the **A/B behavioral
+validation suite** (subscription-only, in `tools/harness`) has answered the proof-of-life question:
+**the ul demonstrably changes Claude's behavior — graded and bidirectional — surfacing
+context-appropriately** (analytical on work tasks, warm on emotional ones; warm-true 0.22–0.33 →
+0.72–0.89 when the prompt gives warmth room). Early nulls were measurement artifacts, not an inert
+renderer. See the four `tools/harness/*FINDINGS.md` docs.
 
-As of Jun 6 the **`plugin/statusline`** (live terminal ul) and **`plugin/mcp` + `/ul` skill**
-(read-only inspection) bricks are done. The remaining bricks, in rough dependency order:
-1. **Setup wizard** (reality warning → watch-only birth → pick level) + the 90d neglect-death clock.
-2. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback.
+Two validated improvements to fold into the product:
+1. **Switch hook delivery to S1** — inject the voice into the conversation channel, not only
+   appended to Claude Code's ~20k-token system prompt (measured noticeability 0.33 → 0.71).
+2. **`r_B` baseline** — the empirical base-Claude persona replaces the assumed 0.5 (done in harness).
 
-In flight / parked:
-- **`real-judge-tuning`** (worktree, opus) — builds the real LLM `Judge`. **Held unmerged** pending
-  the A/B validation plan (`docs/ab-validation-plan.md`) so its judge is reconciled into the A/B
-  runner deliberately rather than landed as the weaker injection-prose design.
-- **A/B behavioral validation** — planned next (see the Phase-3 item + `docs/ab-validation-plan.md`):
-  the proof-of-life run that measures whether the injection causally shifts model behavior vs a
-  no-plugin control.
+Remaining bricks to ship:
+1. **Switch `plugin/hooks` SessionStart to S1-style delivery** (small, evidence-backed change).
+2. **Setup wizard** (reality warning → watch-only birth → pick level) + the 90d neglect-death clock.
+3. **Plugin manifest** + `/plugin` install + bare-MCP portability fallback.
 
-**Also now unblocked:** the two `[~]` Phase-3 tuning items (expression-side knob tuning + text
-Layers 3–5) — a real LLM `Judge` can be built on the `AnthropicLlmClient` that just landed, so the
-harness can finally score felt prose. (Per-stage magnitude sweep + the spine/framing/drift layers
-+ fingerprint remain.)
+**Still open (lower priority, not blocking ship):** the `[~]` Phase-3 renderer items — text Layers
+3–5 (spine/framing/drift) + fingerprint, and the per-stage magnitude sweep. The harness + real
+Judge to drive them now exist.
