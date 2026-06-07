@@ -20,6 +20,9 @@ coverage/
 # Salience-sweep run artifacts (subscription) — non-deterministic; never committed
 .salience-run.json
 .salience-run.log
+# Max-contrast diagnostic run artifacts (subscription) — non-deterministic; never committed
+.diagnostic-run.json
+.diagnostic-run.log
 
 # Local working context (not shared)
 CLAUDE.md

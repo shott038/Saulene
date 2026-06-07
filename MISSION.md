@@ -123,16 +123,20 @@ Status: ready-to-merge
 - Salience sweep: DONE — subscription-only (`ResponseCollector` + `ClaudeCliClient`, `ANTHROPIC_API_KEY`
   stripped), arms=sonnet / judge=haiku, S0→S3 × 7 subjects × 6 prompts × k=3. S0 reproduced the Phase-2
   null exactly (cache-reused). Numbers in `tools/harness/SALIENCE-FINDINGS.md`.
+- Diagnostic (Phase 3.5): DONE — max-contrast souls, forced-choice judge, 3/3 = 100%. `pnpm … run diagnostic`.
 - Scope kept: yes. Refactored shared rig into `ab-core.ts`; `abrun.ts` (Phase 2) still works unchanged.
 
 ## Result (the headline — read SALIENCE-FINDINGS.md)
-**Two-axis answer.** *Target-fidelity: FOUNDATIONAL null* — lift never clears its CI at any rung,
-including the **ceiling S3 (−0.002 ± 0.016)** where the voice IS the whole system prompt. Removing the
-20k-token competitor doesn't move it ⇒ not a dilution artifact. *Noticeability: a real DELIVERY win* —
-2-arm distinguishability jumps **0.33 (S0) → 0.71 (S1)** the moment the voice enters the conversation
-channel. **The ul becomes noticeable but not itself**: high salience yields generic characterfulness,
-not the encoded target personality. Recommended shippable rung: **S1 (voice in the user channel)** for
-noticeability; **no rung** delivers measurable target-fidelity.
+**Salience sweep (two-axis):** *noticeability* is a real DELIVERY win — 2-arm distinguishability jumps
+**0.33 (S0) → 0.71 (S1)** when the voice enters the conversation channel; *target-fidelity via the lift
+metric* stays ~0 at every rung incl. the ceiling.
+
+**Phase 3.5 max-contrast diagnostic reframes the null: THE RENDERER WORKS.** Two opposite souls
+(INTJ-cold vs ENFP-warm), forced-choice judge → **3/3 = 100%** attribution (incl. a swapped trial).
+So the Phase-2/3 lift-null was NOT an inert renderer — it was (a) the test souls being too similar
+(random seeds near base Claude) and (b) `recoverTraits` being a far noisier instrument than a
+forced-choice contrast. Recommended: ship **S1** delivery (noticeability), and re-measure fidelity
+with **distinct souls + a forced-choice target-match comparator**, not raw `recoverTraits`.
 
 ## Final notes (for the merger / next brick)
 - Reported plainly per the mission (the foundational null is NOT papered over). Single most important

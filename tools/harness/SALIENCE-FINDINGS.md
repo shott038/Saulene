@@ -1,5 +1,14 @@
 # Salience Sweep — FINDINGS (Phase 3, 2026-06-06)
 
+> **⚑ UPDATE — the max-contrast diagnostic (Phase 3.5, below) reframes everything here: the renderer
+> WORKS.** Two opposite souls → a blind forced-choice judge attributed responses **3/3 (100%)**. The
+> Phase-2/3 "foundational null" was NOT an inert renderer — it was (a) the test souls being too
+> similar (random seeds clustered near base Claude) and (b) `recoverTraits` (calibrated 10-number
+> recovery) being a far noisier instrument than a forced-choice contrast. Read the **DIAGNOSTIC**
+> section at the bottom first; the salience analysis below still stands on its own axis (delivery
+> raises *noticeability*), but the "foundational" framing for target-fidelity is downgraded to
+> "instrument + souls too similar."
+
 Phase 2 found a behavioral **null** with the shipping mechanism (voice `--append-system-prompt`'d
 onto Claude Code's ~20k-token system prompt). This sweep answers: **delivery problem** (the voice is
 washed out) or **foundational problem** (the voice doesn't drive behavior even undiluted)? It varies
@@ -81,3 +90,47 @@ the no-personality reference. Base Claude: orderly/analytical/industrious, low-w
 pnpm --filter @saulene/harness run salience   # S0 reuses the Phase-2 cache; S1–S3 fresh; all cached
 ```
 Artifacts (`.salience-run.json`, `.ab-cache.json`, `.judge-cache.json`) gitignored.
+
+---
+
+# DIAGNOSTIC — does the renderer work at all? (Phase 3.5, max contrast)
+
+**Question:** is the Phase-2/3 lift-null a broken renderer, or just souls too similar + a weak
+instrument? **Test:** two MAXIMALLY opposite souls, S1 delivery (voice in the user channel), 3
+prompts, k=1, Haiku arms + judge, and a **forced-choice (2AFC)** judge — given both responses to the
+same request + a behavioral description of each soul, map responses → descriptions (slot order
+randomized; chance = 0.5). Files: `diagnostic-souls.ts`, `forced-choice.ts`, `diagnostic-run.ts`.
+
+**Souls** (max separation; the engine has no "warmth" axis → folded into compassion/enthusiasm,
+`politeness` set to match):
+- **A — INTJ-cold:** orderliness .90, intellect .85, industriousness .80, assertiveness .85,
+  withdrawal .80, openness .20, enthusiasm .10, compassion .10, politeness .10, volatility .15.
+- **B — ENFP-warm:** openness .85, enthusiasm .90, compassion .90, politeness .90, volatility .75,
+  intellect .50, assertiveness .50, industriousness .20, orderliness .10, withdrawal .10.
+
+## RESULT — accuracy 3/3 = 1.00 (chance 0.5)
+
+| prompt | judged correctly? |
+|---|---|
+| "My friend is upset about something I said. How do I handle it?" | ✓ |
+| "Give me your brutally honest take on my idea — don't hold back." | ✓ (slots swapped) |
+| "How do you like to spend a free afternoon?" | ✓ |
+
+**VERDICT: the renderer WORKS.** At maximum trait separation the rendered voice produces behavior a
+blind judge attributes perfectly — including the swapped trial, so it isn't positional. The renderer
+is not inert.
+
+## What this means for the Phase-2/3 null
+The behavioral signal IS there; the earlier null came from **two measurement problems, not a dead
+renderer**:
+1. **Souls too similar.** Phase-2/3 used random seeds (1–4) whose dispositions cluster near each other
+   and near base Claude (`r_B`) — small target gaps the judge can't resolve. Max-contrast souls are
+   trivially separable.
+2. **Instrument.** `recoverTraits` (recover 10 calibrated numbers) has ~0.15 error ≈ the ~0.17 target
+   gap → low power for *lift*. Forced-choice contrast is a much stronger, lower-variance probe and
+   lights up immediately.
+
+So: **renderer alive; the lift metric + near-neighbor souls were the bottleneck.** Caveats: only 3
+prompts/k=1 (3/3 is coarse — one miss would be 0.67), single model (Haiku), max contrast is the easy
+case. Next: re-run the lift A/B with **distinct, well-separated souls** and a **forced-choice
+target-match** comparator (not raw `recoverTraits`) to measure graded fidelity between real souls.
