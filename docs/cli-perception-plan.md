@@ -1,5 +1,17 @@
 # Plan: drift perception via `claude -p` headless — no API keys, for anyone
 
+**Status: ✅ DONE + merged (2026-06-07).** `hooks/cli-llm.ts` `ClaudeCliClient` drives perception via
+`claude -p --model claude-haiku-4-5-20251001 --output-format json --bare`; `hook-stop.ts` defaults
+to it (`AnthropicLlmClient` only when `SAULENE_PERCEPTION_API_KEY` is set). Recursion guarded by the
+`SAULENE_PERCEPTION=1` sentinel (`bin/guard.ts`, first statement in every hook entry) **and** `--bare`
+(verified a real Claude Code flag that skips hooks/plugins). README/SPEC updated; 373 tests green.
+**Not yet verified live** — `claude -p` auth from inside a hook subprocess is sound by design but
+untested in a real install (part of the outstanding end-to-end smoke test).
+
+---
+
+_(original plan below)_
+
 **Status:** planned. Today the Stop-hook drift perception uses `AnthropicLlmClient`, which needs
 `ANTHROPIC_API_KEY`. That's a non-starter for distribution (users won't all have a key) and even an
 annoyance for the author. Switch perception to run through the user's **existing Claude Code login**

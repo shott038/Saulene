@@ -1,5 +1,5 @@
 ---
-description: Show your ul companion — current personality snapshot, aspects, recent drift, and neglect countdown. Use when the user asks to see their ul, companion, personality, or "show ul".
+description: Show your ul companion — type (MBTI), life stage, age, a qualitative drift note, and the neglect countdown. Use when the user asks to see their ul, companion, personality, or "show ul". (Raw trait numbers are private — viewable only on the gallery after unlock.)
 ---
 
 Run the following command and display its output to the user:

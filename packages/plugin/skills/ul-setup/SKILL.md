@@ -10,7 +10,8 @@ Your ul needs to be created by running an interactive terminal program. Tell the
 
 The wizard will:
 1. Show a mandatory reality-warning acknowledgement
-2. Play the birth animation (watch-only — their ul springs into existence)
+2. Play the birth animation (watch-only — their ul springs into existence) + generate its keypair
 3. Ask where their ul should live (global sessions or one specific directory)
+4. Disclose the public gallery (on by default; press `o` to opt out)
 
 Once setup completes their ul is alive and will appear in every eligible session.

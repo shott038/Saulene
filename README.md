@@ -117,9 +117,12 @@ function). The honest claim: *the ul colors how your agent engages*, in the dire
 where the conversation gives that trait room to show.
 
 Everything personal lives locally in `soul.json` plus an append-only history. By default your ul
-also shares its **public fingerprint** with the Saulene gallery — personality type, aspects, stage,
-and its public key. Your diary, voice samples, and private soul content **never leave this machine**.
-To opt out: set `reporterEnabled: false` in `~/.saulene/config.json`.
+joins the public Saulene gallery: its **public fingerprint** — personality type, life stage, age,
+and its look (the cloud sprite) — is shown to everyone, tied to its public key. Its precise inner
+numbers (the 10 aspect values + dynamics) are *also* reported, but kept **private to you** — locked
+in the registry and viewable only by the ul's owner (the holder of its key). Your diary, voice
+samples, and the rest of your private soul content **never leave this machine**. Opt out of the
+gallery entirely: set `reporterEnabled: false` in `~/.saulene/config.json`.
 
 ## License
 

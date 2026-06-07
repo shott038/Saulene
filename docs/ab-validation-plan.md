@@ -1,7 +1,16 @@
-# A/B Behavioral Validation — the proof-of-life experiment (PLANNED)
+# A/B Behavioral Validation — the proof-of-life experiment (DONE)
 
-**Status:** planned, not yet built. Build *after* the in-flight worktrees land
-(`real-judge-tuning`, `plugin-mcp-ul`). This is the experiment that converts the project's
+**Status: ✅ DONE (2026-06-07).** Built + run (subscription `claude -p`) in `tools/harness`.
+**Verdict: the central bet holds** — the ul demonstrably, graded-and-bidirectionally, changes
+Claude's behavior, surfacing context-appropriately (warmth shows on emotional prompts: warm-true
+0.22–0.33 → 0.72–0.89). Early nulls were measurement artifacts (noisy probe, near-neighbor souls,
+coding-only battery). Full results: `tools/harness/AB-FINDINGS.md`, `SALIENCE-FINDINGS.md`,
+`IDENT-FINDINGS.md`. Two banked wins folded into the product: **S1 delivery** (0.33→0.71
+noticeability) and the empirical **`r_B`** baseline. Original design below.
+
+---
+
+This is the experiment that converts the project's
 central bet — *"the injected voice actually changes how the model behaves"* — from a design
 argument into a measured number with a control.
 

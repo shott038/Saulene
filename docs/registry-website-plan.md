@@ -1,6 +1,11 @@
 # Registry + Website Plan (Phase 5) — the ul gallery
 
-**Status:** planned. Separate track from the shipped plugin — does not disturb it. Claim mechanism
+**Status: PARTIALLY BUILT (2026-06-07).** Done: the plugin-side **identity keypair** + **opt-in
+(default-on) signed reporter**; the **Supabase backend** — `uls`/`snapshots`/`events` + the SAFE/
+VALUABLE **vault** split (`ul_secrets`/`snapshot_secrets`/`unlocks`), the **`registry` ingest** Edge
+Function, the **`ul-private`** gated unlock, and the daily **death-sweep** cron — all verified live
+(see `docs/db-vault-plan.md`). **Remaining: the website itself** (public SAFE gallery wall + the paid
+unlock UX + claim flow) and a **payment provider** to write `unlocks`. Claim mechanism
 **locked: ed25519 keypair** (Solana-compatible, so it becomes the token wallet later with no rework).
 
 ## What we're building

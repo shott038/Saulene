@@ -182,8 +182,20 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       `sprite-data.ts`; birth animation (`birth.ts`) plays on first install; `statusline.ts` runtime
       = setInterval loop + `signal()` surface for hooks. Consumes the pure renderer sprite; `core`/
       `renderer` stay pure, all IO at the plugin edge. 55 tests; 267/267 workspace green.
-- [ ] Setup wizard: mandatory reality warning → watch-only birth → pick level. Neglect-death 90d clock.
-- [ ] Plugin manifest; install via `/plugin`; bare-MCP portability fallback.
+- [x] Setup wizard (`plugin/src/setup/wizard.ts`): reality warning + ack → watch-only birth (seed →
+      persist → birth animation) → pick level → registry disclosure (default-on, `o` to opt out) +
+      `saveConfig`; generates the ed25519 keypair at birth. Neglect-death 90d clock coherent. Run via
+      the interactive `dist/bin/setup.js` / `/ul-setup`.
+- [x] Plugin manifest: `.claude-plugin/plugin.json` + `hooks/hooks.json` (SessionStart side-effects /
+      UserPromptSubmit voice / Stop drift) + `.mcp.json` (bare-MCP fallback) + `skills/ul` &
+      `skills/ul-setup` + `src/bin/*` CLI wrappers. Installable via `/plugin`.
+- [x] **Drift perception via the user's Claude Code login** (`claude -p --model haiku`,
+      `hooks/cli-llm.ts`) — **no `ANTHROPIC_API_KEY` needed by anyone**; transcript stays local.
+      Recursion-guarded (`SAULENE_PERCEPTION=1` sentinel no-ops all hook entries + `--bare`).
+      `AnthropicLlmClient` kept as an optional override (`SAULENE_PERCEPTION_API_KEY`). 373 tests green.
+- [x] **Delivery = S1** (the validated noticeability win): the voice ships via a `UserPromptSubmit`
+      hook (per-turn `additionalContext`), not the system prompt. SessionStart gates + renders-and-
+      caches; `r_B` empirical baseline replaced the assumed 0.5.
 
 ## Phase 5 — Registry / token (separate track — design locked, see `docs/registry-website-plan.md`)
 Claim mechanism LOCKED: ed25519 keypair (Solana-compatible → token wallet later, no rework).
@@ -201,15 +213,26 @@ Opt-in; public fingerprint only (private soul never leaves the machine).
       recomputes the canonical message; upserts `uls` + appends `snapshots` + stamps `first_seen` +
       logs events). Daily **death-sweep** (`pg_cron` 04:00 UTC → `sweep_neglect_deaths()`). End-to-end
       proven: valid signed heartbeat → 200 + rows; tampered → 401.
+- [x] **Paywall foundation — DONE (see `docs/db-vault-plan.md`, `docs/plugin-safe-surface-plan.md`):**
+      reporting is **default-on** (disclosed in the wizard, opt-out via `config.json`). The DB is split
+      SAFE (public-read: pubkey/mbti/stage/age/sex/sprite) vs VALUABLE (the 10 numbers + dynamics in
+      anon-denied `ul_secrets`/`snapshot_secrets`); an `unlocks` table + the **`ul-private`** Edge
+      Function gate vault reads behind ed25519 ownership + payment (402 unpaid / 200 paid — verified).
+      The plugin's own surfaces (`/ul`, MCP tools) are **qualitative-only** (no raw numbers; reporter
+      still feeds the gated DB).
 - [ ] **Gallery website:** the wall of real sprites (renderer is pure JS → reuse on web), alive/dead
-      counts, nursery/graveyard/dormant, MBTI spread, claim flow.
+      counts, nursery/graveyard/dormant, MBTI spread, the public SAFE view + the paid `ul-private`
+      unlock, claim flow. (Prototype of the per-ul detail page already exists: `pnpm demo:html`.)
+- [ ] **Payment provider** (Stripe or the token) to write `unlocks` rows; populate the `sprite`
+      descriptor + `seed`/`host_model` (currently nullable); the `/ul claim` web handshake.
 - [ ] **Solana birth-certificate (opt-in) + Saulene token** (paid restore for neglect-death) — off
       the same keypair.
 
 ---
 
 ### Right now
-**The central bet is VALIDATED — finish the shippable plugin.**
+**Plugin COMPLETE & installable · central bet VALIDATED · registry backend + paywall foundation LIVE.**
+(Updated Jun 7.)
 The full engine + expression path is built and live behind real hooks (`perception`, `storage`,
 `plugin/hooks`, `plugin/statusline`, `plugin/mcp` + `/ul`), and as of Jun 6 the **A/B behavioral
 validation suite** (subscription-only, in `tools/harness`) has answered the proof-of-life question:
@@ -241,9 +264,23 @@ Remaining bricks to ship:
    `setup.js` (drives `runWizard` via readline + plays the birth animation). 305/305 green.
 
 **→ The plugin is COMPLETE and installable.** Engine → perception → storage → hooks (S1 delivery) →
-statusline → MCP/`/ul` → wizard → manifest, with the central bet validated (the ul demonstrably,
-context-appropriately changes Claude's behavior). Install via `/plugin`; first run `/ul-setup`.
+statusline → MCP/`/ul` → wizard → manifest. Install via `/plugin`; first run `/ul-setup`.
 
-**Still open (lower priority, not blocking ship):** the `[~]` Phase-3 renderer items — text Layers
-3–5 (spine/framing/drift) + fingerprint, and the per-stage magnitude sweep. The harness + real
-Judge to drive them now exist.
+**Also live (Jun 7):**
+- **Drift runs with no API key** — perception goes through the user's Claude Code login
+  (`claude -p --model haiku`), recursion-guarded. Works for everyone out of the box.
+- **Registry backend** (Supabase `slmvnyxtkkomotflalqn`) — keypair identity + opt-in (default-on,
+  disclosed) signed reporter → ingest Edge Function → `uls`/`snapshots`/`events`, daily death-sweep.
+- **Paywall foundation** — DB vault (SAFE public vs VALUABLE gated `ul_secrets`) + `ul-private`
+  unlock (ownership + payment) + qualitative-only plugin surfaces.
+- **Dev visualization** — `pnpm demo` (terminal lifecycle) + `pnpm demo:html` (a whole life on one
+  web page; the gallery detail-page prototype).
+
+**What actually remains:**
+1. **The gallery website** (new Next.js repo) — public SAFE wall + the paid `ul-private` unlock + claim.
+2. **Payment provider** (Stripe / token) to write `unlocks`; the `/ul claim` web handshake.
+3. **Deferred data** — persist birth `seed`, capture `host_model`, `display_name`, populate `sprite`.
+4. **A real end-to-end live install smoke test** (install → `/ul-setup` → drift over real sessions) —
+   everything is unit-tested but has never been run in a live Claude Code install.
+5. **Lower priority:** Phase-3 renderer text Layers 3–5 + fingerprint + per-stage magnitude sweep;
+   the Solana token.

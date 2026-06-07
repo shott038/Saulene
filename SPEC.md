@@ -15,7 +15,16 @@ medium" below.)
 
 > **Open-source (decided):** Saulene is open-source on GitHub and the plugin is always
 > **free to install.** Monetization is opt-in only (see side notes: paid model upgrade,
-> Saulene token, paid restore) — never a paywall to be born or to use a ul.
+> Saulene token, paid restore, **gallery "vault" unlock**) — never a paywall to be born or to use
+> a ul.
+>
+> **Gallery vault (decided, Jun 7):** by default a ul reports to the public gallery (disclosed in
+> the wizard, opt-out via `reporterEnabled:false`). What's *public* is the SAFE fingerprint
+> (type/stage/age + the cloud sprite + public key). The *valuable* data — the exact 10 aspect values
+> and inner dynamics — is reported but **locked**: stored in anon-denied registry tables, readable
+> only by the ul's owner (ed25519 key proof) **after payment** (the `ul-private` unlock). The plugin
+> itself stays fully usable for free and shows only qualitative/safe info; the numbers are a paid
+> gallery feature, not a gate on using the ul.
 
 Core principle: the agent becomes its **own character**, NOT a mirror of the user.
 It must not infer or copy the user's personality. It grows from its own lived
