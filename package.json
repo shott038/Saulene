@@ -18,7 +18,8 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "check:boundaries": "node scripts/check-boundaries.mjs",
-    "check": "pnpm check:boundaries && pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm check:boundaries && pnpm lint && pnpm typecheck && pnpm test",
+    "demo": "pnpm --filter @saulene/demo build && node tools/demo/dist/index.js"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

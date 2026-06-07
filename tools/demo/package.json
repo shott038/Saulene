@@ -1,0 +1,16 @@
+{
+  "name": "@saulene/demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "demo": "node dist/index.js"
+  },
+  "dependencies": {
+    "@saulene/core": "workspace:*",
+    "@saulene/renderer": "workspace:*",
+    "@saulene/simulator": "workspace:*"
+  }
+}

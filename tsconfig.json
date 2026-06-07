@@ -7,6 +7,7 @@
     { "path": "packages/storage" },
     { "path": "packages/plugin" },
     { "path": "tools/simulator" },
-    { "path": "tools/harness" }
+    { "path": "tools/harness" },
+    { "path": "tools/demo" }
   ]
 }

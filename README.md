@@ -45,6 +45,21 @@ pnpm build       # tsc -b across the workspace
 pnpm test        # vitest
 ```
 
+Watch a whole ul lifetime — birth → all four life stages → neglect-death — in seconds:
+
+```sh
+pnpm demo                          # both aligned + mismatched-grind paths, seed 42
+pnpm demo -- --mode aligned        # one path only
+pnpm demo -- --mode mismatched     # mismatched-grind only
+pnpm demo -- --seed 7              # different birth
+pnpm demo -- --fast                # no delays (CI-friendly)
+```
+
+The demo is deterministic and offline — no LLM, no API key. Same seed → same life every run.
+It renders the creature sprite in truecolor at each stage (watch it visibly change with age),
+shows the voice injection block evolving, and prints the aligned-vs-mismatched divergence
+summary at the end.
+
 ## How it actually works
 
 Saulene is built around one rule: **a pure core that knows nothing of the outside world.**
