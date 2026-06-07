@@ -9,6 +9,29 @@ coverage/
 .saulene/
 *.soul.json
 
+# Live harness-run artifacts (real LLM judge) — non-deterministic, paid; never committed
+.judge-cache.json
+.live-run.json
+.live-run.log
+# A/B behavioral-validation run artifacts (subscription) — non-deterministic; never committed
+.ab-cache.json
+.ab-run.json
+.ab-run.log
+# Salience-sweep run artifacts (subscription) — non-deterministic; never committed
+.salience-run.json
+.salience-run.log
+# Max-contrast diagnostic run artifacts (subscription) — non-deterministic; never committed
+.diagnostic-run.json
+.diagnostic-run.log
+# Identification-gradient run artifacts (subscription) — non-deterministic; never committed
+.ident-run.json
+.ident-run.log
+# Pairwise 2-way discrimination run artifacts (subscription) — non-deterministic; never committed
+.pairwise-run.json
+.pairwise-run.log
+.pairwise-emotional-run.json
+.pairwise-emotional-run.log
+
 # Local working context (not shared)
 CLAUDE.md
 
@@ -23,3 +46,6 @@ scripts/_tune.mjs
 docs/_tune.html
 # regenerable animation frame intermediates (rebuilt via ul-idle.mjs --export-*)
 docs/ul-*-frames.json
+
+# Scheduler lock (transient)
+.claude/scheduled_tasks.lock

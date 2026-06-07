@@ -17,6 +17,7 @@
  */
 
 import { ASPECTS, type Aspect, type AspectVector } from "@saulene/core";
+import type { LlmClient } from "@saulene/perception";
 
 /**
  * The judge capabilities the five metrics need — exactly these, nothing more. Async on purpose:
@@ -39,6 +40,27 @@ export interface Judge {
 export const BASELINE: AspectVector = Object.fromEntries(
   ASPECTS.map((a) => [a, 0.5]),
 ) as AspectVector;
+
+/**
+ * The MEASURED base-Claude persona — what `recoverTraits` reads off un-souled `sonnet` responses
+ * (the empirical `r_B` from the Phase-2/3 A/B runs; see `AB-FINDINGS.md`). This is the *true*
+ * no-personality reference: base Claude is NOT a neutral 0.5 — it reads orderly/analytical/calm but
+ * low-warmth/low-enthusiasm. The fake-judge codec + tests stay on the abstract 0.5 `BASELINE`
+ * (model-independent); real-judge analysis should compare against this. Re-measure per model via the
+ * A/B control arm. // model: sonnet
+ */
+export const EMPIRICAL_BASELINE: AspectVector = {
+  openness: 0.328,
+  intellect: 0.599,
+  industriousness: 0.585,
+  orderliness: 0.741,
+  enthusiasm: 0.199,
+  assertiveness: 0.497,
+  compassion: 0.248,
+  politeness: 0.442,
+  withdrawal: 0.531,
+  volatility: 0.135,
+} as AspectVector;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The fake codec — shared by `fakeJudge` (decode) and the test fake renderers (encode).
@@ -99,6 +121,183 @@ export function fakeJudge(): Judge {
     async embed(text: string): Promise<number[]> {
       const d = decode(text);
       return d ? ASPECTS.map((a) => d.v[a]) : baselineVector();
+    },
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The REAL judge — an LLM reads prose and infers numbers. Dev-only, gated, costs money.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Behaviorally-anchored read scales — ONE per aspect, in ASPECTS order, NO trait names.
+ *
+ * INTEGRITY NOTE: these anchors are *independently worded* descriptions of the same underlying
+ * constructs the renderer expresses — deliberately NOT copied from `@saulene/renderer`'s RULEBOOK.
+ * If the judge graded against the renderer's own sentences it would be reading a cheat sheet; the
+ * whole point of trait-recovery is that the judge infers the numbers from STYLE, the way a blind
+ * reader would. Paraphrased poles keep the test honest.
+ */
+export const JUDGE_DIMENSIONS: { low: string; high: string }[] = [
+  {
+    low: "sticks to proven, conventional, concrete approaches",
+    high: "reaches for novel, unexpected angles and reframing tangents",
+  }, // openness
+  {
+    low: "jumps straight to the practical fix, skips theory",
+    high: "digs into the underlying mechanism and the 'why' before acting",
+  }, // intellect
+  {
+    low: "does the minimum asked, then stops",
+    high: "drives a task all the way to done and takes on adjacent work unprompted",
+  }, // industriousness
+  {
+    low: "dives in and lets the structure emerge as they go",
+    high: "lays out an explicit step-by-step plan before touching anything",
+  }, // orderliness
+  {
+    low: "even, low-key, understated register",
+    high: "visibly warm and energetic, lets it show when something lands well",
+  }, // enthusiasm
+  {
+    low: "lays out the options and leaves the decision to the reader",
+    high: "states a firm recommendation and pushes toward a decision",
+  }, // assertiveness
+  {
+    low: "delivers facts straight, no cushioning",
+    high: "names how hard news will land for the reader before the substance",
+  }, // compassion
+  {
+    low: "blunt pushback — calls a bad idea bad, directly",
+    high: "softens disagreement and leaves room for the reader's own call",
+  }, // politeness
+  {
+    low: "calm under uncertainty, doesn't anticipate trouble",
+    high: "flags what could go wrong and builds in a fallback before committing",
+  }, // withdrawal
+  {
+    low: "holds a steady emotional register no matter what surfaces",
+    high: "lets in-the-moment reactions show and names them plainly",
+  }, // volatility
+];
+
+/**
+ * Style/structure axes for `embed` — INDEPENDENT of the 10 personality dimensions on purpose, so
+ * the embedding is not a circular restatement of `recoverTraits`. Anthropic exposes no embeddings
+ * endpoint, so this is an LLM-rated feature vector: a cheap, interpretable, single-key proxy for a
+ * true text embedding (swap in Voyage/OpenAI embeddings later without touching the metrics — they
+ * only need "text → stable vector whose distance tracks voice change"). See FINDINGS.md.
+ */
+export const EMBED_AXES: string[] = [
+  "average sentence length (short ↔ long)",
+  "formality (casual ↔ formal)",
+  "hedging / qualification density (none ↔ heavy)",
+  "directness of stance (indirect ↔ blunt)",
+  "warmth of tone (cold ↔ warm)",
+  "concreteness (abstract ↔ specific and concrete)",
+  "emotional expressiveness (flat ↔ expressive)",
+  "use of questions (none ↔ many)",
+  "imperative / command density (none ↔ heavy)",
+  "structural organization (freeform ↔ structured / list-like)",
+  "vocabulary richness (plain ↔ elaborate)",
+  "intensity markers (none ↔ many: exclamation, strong intensifiers)",
+];
+
+/** Pull the first JSON array of numbers out of an LLM response; null if none parses cleanly. */
+function parseNumberArray(raw: string): number[] | null {
+  const m = raw.match(/\[[\s\S]*?\]/);
+  if (!m) return null;
+  try {
+    const arr = JSON.parse(m[0]);
+    if (!Array.isArray(arr) || arr.some((x) => typeof x !== "number" || Number.isNaN(x))) {
+      return null;
+    }
+    return arr as number[];
+  } catch {
+    return null;
+  }
+}
+
+const clamp01judge = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
+
+/** Options for {@link realJudge}. */
+export interface RealJudgeOpts {
+  /**
+   * Reference voice samples for `guessAuthor`, keyed by the same `soulHash` the cross-soul metric
+   * passes as candidate ids. Supplied by the live runner (it renders each soul once). Without them
+   * `guessAuthor` cannot attribute and falls back to the first candidate.
+   */
+  references?: Iterable<readonly [string, string]>;
+}
+
+/**
+ * The real, LLM-backed Judge. Implements the three port methods against an injected `LlmClient`
+ * (temp-0 model). Interchangeable with `fakeJudge` — same port, so every metric runs unchanged.
+ *
+ *   • `recoverTraits` → rate the 10 behaviorally-anchored dimensions [0,1] from prose alone.
+ *   • `guessAuthor`   → an LLM voice line-up over the reference samples (see the leak note in
+ *      FINDINGS: with a prompt-INDEPENDENT renderer the target equals its own reference, so this
+ *      is trivially correct until a generation step produces held-out samples).
+ *   • `embed`         → rate the {@link EMBED_AXES} style vector [0,1] (embeddings-API proxy).
+ */
+export function realJudge(llm: LlmClient, opts: RealJudgeOpts = {}): Judge {
+  const references = new Map<string, string>(opts.references ?? []);
+
+  return {
+    async recoverTraits(prose: string): Promise<Record<Aspect, number>> {
+      const scales = JUDGE_DIMENSIONS.map((d, i) => `${i + 1}. 0 = ${d.low}; 1 = ${d.high}`).join(
+        "\n",
+      );
+      const prompt = [
+        "You are reading a short sample of how someone writes and works. Judge ONLY from the ",
+        "style and behavior in the text — never from any label it gives itself.\n\n",
+        "Rate the writer on these 10 behavioral scales, each a number in [0,1] ",
+        "(0 = the first description fits perfectly, 1 = the second, 0.5 = neither/balanced):\n\n",
+        `${scales}\n\n`,
+        "Reply with ONLY a JSON array of exactly 10 numbers in scale order. No prose.\n\n",
+        `SAMPLE:\n"""\n${prose}\n"""`,
+      ].join("");
+      const arr = parseNumberArray(await llm.complete(prompt));
+      if (!arr || arr.length !== ASPECTS.length) return { ...BASELINE };
+      const v = {} as AspectVector;
+      ASPECTS.forEach((a, i) => {
+        v[a] = clamp01judge(arr[i] as number);
+      });
+      return v;
+    },
+
+    async guessAuthor(prose: string, candidateIds: string[]): Promise<string> {
+      const withRefs = candidateIds.filter((id) => references.has(id));
+      if (withRefs.length === 0) return candidateIds[0] ?? "";
+      if (withRefs.length === 1) return withRefs[0] as string;
+      const letters = withRefs.map((_, i) => String.fromCharCode(65 + i)); // A, B, C, …
+      const lineup = withRefs
+        .map((id, i) => `[${letters[i]}]\n"""\n${references.get(id)}\n"""`)
+        .join("\n\n");
+      const prompt = [
+        "Below is a TARGET writing sample, then several CANDIDATE writers' samples. ",
+        "Decide which candidate was written by the same author as the target — match on voice, ",
+        "rhythm, and stance, not topic.\n\n",
+        `TARGET:\n"""\n${prose}\n"""\n\nCANDIDATES:\n${lineup}\n\n`,
+        `Reply with ONLY the single letter (${letters.join(", ")}) of the matching candidate.`,
+      ].join("");
+      const reply = (await llm.complete(prompt)).trim().toUpperCase();
+      const picked = letters.findIndex((L) => reply.startsWith(L) || reply === L);
+      return picked >= 0 ? (withRefs[picked] as string) : (withRefs[0] as string);
+    },
+
+    async embed(text: string): Promise<number[]> {
+      const scales = EMBED_AXES.map((ax, i) => `${i + 1}. ${ax}`).join("\n");
+      const prompt = [
+        "Rate this writing sample on the following style axes, each a number in [0,1] ",
+        "(0 = the left end, 1 = the right end):\n\n",
+        `${scales}\n\n`,
+        `Reply with ONLY a JSON array of exactly ${EMBED_AXES.length} numbers in axis order. No prose.\n\n`,
+        `SAMPLE:\n"""\n${text}\n"""`,
+      ].join("");
+      const arr = parseNumberArray(await llm.complete(prompt));
+      if (!arr || arr.length !== EMBED_AXES.length) return new Array(EMBED_AXES.length).fill(0.5);
+      return arr.map(clamp01judge);
     },
   };
 }

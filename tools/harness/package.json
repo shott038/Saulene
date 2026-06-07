@@ -7,9 +7,18 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "test": "vitest run"
+    "test": "vitest run",
+    "live": "node dist/live.js",
+    "calibrate": "node dist/calibrate.js",
+    "ab": "node dist/abrun.js",
+    "salience": "node dist/salience.js",
+    "diagnostic": "node dist/diagnostic-run.js",
+    "ident": "node dist/ident-run.js",
+    "pairwise": "node dist/pairwise-run.js",
+    "pairwise:emotional": "AB_BATTERY_SET=emotional node dist/pairwise-run.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.102.0",
     "@saulene/core": "workspace:*",
     "@saulene/renderer": "workspace:*",
     "@saulene/perception": "workspace:*",
