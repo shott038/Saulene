@@ -3,6 +3,14 @@
 This worktree holds the ul's visual-identity prototype (Jun 5–6). Samuel has drawn a hard line
 between what's REAL and what was just testing. Honor it.
 
+> ⚠️ **CANONICAL SPRITE REMINDER — read before touching the look.** The REAL ul is the
+> **pixel-art terminal sprite** (the truecolor half-block cloud-spirit: `scripts/ul-mini.mjs` +
+> `scripts/ul-geometry.mjs` → formalized in `packages/renderer/src/sprite/` + the locked pixel
+> bodies in `packages/plugin/src/statusline/sprite-data.ts`). The old **permanent purple "blob"
+> variations** (early smooth/SVG-ish blobs that look like featureless purple clouds) were **scratch
+> from testing only — NOT canonical. Do not ship, render, or revive them.** If anything is showing a
+> purple blob instead of the pixel cloud-spirit, that's a regression — fix it back to the pixel sprite.
+
 ## ⭐ BASE DEFAULT KIT — the locked terminal ul (Jun 6)
 The cyan in-terminal ul that sits in a user's session. This is the base everything builds off of.
 Two color modes: light terminal = all cyan + black eyes; dark terminal = grey body outline,
