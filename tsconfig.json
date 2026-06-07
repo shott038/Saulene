@@ -9,6 +9,7 @@
     { "path": "tools/simulator" },
     { "path": "tools/harness" },
     { "path": "tools/life-sim" },
+    { "path": "tools/life-sim-pop" },
     { "path": "tools/demo" }
   ]
 }

@@ -276,6 +276,15 @@ statusline → MCP/`/ul` → wizard → manifest. Install via `/plugin`; first r
 - **Dev visualization** — `pnpm demo` (terminal lifecycle) + `pnpm demo:html` (a whole life on one
   web page; the gallery detail-page prototype).
 
+**Also done (Jun 7 — `life-sim-population` branch):**
+- **Large-scale life simulation — Layer A** (`tools/life-sim-pop`, `@saulene/life-sim-pop`):
+  `EmpiricalLedgerSource` (W1/W2 corpus contract, deterministic sampling with injected RNG),
+  `population()` runner (N seeds × M scripts × K knob-sets through the pure engine, static
+  OR empirical sessions), experiment-design toolkit (CRN paired, frozen-soul A/B, Latin-
+  hypercube, power analysis), a runnable 4,000-life sweep (2.2s, 100% deterministic), and
+  `FINDINGS.md` with population dynamics + a worked power-analysis example.
+  38 new tests; 411/411 workspace green. Boundary: `["core","perception","simulator"]`.
+
 **What actually remains:**
 1. **The gallery website** (new Next.js repo) — public SAFE wall + the paid `ul-private` unlock + claim.
 2. **Payment provider** (Stripe / token) to write `unlocks`; the `/ul claim` web handshake.
@@ -284,6 +293,8 @@ statusline → MCP/`/ul` → wizard → manifest. Install via `/plugin`; first r
    everything is unit-tested but has never been run in a live Claude Code install.
 5. **Lower priority:** Phase-3 renderer text Layers 3–5 + fingerprint + per-stage magnitude sweep;
    the Solana token.
+6. **Large-scale life simulation — Layer D** (W3 follow-on): golden closed-loop
+   lives + felt-expression validation metrics against the real fingerprint corpus.
 
 ---
 
@@ -304,8 +315,13 @@ The goal: simulate millions of synthetic lives cheaply by paying for real-CLI tr
 - **`live.ts`** — gated behind `SAULENE_LIVE=1`; builds a real corpus. Run: `SAULENE_LIVE=1 pnpm --filter @saulene/life-sim corpus`.
 - **19 new tests** in `tools/life-sim/test/` + 6 new perception signals tests. `pnpm check` green (397 tests).
 
-### Layer C — Population runner (W2 — sibling worktree, not started)
-W2 imports `LedgerSource` from `@saulene/life-sim`, drives millions of lives through `core`, measures empirical distributions.
+### Layer C — Population runner (DONE ✅, `tools/life-sim-pop`)
+`@saulene/life-sim-pop` imports the `LedgerSource` contract, drives millions of lives through `core`,
+measures empirical distributions. `EmpiricalLedgerSource` (deterministic corpus sampling, injected
+RNG), `population()` runner (N seeds × M scripts × K knob-sets), experiment-design toolkit (CRN
+paired, frozen-soul A/B, Latin-hypercube, power analysis), a runnable 4,000-life sweep (2.2s, 100%
+deterministic), and `FINDINGS.md`. 38 new tests. Boundary: `["core","perception","simulator"]`.
+TODO(merge-W1): swap the local `ledgerToSignals` in `empirical-source.ts` for the shared pure fn.
 
 ### Layer D — Golden closed-loop validation (W3 — follow-on)
-Replay real sessions through the pipeline; compare predicted vs actual soul drift. Needs W2 first.
+Replay real sessions through the pipeline; compare predicted vs actual soul drift. Needs Layer C first.
