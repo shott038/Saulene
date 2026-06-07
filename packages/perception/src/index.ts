@@ -15,3 +15,4 @@ export * from "./schema.js";
 export * from "./validate.js";
 export * from "./rubric/index.js";
 export * from "./perceive.js";
+export * from "./signals.js";

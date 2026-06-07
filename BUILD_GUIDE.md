@@ -284,3 +284,28 @@ statusline → MCP/`/ul` → wizard → manifest. Install via `/plugin`; first r
    everything is unit-tested but has never been run in a live Claude Code install.
 5. **Lower priority:** Phase-3 renderer text Layers 3–5 + fingerprint + per-stage magnitude sweep;
    the Solana token.
+
+---
+
+## Large-scale life simulation (surrogate pyramid)
+
+The goal: simulate millions of synthetic lives cheaply by paying for real-CLI truth once, then replaying.
+
+### Layer B — Perception-fingerprint corpus (DONE ✅, `tools/life-sim`)
+
+`@saulene/life-sim` bridges the cheap deterministic engine to *real* CLI behavior:
+
+- **`ledgerToSignals`** extracted from `plugin/hooks/stop.ts` into `@saulene/perception` (one source of truth). `stop.ts` now delegates to it. Parity test added to `packages/perception/test/signals.test.ts`.
+- **`SyntheticUser`** — persona-driven (4 personas) user side of a conversation. DI over `LlmClient`.
+- **Conversation runner** (`runConversation`) — 2–4 turn synthetic user ↔ ul exchange with `render(soul).text` injected as voice (mirrors plugin S1). Returns a transcript + soulHash.
+- **Fingerprint builder** (`runFingerprintSession`, `buildFingerprint`) — sweeps the bucket space (persona × workType × stage × stateBucket = 240 buckets), runs `perceive()` on each transcript, writes `{bucket, ledger, meta}` JSONL corpus records.
+- **`LedgerSource` contract** (W2 interface) — `CorpusLedgerSource` samples `ScriptedSession` ledgers deterministically (injected `SeededRng`, no `Math.random`). `parseCorpus`/`serializeRecord` for JSONL I/O.
+- **`ClaudeCliClient`** + `LifeSimCache` (FNV-1a) — subscription `claude -p` backend, cached so re-runs are free.
+- **`live.ts`** — gated behind `SAULENE_LIVE=1`; builds a real corpus. Run: `SAULENE_LIVE=1 pnpm --filter @saulene/life-sim corpus`.
+- **19 new tests** in `tools/life-sim/test/` + 6 new perception signals tests. `pnpm check` green (397 tests).
+
+### Layer C — Population runner (W2 — sibling worktree, not started)
+W2 imports `LedgerSource` from `@saulene/life-sim`, drives millions of lives through `core`, measures empirical distributions.
+
+### Layer D — Golden closed-loop validation (W3 — follow-on)
+Replay real sessions through the pipeline; compare predicted vs actual soul drift. Needs W2 first.

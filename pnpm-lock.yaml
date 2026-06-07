@@ -98,6 +98,21 @@ importers:
         specifier: workspace:*
         version: link:../simulator
 
+  tools/life-sim:
+    dependencies:
+      '@saulene/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@saulene/perception':
+        specifier: workspace:*
+        version: link:../../packages/perception
+      '@saulene/renderer':
+        specifier: workspace:*
+        version: link:../../packages/renderer
+      '@saulene/simulator':
+        specifier: workspace:*
+        version: link:../simulator
+
   tools/simulator:
     dependencies:
       '@saulene/core':
