@@ -124,7 +124,17 @@ export class ClaudeCliClient implements LlmClient {
     return new Promise<string>((resolve, reject) => {
       const child = spawn(
         this.bin,
-        ["-p", "--model", this.model, "--allowedTools", "", "--system-prompt", JUDGE_SYSTEM],
+        // `--strict-mcp-config` (no `--mcp-config`) ⇒ no MCP servers booted per call (CPU saver).
+        [
+          "-p",
+          "--model",
+          this.model,
+          "--allowedTools",
+          "",
+          "--strict-mcp-config",
+          "--system-prompt",
+          JUDGE_SYSTEM,
+        ],
         { stdio: ["pipe", "pipe", "pipe"] },
       );
       let out = "";

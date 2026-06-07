@@ -81,7 +81,18 @@ export class ResponseCollector {
     systemAppend: string,
     systemReplace: string,
   ): Promise<string> {
-    const args = ["-p", "--output-format", "json", "--allowedTools", "", "--model", this.model];
+    // `--strict-mcp-config` with no `--mcp-config` ⇒ load ZERO MCP servers. Without it every headless
+    // call boots the user's global MCP servers (chrome-devtools, shadcn, …) and thrashes the CPU.
+    const args = [
+      "-p",
+      "--output-format",
+      "json",
+      "--allowedTools",
+      "",
+      "--strict-mcp-config",
+      "--model",
+      this.model,
+    ];
     if (systemReplace) args.push("--system-prompt", systemReplace);
     else if (systemAppend) args.push("--append-system-prompt", systemAppend);
     // Strip the metered key so the CLI uses subscription auth (omit it entirely, not set undefined).
