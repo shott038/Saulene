@@ -44,11 +44,18 @@ const llm = process.env.SAULENE_PERCEPTION_API_KEY
   ? new AnthropicLlmClient({ apiKey: process.env.SAULENE_PERCEPTION_API_KEY })
   : new ClaudeCliClient();
 
-await stop({
-  transcript,
-  llm,
-  now: Date.now(),
-  ...(payload.session_id ? { sessionId: payload.session_id } : {}),
-});
+try {
+  await stop({
+    transcript,
+    llm,
+    now: Date.now(),
+    ...(payload.session_id ? { sessionId: payload.session_id } : {}),
+  });
+} catch (err) {
+  const msg = err instanceof Error ? err.message : String(err);
+  process.stderr.write(
+    `[saulene] Stop hook error (session not consolidated): ${msg.slice(0, 200)}\n`,
+  );
+}
 
 process.stdout.write(`${JSON.stringify({ continue: true })}\n`);

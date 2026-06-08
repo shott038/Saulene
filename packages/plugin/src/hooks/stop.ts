@@ -96,7 +96,18 @@ export async function stop(opts: StopOpts): Promise<void> {
         );
         continue;
       }
-      throw err; // unexpected errors (network, storage) propagate
+      // Transport / CLI / auth failure — not retriable; skip drift, soul untouched.
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/not logged in|please run \/login/i.test(msg)) {
+        console.error(
+          "Saulene: personality drift is paused — run `claude` in a terminal and log in (or set SAULENE_PERCEPTION_API_KEY) to enable it.",
+        );
+      } else {
+        console.error(
+          `[saulene/stop] perception transport error — session not consolidated: ${msg.slice(0, 120)}`,
+        );
+      }
+      return;
     }
   }
   if (!result) {
