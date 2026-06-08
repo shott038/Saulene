@@ -536,8 +536,8 @@ proven demo-only (`docs/ul-session.gif`, full-lifecycle); **promote it to the ru
 and drive it from real hooks when wiring the statusline** (Phase 4).
 
 **Birth animation** (resolves the open item below): on first install the cloud is *watched
-being born* — it grows puff-by-puff, center → upper ring → lower ring (`scripts/build-ul-birth.mjs`,
-`docs/ul-birth.html`), entropy-seeded so each birth is unique. This is the wizard's "watch it
+being born* — it grows puff-by-puff, center → upper ring → lower ring
+(`packages/plugin/src/statusline/birth.ts`), entropy-seeded so each birth is unique. This is the wizard's "watch it
 be born" moment.
 
 ### Verifying expression — the harness (DECIDED: build this FIRST)
@@ -941,7 +941,7 @@ set point.
 - **MCP surface** — what tools/resources the server exposes.
 - **Birth entropy recipe** — how timestamp + randomness combine (through the research distributions) into set points.
 - ✅ **Birth animation** — DONE. Watch-only, entropy-seeded, grows puff-by-puff center→out
-  (`scripts/build-ul-birth.mjs`, `docs/ul-birth.html`). See Expression → the *look*.
+  (`packages/plugin/src/statusline/birth.ts`). See Expression → the *look*.
 
 ### Token / registry track (separate, later)
 

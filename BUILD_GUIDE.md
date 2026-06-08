@@ -141,7 +141,7 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       idle engine (breathing + gestures + 2:15 swap + twinkle easter-egg), all 9 reactive animations
       (prompt/thinking/success/error/retry/response/ctx-filling/ctx>80%/compaction), the **director**
       (mode+pulse conflict resolution, proven in `docs/ul-session.gif`), and the **birth animation**
-      (`scripts/build-ul-birth.mjs`). Terminal rasterizer (truecolor half-blocks) exists in `scripts/`.
+      (now in `packages/plugin/src/statusline/birth.ts`). Terminal rasterizer (truecolor half-blocks) is the runtime `statusline/rasterizer.ts`.
       **Pure core formalized (Jun 6, `sprite-formalization` branch):** `packages/renderer/src/sprite/`
       is now a pure, golden-tested `Soul → SpriteParams` module (`geometry.ts` + `index.ts`) — all 10
       aspects + stage + birth-entropy jitter resolved into typed visual params, with `SPRITE_EXCLUSIVE`
@@ -229,7 +229,7 @@ Opt-in; public fingerprint only (private soul never leaves the machine).
       still feeds the gated DB).
 - [ ] **Gallery website:** the wall of real sprites (renderer is pure JS → reuse on web), alive/dead
       counts, nursery/graveyard/dormant, MBTI spread, the public SAFE view + the paid `ul-private`
-      unlock, claim flow. (Prototype of the per-ul detail page already exists: `pnpm demo:html`.)
+      unlock, claim flow.
 - [ ] **Payment provider** (Stripe or the token) to write `unlocks` rows; populate the `sprite`
       descriptor + `seed`/`host_model` (currently nullable); the `/ul claim` web handshake.
 - [ ] **Solana birth-certificate (opt-in) + Saulene token** (paid restore for neglect-death) — off
@@ -280,8 +280,7 @@ statusline → MCP/`/ul` → wizard → manifest. Install via `/plugin`; first r
   disclosed) signed reporter → ingest Edge Function → `uls`/`snapshots`/`events`, daily death-sweep.
 - **Paywall foundation** — DB vault (SAFE public vs VALUABLE gated `ul_secrets`) + `ul-private`
   unlock (ownership + payment) + qualitative-only plugin surfaces.
-- **Dev visualization** — `pnpm demo` (terminal lifecycle) + `pnpm demo:html` (a whole life on one
-  web page; the gallery detail-page prototype).
+- **Dev visualization** — `pnpm demo` (narrated terminal lifecycle).
 
 **Also done (Jun 7 — `life-sim-population` branch):**
 - **Large-scale life simulation — Layer A** (`tools/life-sim-pop`, `@saulene/life-sim-pop`):

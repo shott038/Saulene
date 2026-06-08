@@ -16,12 +16,12 @@
 
 import { type Soul, presentedAge, seedFromEntropy } from "@saulene/core";
 import { entropyFromInt } from "@saulene/simulator";
-import { ClaudeCliClient } from "./llm.js";
+import type { LifeSnapshot } from "./closed-loop.js";
 import { type Transcript, runConversation } from "./conversation.js";
+import { ClaudeCliClient } from "./llm.js";
 import { SyntheticUser } from "./synthetic-user.js";
 import { crossTimeIdentity } from "./validation/index.js";
 import { realValidationJudge } from "./validation/index.js";
-import type { LifeSnapshot } from "./closed-loop.js";
 
 if (!process.env.SAULENE_LIVE) {
   console.error("Set SAULENE_LIVE=1 to run the live cross-time check.");
@@ -44,7 +44,10 @@ async function main(): Promise<void> {
   const judge = realValidationJudge(
     new ClaudeCliClient({ model: MODEL, cachePath: ".cross-time-cache.json" }),
   );
-  const user = new SyntheticUser({ persona: "analytical-reserved", workType: "deep-focus" }, userLlm);
+  const user = new SyntheticUser(
+    { persona: "analytical-reserved", workType: "deep-focus" },
+    userLlm,
+  );
 
   let orderableCount = 0;
   let sameBeingCount = 0;
