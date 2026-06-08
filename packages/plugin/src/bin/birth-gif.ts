@@ -17,7 +17,11 @@ import { fileURLToPath } from "node:url";
 import { type Soul, seedFromEntropy } from "@saulene/core";
 import { spriteParams } from "@saulene/renderer";
 import { birthFrameGrid, birthFrames } from "../statusline/birth.js";
-import { type RasterizerColors, type RgbColor, colorsFromParams } from "../statusline/rasterizer.js";
+import {
+  type RasterizerColors,
+  type RgbColor,
+  colorsFromParams,
+} from "../statusline/rasterizer.js";
 import { H, W } from "../statusline/sprite-data.js";
 
 const BG = "#0c0c0c";
