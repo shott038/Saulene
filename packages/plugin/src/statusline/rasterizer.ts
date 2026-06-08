@@ -44,39 +44,25 @@ export interface OverlayFlags {
   noWisps?: 1; // suppress all wisps (error shake, retry)
 }
 
-// ── HSL → RGB ─────────────────────────────────────────────────────────────────
+// ── Color derivation ──────────────────────────────────────────────────────────
+// EVERY ul renders the canonical DEFAULT look — sprite color is intentionally NOT
+// individualized by traits (all uls look the same). `_params` is retained on the signature
+// for API stability but no longer affects the rendered colors.
 
-function hslToRgb(h: number, s: number, l: number): RgbColor {
-  const s1 = s / 100;
-  const l1 = l / 100;
-  const a = s1 * Math.min(l1, 1 - l1);
-  const ch = (n: number): number => {
-    const k = (n + h / 30) % 12;
-    return Math.round((l1 - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255);
-  };
-  return [ch(0), ch(8), ch(4)];
-}
-
-// ── Color derivation from SpriteParams ────────────────────────────────────────
-
+const DARK_FILL: RgbColor = [0xff, 0xff, 0xff]; // white body fill (dark terminal)
 const DARK_INK: RgbColor = [0xb8, 0xb8, 0xb8]; // grey outline (dark terminal)
 const DARK_WISP: RgbColor = [0xff, 0xff, 0xff]; // white wisps
 const EYE_COLOR: RgbColor = [0x16, 0x13, 0x10]; // near-black eye
 const LIGHT_CYAN: RgbColor = [0x99, 0xd9, 0xea]; // all-cyan (light terminal)
 
 export function colorsFromParams(
-  params: SpriteParams,
+  _params: SpriteParams,
   mode: "dark" | "light" = "dark",
 ): RasterizerColors {
   if (mode === "light") {
     return { fill: LIGHT_CYAN, ink: LIGHT_CYAN, wisp: LIGHT_CYAN, eye: EYE_COLOR };
   }
-  return {
-    fill: hslToRgb(params.hue, params.saturation, params.lightness),
-    ink: DARK_INK,
-    wisp: DARK_WISP,
-    eye: EYE_COLOR,
-  };
+  return { fill: DARK_FILL, ink: DARK_INK, wisp: DARK_WISP, eye: EYE_COLOR };
 }
 
 // ── Pixel write helper ────────────────────────────────────────────────────────

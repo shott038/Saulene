@@ -511,13 +511,20 @@ pixel-grid` — living in `@saulene/renderer` (`src/sprite`). The canonical geom
 in `scripts/ul-geometry.mjs` / `docs/ul-default.svg` (the source of truth); the statusline
 rasterizer + animation director live at the plugin edge.
 
-**Individualized by the same 10 numbers.** Color and form are grounded in engine values, never
-random decoration: hue ← openness·intellect (common warm terracotta → the rare violet
-"unicorn"), saturation ← industriousness, aura/glow ← enthusiasm, shimmer ← volatility,
-body height ← assertiveness, dash spacing ← orderliness, eyes/blush/mouth ← compassion +
-withdrawal + mood, size/detail ← life **stage** (child small → elder dim and guttering), plus
-per-ul birth-entropy jitter so two uls with identical aspects still differ. **Sex affects birth
-seeding only — never the look** (carried as a gallery/identity tag, not a body morph).
+> ⚑ **DECIDED (overrides the individualization below): all uls render the SAME default sprite.**
+> The terminal sprite is intentionally uniform — every ul looks like the canonical default
+> (dark: grey outline + white fill + white wisps + black eyes; light: all-cyan). Sprite color is
+> NOT individualized by traits. `spriteParams` still computes the per-ul numbers (they remain in
+> the soul/registry), but `colorsFromParams` ignores them and returns the default palette, so the
+> rendered cloud is identical for everyone. The trait→look mapping below is retained as design
+> history / a possible future re-enable, not current behavior.
+
+**~~Individualized by the same 10 numbers~~ (NOT active — see above).** Color and form were
+designed to be grounded in engine values, never random decoration: hue ← openness·intellect
+(common warm terracotta → the rare violet "unicorn"), saturation ← industriousness, aura/glow ←
+enthusiasm, shimmer ← volatility, body height ← assertiveness, dash spacing ← orderliness,
+eyes/blush/mouth ← compassion + withdrawal + mood, size/detail ← life **stage**, plus per-ul
+birth-entropy jitter. **Sex affects birth seeding only — never the look.**
 
 **It moves with the session — two channels:**
 - **Idle** (the resting heartbeat): slow breathing, random calm gestures (blink, double-blink,

@@ -90,12 +90,16 @@ describe("colorsFromParams", () => {
     expect(c.wisp).toEqual([0x99, 0xd9, 0xea]);
   });
 
-  it("fill color varies by soul (hue/saturation/lightness)", () => {
-    const a = spriteParams(soulOf(0.5, { openness: 0.1, intellect: 0.1 })); // warm/terracotta
-    const b = spriteParams(soulOf(0.5, { openness: 0.9, intellect: 0.9 })); // cool/violet
-    const ca = colorsFromParams(a, "dark");
-    const cb = colorsFromParams(b, "dark");
-    expect(ca.fill).not.toEqual(cb.fill); // distinct hues → distinct colors
+  it("dark mode: fill is the default white (#ffffff)", () => {
+    const c = colorsFromParams(DEFAULT_PARAMS, "dark");
+    expect(c.fill).toEqual([0xff, 0xff, 0xff]);
+  });
+
+  it("every soul renders the SAME colors — no trait individualization", () => {
+    const a = spriteParams(soulOf(0.5, { openness: 0.1, intellect: 0.1 }));
+    const b = spriteParams(soulOf(0.5, { openness: 0.9, intellect: 0.9 }));
+    expect(colorsFromParams(a, "dark")).toEqual(colorsFromParams(b, "dark"));
+    expect(colorsFromParams(a, "light")).toEqual(colorsFromParams(b, "light"));
   });
 });
 
