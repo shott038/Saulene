@@ -14,6 +14,7 @@ import {
   CHAR_ROWS,
   type OverlayFlags,
   type PixelGrid,
+  type RasterizerColors,
   type RgbColor,
   colorsFromParams,
   compose,
@@ -133,23 +134,17 @@ export function birthFrames(): BirthFrame[] {
 // ── Terminal render helper for birth frames ────────────────────────────────────
 
 /**
- * Render one birth frame to an ANSI terminal string. Handles `visibleRows` for
- * the puff-by-puff condensing effect — invisible rows are rendered as blank lines.
+ * Build the pixel grid for one birth frame (pure — no ANSI). Handles `visibleRows` for the
+ * puff-by-puff condensing effect. Takes resolved colors so it can render any palette (the live
+ * wizard passes the soul's colors; the GIF exporter passes the canonical default palette).
  */
-export function renderBirthFrame(
-  frame: BirthFrame,
-  params: SpriteParams,
-  mode: "dark" | "light" = "dark",
-): string {
-  const colors = colorsFromParams(params, mode);
-
+export function birthFrameGrid(frame: BirthFrame, colors: RasterizerColors): PixelGrid {
   if (!frame.visibleRows) {
-    // Normal compose
-    const grid = compose(colors, frame.wispCells, frame.overlay, frame.dy);
-    return pixelGridToAnsi(grid);
+    // Whole body visible — normal compose.
+    return compose(colors, frame.wispCells, frame.overlay, frame.dy);
   }
 
-  // Partial-body compose: only paint body rows in the visible set
+  // Partial-body compose: only paint body rows in the visible set.
   const { dx = 0, blink, eye = 0, eyeDy = 0, wdy = 0, win = 0, noWisps } = frame.overlay;
 
   type Pixel = RgbColor | null;
@@ -198,7 +193,19 @@ export function renderBirthFrame(
     }
   }
 
-  return pixelGridToAnsi(px as PixelGrid);
+  return px as PixelGrid;
+}
+
+/**
+ * Render one birth frame to an ANSI terminal string. Handles `visibleRows` for
+ * the puff-by-puff condensing effect — invisible rows are rendered as blank lines.
+ */
+export function renderBirthFrame(
+  frame: BirthFrame,
+  params: SpriteParams,
+  mode: "dark" | "light" = "dark",
+): string {
+  return pixelGridToAnsi(birthFrameGrid(frame, colorsFromParams(params, mode)));
 }
 
 // ── Live birth animation ───────────────────────────────────────────────────────
