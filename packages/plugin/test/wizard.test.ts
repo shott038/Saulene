@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { loadSoul } from "@saulene/storage";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { loadConfig } from "../src/hooks/config.js";
-import { runWizard } from "../src/setup/wizard.js";
+import { runSetup, runWizard } from "../src/setup/wizard.js";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -209,5 +209,150 @@ describe("neglect-death clock", () => {
     const NEGLECT_DEATH_MS = 90 * 24 * 60 * 60 * 1000;
     const laterNow = NOW + NEGLECT_DEATH_MS + 1;
     expect(laterNow - (soul?.lastUsedAt ?? 0)).toBeGreaterThan(NEGLECT_DEATH_MS);
+  });
+});
+
+// ── runSetup — non-interactive path ──────────────────────────────────────────
+
+/** Shared setup opts factory for runSetup tests (zero readline, no-anim). */
+function mkSetupOpts(overrides: Partial<Parameters<typeof runSetup>[0]> = {}): {
+  output: string[];
+  opts: Parameters<typeof runSetup>[0];
+} {
+  const output: string[] = [];
+  return {
+    output,
+    opts: {
+      acknowledged: true,
+      scope: "global",
+      write: (s) => output.push(s),
+      sleep: async (_ms) => {},
+      storageRoot: root,
+      now: NOW,
+      entropy: ENTROPY,
+      mode: "dark",
+      noAnim: true,
+      ...overrides,
+    },
+  };
+}
+
+describe("runSetup — acknowledgement guard", () => {
+  it("acknowledged=false → no birth, clear message", async () => {
+    const { output, opts } = mkSetupOpts({ acknowledged: false });
+    await runSetup(opts);
+    const full = output.map(stripAnsi).join("");
+    expect(full).toContain("requires acknowledgement");
+    expect(loadSoul(root)).toBeNull();
+  });
+
+  it("acknowledged=true → births and persists soul", async () => {
+    const { opts } = mkSetupOpts({ acknowledged: true });
+    await runSetup(opts);
+    expect(loadSoul(root)).not.toBeNull();
+  });
+});
+
+describe("runSetup — scope / config", () => {
+  it("scope=global → config.json level=global", async () => {
+    const { opts } = mkSetupOpts({ scope: "global" });
+    await runSetup(opts);
+    const cfg = loadConfig(root);
+    expect(cfg?.level).toBe("global");
+    expect(cfg?.dir).toBeUndefined();
+  });
+
+  it("scope=dir + dir → config.json level=named-dir with dir", async () => {
+    const dir = "/Users/test/project";
+    const { opts } = mkSetupOpts({ scope: "dir", dir });
+    await runSetup(opts);
+    const cfg = loadConfig(root);
+    expect(cfg?.level).toBe("named-dir");
+    expect(cfg?.dir).toBe(dir);
+  });
+
+  it("scope=dir without dir → no birth, clear error", async () => {
+    const { output, opts } = mkSetupOpts({ scope: "dir", dir: undefined });
+    await runSetup(opts);
+    const full = output.map(stripAnsi).join("");
+    expect(full).toContain("--dir");
+    expect(loadSoul(root)).toBeNull();
+  });
+
+  it("bornAt is saved in config.json", async () => {
+    const { opts } = mkSetupOpts();
+    await runSetup(opts);
+    const cfg = loadConfig(root);
+    expect(cfg?.bornAt).toBe(NOW);
+  });
+});
+
+describe("runSetup — reporterEnabled", () => {
+  it("reporterEnabled omitted → not set to false (reporting on by default)", async () => {
+    const { opts } = mkSetupOpts({ reporterEnabled: undefined });
+    await runSetup(opts);
+    const cfg = loadConfig(root);
+    expect(cfg?.reporterEnabled).not.toBe(false);
+  });
+
+  it("reporterEnabled=false → persisted in config.json", async () => {
+    const { opts } = mkSetupOpts({ reporterEnabled: false });
+    await runSetup(opts);
+    const cfg = loadConfig(root);
+    expect(cfg?.reporterEnabled).toBe(false);
+  });
+});
+
+describe("runSetup — no readline", () => {
+  it("completes without any readline calls (pure flag-driven)", async () => {
+    // If runSetup ever calls readline it would hang; this test proves it doesn't.
+    const readlineCalled = { count: 0 };
+    const { opts } = mkSetupOpts();
+    // Inject a readline that would fail the test if called
+    const optsWithSpy = {
+      ...opts,
+      // @ts-expect-error — SetupOpts has no readline; adding one to verify it's never invoked
+      readline: async () => {
+        readlineCalled.count++;
+        return "";
+      },
+    };
+    await runSetup(optsWithSpy as Parameters<typeof runSetup>[0]);
+    expect(readlineCalled.count).toBe(0);
+  });
+});
+
+describe("runSetup — already born guard", () => {
+  it("exits early with friendly message if soul exists", async () => {
+    // First birth
+    await runSetup(mkSetupOpts().opts);
+    // Second attempt
+    const { output, opts } = mkSetupOpts();
+    await runSetup(opts);
+    const full = output.map(stripAnsi).join("");
+    expect(full).toContain("already born");
+  });
+});
+
+describe("runSetup — determinism", () => {
+  it("same entropy + now → same soul as runWizard", async () => {
+    // runSetup birth
+    const root2 = mkdtempSync(join(tmpdir(), "saulene-setup-det-"));
+    try {
+      const { opts } = mkSetupOpts({ storageRoot: root2 });
+      await runSetup(opts);
+      const setupSoul = loadSoul(root2);
+
+      // runWizard birth in the original root (same entropy + now)
+      const { opts: wOpts } = mkOpts(["yes", "1"]);
+      await runWizard(wOpts);
+      const wizardSoul = loadSoul(root);
+
+      expect(setupSoul?.v).toEqual(wizardSoul?.v);
+      expect(setupSoul?.s).toEqual(wizardSoul?.s);
+      expect(setupSoul?.sex).toBe(wizardSoul?.sex);
+    } finally {
+      rmSync(root2, { recursive: true, force: true });
+    }
   });
 });

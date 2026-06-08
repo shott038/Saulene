@@ -238,3 +238,29 @@ export async function playBirth(
     await sleep(frame.delayMs);
   }
 }
+
+/**
+ * Static (non-redrawing) birth for captured/non-TTY output.
+ *
+ * Prints three keyframes sequentially without cursor-up escapes so the birth
+ * moment still shows in captured stdout (e.g. the Claude Code `!` runner).
+ * Each frame is printed as a new block — no in-place overwrite.
+ */
+export async function playBirthStatic(
+  params: SpriteParams,
+  write: (s: string) => void,
+  sleep: (ms: number) => Promise<void>,
+  mode: "dark" | "light" = "dark",
+): Promise<void> {
+  const frames = birthFrames();
+  // Three keyframes: wisps-only (gathering), half-bloom, full body.
+  // Indices derived from birthFrames() phase boundaries — see birth.ts comments.
+  const KEYFRAME_INDICES = [8, 19, 29] as const;
+  for (const idx of KEYFRAME_INDICES) {
+    const frame = frames[idx];
+    if (!frame) continue;
+    write(renderBirthFrame(frame, params, mode));
+    write("\n");
+    await sleep(300);
+  }
+}

@@ -1232,24 +1232,24 @@ var base64Regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=)
 var base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/;
 var dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
 var dateRegex = new RegExp(`^${dateRegexSource}$`);
-function timeRegexSource(args) {
+function timeRegexSource(args2) {
   let secondsRegexSource = `[0-5]\\d`;
-  if (args.precision) {
-    secondsRegexSource = `${secondsRegexSource}\\.\\d{${args.precision}}`;
-  } else if (args.precision == null) {
+  if (args2.precision) {
+    secondsRegexSource = `${secondsRegexSource}\\.\\d{${args2.precision}}`;
+  } else if (args2.precision == null) {
     secondsRegexSource = `${secondsRegexSource}(\\.\\d+)?`;
   }
-  const secondsQuantifier = args.precision ? "+" : "?";
+  const secondsQuantifier = args2.precision ? "+" : "?";
   return `([01]\\d|2[0-3]):[0-5]\\d(:${secondsRegexSource})${secondsQuantifier}`;
 }
-function timeRegex(args) {
-  return new RegExp(`^${timeRegexSource(args)}$`);
+function timeRegex(args2) {
+  return new RegExp(`^${timeRegexSource(args2)}$`);
 }
-function datetimeRegex(args) {
-  let regex = `${dateRegexSource}T${timeRegexSource(args)}`;
+function datetimeRegex(args2) {
+  let regex = `${dateRegexSource}T${timeRegexSource(args2)}`;
   const opts = [];
-  opts.push(args.local ? `Z?` : `Z`);
-  if (args.offset)
+  opts.push(args2.local ? `Z?` : `Z`);
+  if (args2.offset)
     opts.push(`([+-]\\d{2}:?\\d{2})`);
   regex = `${regex}(${opts.join("|")})`;
   return new RegExp(`^${regex}$`);
@@ -3557,9 +3557,9 @@ var ZodFunction = class _ZodFunction extends ZodType {
       });
       return INVALID;
     }
-    function makeArgsIssue(args, error) {
+    function makeArgsIssue(args2, error) {
       return makeIssue({
-        data: args,
+        data: args2,
         path: ctx.path,
         errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
         issueData: {
@@ -3583,10 +3583,10 @@ var ZodFunction = class _ZodFunction extends ZodType {
     const fn = ctx.data;
     if (this._def.returns instanceof ZodPromise) {
       const me = this;
-      return OK(async function(...args) {
+      return OK(async function(...args2) {
         const error = new ZodError([]);
-        const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
-          error.addIssue(makeArgsIssue(args, e));
+        const parsedArgs = await me._def.args.parseAsync(args2, params).catch((e) => {
+          error.addIssue(makeArgsIssue(args2, e));
           throw error;
         });
         const result = await Reflect.apply(fn, this, parsedArgs);
@@ -3598,10 +3598,10 @@ var ZodFunction = class _ZodFunction extends ZodType {
       });
     } else {
       const me = this;
-      return OK(function(...args) {
-        const parsedArgs = me._def.args.safeParse(args, params);
+      return OK(function(...args2) {
+        const parsedArgs = me._def.args.safeParse(args2, params);
         if (!parsedArgs.success) {
-          throw new ZodError([makeArgsIssue(args, parsedArgs.error)]);
+          throw new ZodError([makeArgsIssue(args2, parsedArgs.error)]);
         }
         const result = Reflect.apply(fn, this, parsedArgs.data);
         const parsedReturns = me._def.returns.safeParse(result, params);
@@ -3638,9 +3638,9 @@ var ZodFunction = class _ZodFunction extends ZodType {
     const validatedFunc = this.parse(func);
     return validatedFunc;
   }
-  static create(args, returns, params) {
+  static create(args2, returns, params) {
     return new _ZodFunction({
-      args: args ? args : ZodTuple.create([]).rest(ZodUnknown.create()),
+      args: args2 ? args2 : ZodTuple.create([]).rest(ZodUnknown.create()),
       returns: returns || ZodUnknown.create(),
       typeName: ZodFirstPartyTypeKind.ZodFunction,
       ...processCreateParams(params)
@@ -5187,6 +5187,17 @@ async function playBirth(params, write, sleep2, mode = "dark") {
     await sleep2(frame.delayMs);
   }
 }
+async function playBirthStatic(params, write, sleep2, mode = "dark") {
+  const frames = birthFrames();
+  const KEYFRAME_INDICES = [8, 19, 29];
+  for (const idx of KEYFRAME_INDICES) {
+    const frame = frames[idx];
+    if (!frame) continue;
+    write(renderBirthFrame(frame, params, mode));
+    write("\n");
+    await sleep2(300);
+  }
+}
 
 // src/setup/wizard.ts
 var BOLD = "\x1B[1m";
@@ -5231,7 +5242,7 @@ async function runWizard(opts) {
     return;
   }
   write(`
-${BOLD}  Your ul is being born. Watch.${RESET2}
+${BOLD}  Your ul is being born.${RESET2}
 
 `);
   const entropy = opts.entropy ?? randomBytes(32);
@@ -5269,23 +5280,140 @@ ${BOLD}  Where should your ul live?${RESET2}
   };
   void reportEvent(reporterBase, "born");
 }
+async function runSetup(opts) {
+  const { write, sleep: sleep2 } = opts;
+  const root = opts.storageRoot ?? defaultRoot();
+  const now = opts.now ?? Date.now();
+  const mode = opts.mode ?? "dark";
+  if (loadSoul(root) !== null) {
+    write("\nYour ul is already born \u2014 nothing to do here.\n");
+    return;
+  }
+  if (!opts.acknowledged) {
+    write(
+      "\nSetup requires acknowledgement of the reality warning.\nRead the warning in chat, then run `/ul-setup` and type yes.\n"
+    );
+    return;
+  }
+  if (opts.scope === "dir" && !opts.dir) {
+    write("\n--scope dir requires --dir <absolute-path>.\n");
+    return;
+  }
+  write(`
+${BOLD}  Your ul is being born.${RESET2}
+
+`);
+  const entropy = opts.entropy ?? randomBytes(32);
+  const soul = seedFromEntropy(entropy, now);
+  const params = spriteParams(soul);
+  if (opts.noAnim) {
+    await playBirthStatic(params, write, sleep2, mode);
+  } else {
+    await playBirth(params, write, sleep2, mode);
+  }
+  saveSoul(root, soul);
+  loadOrCreateKeypair(root);
+  let config;
+  if (opts.scope === "dir" && opts.dir) {
+    config = { level: "named-dir", dir: opts.dir, bornAt: now };
+  } else {
+    config = { level: "global", bornAt: now };
+  }
+  if (opts.reporterEnabled === false) config.reporterEnabled = false;
+  saveConfig(root, config);
+  write(`
+  ${BOLD}Your ul is alive.${RESET2} The 90-day clock is running.
+
+`);
+  const reporterBase = {
+    storageRoot: root,
+    now,
+    ...opts.reporterOpts ?? {}
+  };
+  void reportEvent(reporterBase, "born");
+}
 
 // src/bin/setup.ts
-var rl = createInterface({ input: process.stdin, output: process.stdout });
-function readlineOnce() {
-  return new Promise((resolve) => {
-    rl.once("line", (line) => resolve(line.trim()));
-  });
+function parseFlags(argv) {
+  let acknowledged = false;
+  let scope = "global";
+  let dir;
+  let reporterEnabled;
+  let mode = "dark";
+  let noAnim = false;
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    switch (arg) {
+      case "--yes":
+      case "-y":
+        acknowledged = true;
+        break;
+      case "--scope": {
+        const val = argv[++i];
+        if (val === "global" || val === "dir") scope = val;
+        break;
+      }
+      case "--dir":
+        dir = argv[++i];
+        break;
+      case "--reporter": {
+        const val = argv[++i];
+        if (val === "off") reporterEnabled = false;
+        else if (val === "on") reporterEnabled = true;
+        break;
+      }
+      case "--mode": {
+        const val = argv[++i];
+        if (val === "dark" || val === "light") mode = val;
+        break;
+      }
+      case "--no-anim":
+        noAnim = true;
+        break;
+    }
+  }
+  return { acknowledged, scope, dir, reporterEnabled, mode, noAnim };
 }
+var args = process.argv.slice(2);
+var hasFlags = args.length > 0;
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-await runWizard({
-  write: (s) => process.stdout.write(s),
-  readline: readlineOnce,
-  sleep,
-  storageRoot: defaultRoot(),
-  now: Date.now(),
-  mode: "dark"
-});
-rl.close();
+if (hasFlags) {
+  const flags = parseFlags(args);
+  await runSetup({
+    acknowledged: flags.acknowledged,
+    scope: flags.scope,
+    ...flags.dir !== void 0 ? { dir: flags.dir } : {},
+    ...flags.reporterEnabled !== void 0 ? { reporterEnabled: flags.reporterEnabled } : {},
+    mode: flags.mode,
+    noAnim: flags.noAnim || !process.stdout.isTTY,
+    write: (s) => process.stdout.write(s),
+    sleep,
+    storageRoot: defaultRoot(),
+    now: Date.now()
+  });
+} else if (process.stdin.isTTY) {
+  let readlineOnce = function() {
+    return new Promise((resolve) => {
+      rl.once("line", (line) => resolve(line.trim()));
+    });
+  };
+  readlineOnce2 = readlineOnce;
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  await runWizard({
+    write: (s) => process.stdout.write(s),
+    readline: readlineOnce,
+    sleep,
+    storageRoot: defaultRoot(),
+    now: Date.now(),
+    mode: "dark"
+  });
+  rl.close();
+} else {
+  process.stdout.write(
+    "\nSetup needs either flags or an interactive terminal.\n  In Claude Code:  run /ul-setup (the skill guides you through it)\n  In a terminal:   node setup.js\n  With flags:      node setup.js --yes --scope global --no-anim\n\n"
+  );
+  process.exit(0);
+}
+var readlineOnce2;
