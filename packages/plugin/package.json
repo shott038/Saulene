@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc -b",
     "test": "vitest run",
+    "bundle": "tsc -b && node ../../scripts/bundle-plugin.mjs",
     "birth-gif": "tsc -b && node dist/bin/birth-gif.js"
   },
   "dependencies": {

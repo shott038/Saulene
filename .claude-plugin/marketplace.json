@@ -1,0 +1,14 @@
+{
+  "name": "saulene",
+  "owner": {
+    "name": "Samuel Schoettker"
+  },
+  "description": "Saulene — gives your Claude Code agent a unique personality that develops slowly and realistically over time.",
+  "plugins": [
+    {
+      "name": "saulene",
+      "source": "./packages/plugin",
+      "description": "Gives your Claude Code agent a unique personality (an \"ul\") that develops slowly over time. Adds the /ul and /ul-setup skills, three lifecycle hooks, and an MCP server exposing the ul's identity snapshot."
+    }
+  ]
+}
