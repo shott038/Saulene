@@ -144,24 +144,13 @@ export async function runWizard(opts: WizardOpts): Promise<void> {
     config = { level: "global", bornAt: now };
   }
 
-  // ── Step 4: Disclosure notice (reporting is ON by default; press o to opt out) ─────────
-  write(`\n${BOLD}  Public gallery — you're in by default${RESET}\n`);
-  write(
-    `  Your ul will appear on the public Saulene gallery automatically.\n  ${BOLD}What is shared:${RESET} personality type, aspects, stage, and your ul's public key.\n  ${BOLD}What never leaves this machine:${RESET} diary, voice samples, private soul content.\n  ${DIM}To opt out later: set ${BOLD}reporterEnabled: false${DIM} in ${root}/config.json${RESET}\n`,
-  );
-  write(`\n  Press ${BOLD}o${RESET} to opt out now, or anything else to continue: `);
-
-  const optOut = (await readline()).trim().toLowerCase();
-  if (optOut === "o") {
-    config = { ...config, reporterEnabled: false };
-  }
-
   saveConfig(root, config);
 
   write(`\n  ${BOLD}Your ul is alive.${RESET} The 90-day clock is running.\n\n`);
 
-  // ── Step 5: Born event (fire-and-forget) ──────────────────────────────────
-  // Fires by default (reporting is on); skipped only if the user opted out above.
+  // ── Step 4: Born event (fire-and-forget) ──────────────────────────────────
+  // Reporting to the public gallery is ON by default. The disclosure + opt-out
+  // (reporterEnabled:false in ~/.saulene/config.json) live in the README, not the wizard.
   const reporterBase: ReporterOpts = {
     storageRoot: root,
     now,

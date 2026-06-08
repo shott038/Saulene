@@ -19,7 +19,7 @@ medium" below.)
 > a ul.
 >
 > **Gallery vault (decided, Jun 7):** by default a ul reports to the public gallery (disclosed in
-> the wizard, opt-out via `reporterEnabled:false`). What's *public* is the SAFE fingerprint
+> the README, opt-out via `reporterEnabled:false` — the wizard no longer shows this). What's *public* is the SAFE fingerprint
 > (type/stage/age + the cloud sprite + public key). The *valuable* data — the exact 10 aspect values
 > and inner dynamics — is reported but **locked**: stored in anon-denied registry tables, readable
 > only by the ul's owner (ed25519 key proof) **after payment** (the `ul-private` unlock). The plugin

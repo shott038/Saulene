@@ -190,8 +190,8 @@ Legend: `[x]` done · `[~]` in progress · `[ ]` not started.
       = setInterval loop + `signal()` surface for hooks. Consumes the pure renderer sprite; `core`/
       `renderer` stay pure, all IO at the plugin edge. 55 tests; 267/267 workspace green.
 - [x] Setup wizard (`plugin/src/setup/wizard.ts`): reality warning + ack → watch-only birth (seed →
-      persist → birth animation) → pick level → registry disclosure (default-on, `o` to opt out) +
-      `saveConfig`; generates the ed25519 keypair at birth. Neglect-death 90d clock coherent. Run via
+      persist → birth animation) → pick level → `saveConfig`; generates the ed25519 keypair at birth.
+      Reporting is default-on (disclosure + opt-out live in the README, not the wizard). Run via
       the interactive `dist/bin/setup.js` / `/ul-setup`.
 - [x] Plugin manifest: `.claude-plugin/plugin.json` + `hooks/hooks.json` (SessionStart side-effects /
       UserPromptSubmit voice / Stop drift) + `.mcp.json` (bare-MCP fallback) + `skills/ul` &
@@ -221,7 +221,7 @@ Opt-in; public fingerprint only (private soul never leaves the machine).
       logs events). Daily **death-sweep** (`pg_cron` 04:00 UTC → `sweep_neglect_deaths()`). End-to-end
       proven: valid signed heartbeat → 200 + rows; tampered → 401.
 - [x] **Paywall foundation — DONE (see `docs/db-vault-plan.md`, `docs/plugin-safe-surface-plan.md`):**
-      reporting is **default-on** (disclosed in the wizard, opt-out via `config.json`). The DB is split
+      reporting is **default-on** (disclosed in the README, opt-out via `config.json`). The DB is split
       SAFE (public-read: pubkey/mbti/stage/age/sex/sprite) vs VALUABLE (the 10 numbers + dynamics in
       anon-denied `ul_secrets`/`snapshot_secrets`); an `unlocks` table + the **`ul-private`** Edge
       Function gate vault reads behind ed25519 ownership + payment (402 unpaid / 200 paid — verified).
