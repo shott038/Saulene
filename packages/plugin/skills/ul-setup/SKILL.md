@@ -48,9 +48,6 @@ Wait for their choice (1, 2, "global", "dir", or they can type a path).
 - If they choose this directory (option 2 or "dir"): use `--scope dir --dir <absolute-cwd>`
 - If they type a custom absolute path: use `--scope dir --dir <their-path>`
 
-Optionally ask about reporting: "The public gallery tracks your ul's public stats (no private data). Report to the gallery? [yes/no, default yes]"
-- If they say no: add `--reporter off` to the command.
-
 ## Step 3 — Run the one-shot setup command
 
 Build the command from the answers above and run it via `!`:
@@ -63,11 +60,6 @@ Build the command from the answers above and run it via `!`:
 **This-directory example:**
 ```
 ! node ${CLAUDE_PLUGIN_ROOT}/dist/bin/setup.js --yes --scope dir --dir /absolute/path --no-anim
-```
-
-**With reporter off:**
-```
-! node ${CLAUDE_PLUGIN_ROOT}/dist/bin/setup.js --yes --scope global --no-anim --reporter off
 ```
 
 **CRITICAL:** Only pass `--yes` because the user typed "yes" in Step 1. Never pass `--yes` automatically. The acknowledgement must be real.
