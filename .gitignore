@@ -39,6 +39,15 @@ coverage/
 # Local working context (not shared)
 CLAUDE.md
 
+# Internal planning / scratch docs — kept local, not part of the public repo
+NOTES.md
+BUILD_GUIDE.md
+docs/db-vault-plan.md
+docs/registry-website-plan.md
+docs/plugin-safe-surface-plan.md
+docs/ab-validation-plan.md
+docs/cli-perception-plan.md
+
 # Feature worktrees (each tracks its own branch; never part of main's tree)
 .claude/worktrees/
 
