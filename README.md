@@ -17,7 +17,7 @@
 
 </div>
 
-An **ul** is the soul behind your agent. A personality sitting underneath everything it does, that slowly turns into something nobody else has.
+An **ul** is like a soul for your agent. A personality sitting underneath everything it does, that slowly turns into something nobody else has.
 
 You don't write it. You don't pick traits off a menu like a video game character. You install the plugin, run `/ul-setup`, and a brand new unformed personality is *born* from a single random seed, built on the same 10 traits from Jordan Peterson's Big Five work (the real aspect research, not a horoscope).
 
