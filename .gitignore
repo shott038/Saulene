@@ -1,7 +1,7 @@
 node_modules/
 dist/
 # The plugin's bundled dist IS shipped — Claude Code runs it as-is with no build
-# step on the user's machine. Track ONLY the 6 self-contained esbuild bundles;
+# step on the user's machine. Track ONLY the self-contained esbuild bundles;
 # keep tsc output (.d.ts/.map), dev-only bins (guard/birth-gif), and every other
 # dist/ ignored. Regenerate the bundles with `pnpm bundle`.
 !packages/plugin/dist/
@@ -13,6 +13,8 @@ packages/plugin/dist/bin/*
 !packages/plugin/dist/bin/hook-user-prompt-submit.js
 !packages/plugin/dist/bin/setup.js
 !packages/plugin/dist/bin/skill-ul.js
+!packages/plugin/dist/bin/statusline.js
+!packages/plugin/dist/bin/enable-statusline.js
 !packages/plugin/dist/mcp/
 packages/plugin/dist/mcp/*
 !packages/plugin/dist/mcp/bin.js

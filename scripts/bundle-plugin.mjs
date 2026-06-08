@@ -36,6 +36,8 @@ const ENTRYPOINTS = [
   { in: "bin/hook-user-prompt-submit.ts", out: "bin/hook-user-prompt-submit.js" },
   { in: "bin/setup.ts", out: "bin/setup.js" },
   { in: "bin/skill-ul.ts", out: "bin/skill-ul.js" },
+  { in: "bin/statusline.ts", out: "bin/statusline.js" },
+  { in: "bin/enable-statusline.ts", out: "bin/enable-statusline.js" },
   { in: "mcp/bin.ts", out: "mcp/bin.js" },
 ];
 
