@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    // tsc -b emits its typecheck byproduct here, NOT into dist/. dist/ is owned solely
+    // by esbuild (pnpm bundle) — the committed dist/bin/*.js are inlined esbuild bundles.
+    // If tsc emitted into dist/ it would CLOBBER those bundles with thin, non-inlined
+    // output (external `../statusline/*` imports), breaking the shipped plugin and any
+    // test that executes them. Keeping tsc out of dist/ makes `pnpm check` deterministic.
+    "outDir": "dist-tsc"
   },
   "include": ["src"],
   "references": [

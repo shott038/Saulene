@@ -1,5 +1,8 @@
 node_modules/
 dist/
+# tsc -b typecheck byproduct for the plugin (kept OUT of dist/ so it never clobbers the
+# shipped esbuild bundles). Never committed.
+dist-tsc/
 # The plugin's bundled dist IS shipped — Claude Code runs it as-is with no build
 # step on the user's machine. Track ONLY the self-contained esbuild bundles;
 # keep tsc output (.d.ts/.map), dev-only bins (guard/birth-gif), and every other
