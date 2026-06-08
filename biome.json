@@ -4,6 +4,7 @@
   "files": {
     "ignore": [
       "dist",
+      "dist-tsc",
       "node_modules",
       "*.tsbuildinfo",
       ".claude/worktrees",
