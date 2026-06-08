@@ -16,3 +16,8 @@ export type { RgbColor, PixelGrid, RasterizerColors, OverlayFlags } from "./rast
 
 export { birthFrames, renderBirthFrame, playBirth } from "./birth.js";
 export type { BirthFrame } from "./birth.js";
+
+export { renderStatuslineFrame } from "./frame.js";
+
+export { mergeStatusLineSettings, buildLauncherScript } from "./enable.js";
+export type { StatusLineConfig } from "./enable.js";

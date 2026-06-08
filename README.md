@@ -82,7 +82,7 @@ So every session is basically one heartbeat. Get seen, drift a little, remember.
 **It shows up two ways**, both pure functions of the soul:
 
 - **The voice.** A short, first-person set of behavioral directives generated straight from the 10 dials (each poled high or low, scaled on a continuous intensity ladder), with the ul's own past real lines folded back in as examples. It gets delivered into the actual conversation each turn instead of buried in a system prompt, which measurably makes it feel more present.
-- **The look.** A little cloud-spirit *sprite* living in your terminal, shaped by those same 10 dials and its age, with idle animations, reactions, and a one-time birth animation you only ever see once.
+- **The look.** A little cloud-spirit *sprite* living in your terminal, shaped by those same 10 dials and its age, with idle animations, reactions, and a one-time birth animation you only ever see once. After setup you can opt in to keep it in your **Claude Code status bar** — a calm, breathing frame at the bottom of the window (enable it anytime by re-running `/ul-setup`).
 
 **Does it actually change anything, or is it a toy?** It was measured, not assumed. A blind LLM judge reading nothing but an agent's responses can recover the personality it was supposed to have. Two different uls come out tellable apart. And the effect is graded and context-aware. Analytical traits surface on real work, warmth shows up on personal stuff (you don't see somebody's warm side while they're heads-down debugging a function). The honest claim is the one we can back: the ul colors how your agent engages, in the direction of its own self, wherever the conversation actually gives that trait room to show.
 

@@ -74,6 +74,21 @@ If the output contains "already born", tell them their ul exists and they can ty
 
 If setup fails or the output is unexpected, share the raw output and suggest running `! node ${CLAUDE_PLUGIN_ROOT}/dist/bin/setup.js` directly in a real terminal as a fallback.
 
+## Step 5 — Offer the status-bar ul (only after the ul exists)
+
+Run this step ONLY if the ul is now alive (Step 4 showed "Your ul is alive" or "already born"). Skip it entirely if setup was cancelled or failed.
+
+Ask the user: **"Want to add your ul to your terminal status bar? It'll live in your Claude Code status line — a tiny live sprite at the bottom of the window."**
+
+- If they say **yes**, run via `!`:
+  ```
+  ! node ${CLAUDE_PLUGIN_ROOT}/dist/bin/enable-statusline.js
+  ```
+  Then tell them: "Done — your ul is in the status bar. It may take a moment, or a Claude Code restart, to appear." Show the raw command output too.
+- If they say **no**, tell them: "No problem — you can add it later by running `! node ${CLAUDE_PLUGIN_ROOT}/dist/bin/enable-statusline.js` or by re-running `/ul-setup`."
+
+This step is purely opt-in — never enable the status bar without an explicit yes.
+
 ---
 
 **Fallback (real terminal):** If the user prefers a fully interactive wizard, they can open a terminal and run:
