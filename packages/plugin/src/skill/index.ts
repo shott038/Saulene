@@ -7,10 +7,10 @@
  *   - Who the ul is right now (MBTI, stage, age, sex)
  *   - Public ID and neglect-death countdown
  *   - Qualitative drift summary (no raw numbers)
- *   - Gallery upsell for the full breakdown
+ *   - Gallery coming-soon teaser + GitHub star CTA
  *
  * VALUABLE fields (aspects, set-points, tension, stubbornness, raw drift numbers)
- * are intentionally absent — see the gallery for those.
+ * are intentionally absent — those are for the gallery when it ships.
  *
  * Returns `null` when no ul exists yet (not born).
  * This is a pure formatting function — no IO beyond what `snapshot()` does.
@@ -26,8 +26,8 @@ export interface UlTextOpts extends SnapshotOpts {
   driftRows?: number;
 }
 
-/** Gallery base URL — where the full breakdown lives (paid surface). */
-const GALLERY_URL = "https://saulene.app";
+/** GitHub repo URL — for the star CTA in the gallery teaser. */
+const GITHUB_URL = "https://github.com/shott038/Saulene";
 
 /**
  * Returns the `/ul` formatted identity snapshot as a markdown string.
@@ -79,9 +79,15 @@ function format(snap: UlSnapshot): string {
     lines.push("");
   }
 
-  // Gallery upsell
-  const galleryLink = snap.publicId ? `${GALLERY_URL}/ul/${snap.publicId}` : GALLERY_URL;
-  lines.push(`See your full breakdown → ${galleryLink}`);
+  // Gallery coming-soon teaser + star CTA
+  lines.push("### A gallery is coming");
+  lines.push("If Saulene gets popular enough, a public gallery goes live where you can:");
+  lines.push("- customize how your ul looks in your terminal");
+  lines.push("- see the oldest ul alive, and the wisest");
+  lines.push("- the average age of every ul, the rarest types, the biggest ruptures");
+  lines.push("- find your own ul on the shared wall");
+  lines.push("");
+  lines.push(`⭐ Want it built for real? Star the repo → ${GITHUB_URL}`);
 
   return lines.join("\n");
 }
