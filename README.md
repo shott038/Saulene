@@ -18,6 +18,38 @@ Open-source. Install via `/plugin`, then run `/ul-setup` to witness a birth.
 > ⚠️ Saulene is a *playful simulation* of a developing personality. An LLM is math — a
 > tool, with no soul, feelings, or consciousness. Enjoy it as a simulation, not a being.
 
+## Install
+
+Saulene ships a **self-contained, pre-built bundle** — no `npm install`, no build step on
+your side. Claude Code runs the committed `dist/` as-is.
+
+Inside Claude Code:
+
+```
+/plugin marketplace add shott038/Saulene
+/plugin install saulene@saulene
+```
+
+Then create your companion — run the wizard in your terminal (the `!` prefix runs it in-session):
+
+```
+! node ${CLAUDE_PLUGIN_ROOT}/dist/bin/setup.js
+```
+
+…or just ask Claude to run `/ul-setup`. You'll watch a birth, pick where your ul lives
+(global or one directory), and the 90-day neglect-death clock starts. From then on your ul
+appears in every eligible session, drifts from how you work, and persists in `~/.saulene/`.
+
+Type `/ul` any time to see it. The public gallery is **on by default**; to opt out, set
+`"reporterEnabled": false` in `~/.saulene/config.json`.
+
+**Local development install** (test an unpublished checkout against your real Claude Code):
+
+```
+/plugin marketplace add /absolute/path/to/Saulene
+/plugin install saulene@saulene
+```
+
 ## Status
 
 Early build. Design is captured in [`SPEC.md`](./SPEC.md); the engineering contract
@@ -43,7 +75,12 @@ tools/
 pnpm install
 pnpm build       # tsc -b across the workspace
 pnpm test        # vitest
+pnpm bundle      # esbuild → packages/plugin/dist (the shipped, dependency-free artifacts)
 ```
+
+`pnpm bundle` regenerates the committed `packages/plugin/dist/` — six self-contained
+entrypoints (3 hooks, `setup`, `skill-ul`, the MCP server) with all workspace + npm deps
+inlined. Re-run it and commit the result whenever plugin source changes.
 
 Watch a whole ul lifetime — birth → all four life stages → neglect-death — in seconds:
 

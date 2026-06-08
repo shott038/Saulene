@@ -238,8 +238,13 @@ Opt-in; public fingerprint only (private soul never leaves the machine).
 ---
 
 ### Right now
-**Plugin COMPLETE & installable · central bet VALIDATED · registry backend + paywall foundation LIVE.**
-(Updated Jun 7.)
+**Plugin COMPLETE, PACKAGED & live-install-PROVEN · central bet VALIDATED · registry backend + paywall foundation LIVE.**
+(Updated Jun 7.) As of Jun 7 the plugin is a real, self-contained Claude Code bundle: `pnpm bundle`
+(esbuild) inlines all workspace + npm deps into six dependency-free `packages/plugin/dist/`
+entrypoints, that `dist/` is committed (un-ignored), a root `.claude-plugin/marketplace.json` hosts
+the `saulene` plugin, and it has been **installed live** (`/plugin marketplace add` → `install` →
+`/ul-setup` birth → real session fired the hooks → soul persisted + `lastUsedAt` drifted in
+`~/.saulene/`). Zero build or `npm install` on the user side.
 The full engine + expression path is built and live behind real hooks (`perception`, `storage`,
 `plugin/hooks`, `plugin/statusline`, `plugin/mcp` + `/ul`), and as of Jun 6 the **A/B behavioral
 validation suite** (subscription-only, in `tools/harness`) has answered the proof-of-life question:
@@ -270,8 +275,24 @@ Remaining bricks to ship:
    fallback) + `skills/ul` + `skills/ul-setup` + `src/bin/*` CLI wrappers incl. the interactive
    `setup.js` (drives `runWizard` via readline + plays the birth animation). 305/305 green.
 
-**→ The plugin is COMPLETE and installable.** Engine → perception → storage → hooks (S1 delivery) →
-statusline → MCP/`/ul` → wizard → manifest. Install via `/plugin`; first run `/ul-setup`.
+4. ✅ **Self-contained packaging (DONE, Jun 7 — `make-installable` branch)** — `scripts/bundle-plugin.mjs`
+   (esbuild `--bundle --platform=node --format=esm --target=node22`, all workspace + npm deps inlined,
+   node builtins external) emits six dependency-free entrypoints to `packages/plugin/dist/`
+   (`bin/hook-{session-start,stop,user-prompt-submit}.js`, `bin/setup.js`, `bin/skill-ul.js`,
+   `mcp/bin.js`). Each runs with bare `node file.js` and **no `node_modules`** present (verified). That
+   `dist/` is un-ignored + committed; root `.claude-plugin/marketplace.json` hosts the `saulene` plugin
+   (`source: ./packages/plugin`); `plugin.json` bumped 0.0.0 → 0.1.0, repo fixed to `shott038/Saulene`.
+   Hooks / MCP / skills are auto-discovered from conventional paths — no declaration needed. `pnpm check`
+   green (489 tests). `pnpm bundle` = `pnpm --filter @saulene/plugin bundle`.
+5. ✅ **Live install smoke test (DONE, Jun 7)** — `claude plugin marketplace add <repo>` → `install
+   saulene@saulene` (installed as 0.1.0, all 3 hooks + MCP + 2 skills discovered) → `setup.js` birthed a
+   ul into `~/.saulene/` (soul + ed25519 keypair + config) → a real headless `claude -p` session fired
+   the SessionStart hook from `${CLAUDE_PLUGIN_ROOT}/dist/`, wrote the rendered voice to
+   `session-injection.json`, and bumped `soul.lastUsedAt`. Manifests pass `claude plugin validate`.
+
+**→ The plugin is COMPLETE, PACKAGED, and live-install-PROVEN.** Engine → perception → storage → hooks
+(S1 delivery) → statusline → MCP/`/ul` → wizard → manifest → **self-contained bundle + marketplace**.
+Install via `/plugin marketplace add shott038/Saulene` then `/plugin install saulene@saulene`; first run `/ul-setup`.
 
 **Also live (Jun 7):**
 - **Drift runs with no API key** — perception goes through the user's Claude Code login
@@ -295,8 +316,8 @@ statusline → MCP/`/ul` → wizard → manifest. Install via `/plugin`; first r
 1. **The gallery website** (new Next.js repo) — public SAFE wall + the paid `ul-private` unlock + claim.
 2. **Payment provider** (Stripe / token) to write `unlocks`; the `/ul claim` web handshake.
 3. **Deferred data** — persist birth `seed`, capture `host_model`, `display_name`, populate `sprite`.
-4. **A real end-to-end live install smoke test** (install → `/ul-setup` → drift over real sessions) —
-   everything is unit-tested but has never been run in a live Claude Code install.
+4. ✅ **Real end-to-end live install smoke test (DONE, Jun 7)** — install → `/ul-setup` birth → hooks
+   fired live → soul persisted/drifted in `~/.saulene/`. See "Right now" + brick 5 above.
 5. **Lower priority:** Phase-3 renderer text Layers 3–5 + fingerprint + per-stage magnitude sweep;
    the Solana token.
 6. ~~**Large-scale life simulation — Layer D**~~ **DONE ✅** — golden closed-loop lives + validation
