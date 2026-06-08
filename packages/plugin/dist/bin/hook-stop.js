@@ -5009,10 +5009,10 @@ async function setupSkills(ctx) {
     try {
       const versionId = await resolveSkillVersion(client, skill.skill_id, skill.version);
       const version = await client.beta.skills.versions.retrieve(versionId, { skill_id: skill.skill_id });
-      let dirname8 = path3.basename(version.name.trim());
-      if (dirname8 === "" || dirname8 === "." || dirname8 === "..")
-        dirname8 = skill.skill_id;
-      const dest = path3.resolve(skillsRoot, dirname8);
+      let dirname9 = path3.basename(version.name.trim());
+      if (dirname9 === "" || dirname9 === "." || dirname9 === "..")
+        dirname9 = skill.skill_id;
+      const dest = path3.resolve(skillsRoot, dirname9);
       if (dest !== skillsRoot && !dest.startsWith(skillsRoot + path3.sep)) {
         log.warn("skill name escapes the skills dir; skipping", {
           component: "agent-tool-context",
@@ -11397,7 +11397,7 @@ var init_sdk = __esm({
 });
 
 // src/bin/hook-stop.ts
-import { readFileSync as readFileSync5 } from "node:fs";
+import { readFileSync as readFileSync6 } from "node:fs";
 
 // src/hooks/cli-llm.ts
 import { spawn as nodeSpawn } from "node:child_process";
@@ -16503,20 +16503,148 @@ async function reportEvent(opts, kind, meta) {
   void postToRegistry(fetchFn, baseUrl, "/events", payload2);
 }
 
+// src/hooks/perception-state.ts
+import { mkdirSync as mkdirSync5, readFileSync as readFileSync5, rmSync, writeFileSync as writeFileSync4 } from "node:fs";
+import { dirname as dirname8, join as join7 } from "node:path";
+var STATE_FILENAME = "perception-state.json";
+var LOCK_FILENAME = "perception.lock";
+var DEFAULT_PERCEPTION_INTERVAL_MS = 15 * 60 * 1e3;
+var DEFAULT_LOCK_TTL_MS = 10 * 60 * 1e3;
+var DEFAULT_STATE = { lastPerceivedAt: 0, watermark: null };
+var statePath = (root) => join7(root, STATE_FILENAME);
+var lockPath = (root) => join7(root, LOCK_FILENAME);
+function resolveIntervalMs(env = process.env) {
+  const raw2 = env.SAULENE_PERCEPTION_INTERVAL_MS;
+  if (raw2 !== void 0) {
+    const parsed = Number.parseInt(raw2, 10);
+    if (Number.isFinite(parsed) && parsed > 0) return parsed;
+  }
+  return DEFAULT_PERCEPTION_INTERVAL_MS;
+}
+function loadPerceptionState(root) {
+  let raw2;
+  try {
+    raw2 = JSON.parse(readFileSync5(statePath(root), "utf8"));
+  } catch {
+    return { ...DEFAULT_STATE };
+  }
+  if (!raw2 || typeof raw2 !== "object" || Array.isArray(raw2)) return { ...DEFAULT_STATE };
+  const obj = raw2;
+  const lastPerceivedAt = typeof obj.lastPerceivedAt === "number" ? obj.lastPerceivedAt : 0;
+  const watermark = typeof obj.watermark === "number" ? obj.watermark : null;
+  return { lastPerceivedAt, watermark };
+}
+function savePerceptionState(root, state) {
+  const file = statePath(root);
+  mkdirSync5(dirname8(file), { recursive: true });
+  writeFileSync4(file, `${JSON.stringify(state, null, 2)}
+`, "utf8");
+}
+function defaultIsAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (err) {
+    return err.code === "EPERM";
+  }
+}
+function acquireLock(root, opts) {
+  const { now, ttlMs, pid = process.pid, isAlive = defaultIsAlive } = opts;
+  const file = lockPath(root);
+  mkdirSync5(dirname8(file), { recursive: true });
+  const mine = JSON.stringify({ pid, ts: now });
+  try {
+    writeFileSync4(file, mine, { flag: "wx" });
+    return true;
+  } catch {
+    let info = null;
+    try {
+      const parsed = JSON.parse(readFileSync5(file, "utf8"));
+      if (parsed && typeof parsed.pid === "number" && typeof parsed.ts === "number") {
+        info = parsed;
+      }
+    } catch {
+      info = null;
+    }
+    const fresh = info !== null && now - info.ts < ttlMs;
+    const alive = info !== null && isAlive(info.pid);
+    if (fresh && alive) return false;
+    try {
+      writeFileSync4(file, mine);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+}
+function releaseLock(root, pid = process.pid) {
+  const file = lockPath(root);
+  try {
+    const parsed = JSON.parse(readFileSync5(file, "utf8"));
+    if (parsed?.pid !== pid) return;
+  } catch {
+  }
+  try {
+    rmSync(file, { force: true });
+  } catch {
+  }
+}
+function sliceTranscript(rawTranscript, watermark) {
+  const lines = rawTranscript.split("\n");
+  let maxTs = null;
+  let sawTimestamp = false;
+  const kept = [];
+  for (const line of lines) {
+    if (line.trim() === "") continue;
+    let ts = null;
+    try {
+      const obj = JSON.parse(line);
+      if (typeof obj.timestamp === "string") {
+        const parsed = Date.parse(obj.timestamp);
+        if (!Number.isNaN(parsed)) ts = parsed;
+      }
+    } catch {
+    }
+    if (ts === null) continue;
+    sawTimestamp = true;
+    if (maxTs === null || ts > maxTs) maxTs = ts;
+    if (watermark === null || ts > watermark) kept.push(line);
+  }
+  if (!sawTimestamp) return { sliceText: rawTranscript, newWatermark: watermark };
+  return { sliceText: kept.join("\n"), newWatermark: maxTs };
+}
+
 // src/hooks/stop.ts
 var PERCEPTION_ATTEMPTS = 2;
 async function stop(opts) {
   const root = opts.storageRoot ?? defaultRoot();
   const now = opts.now ?? Date.now();
   const sessionId = opts.sessionId ?? randomUUID3();
-  let soul = loadSoul(root);
+  const soul = loadSoul(root);
   if (!soul) return;
   const priorMp = soul.mp;
+  const intervalMs = opts.intervalMs ?? resolveIntervalMs();
+  const lockTtlMs = opts.lockTtlMs ?? DEFAULT_LOCK_TTL_MS;
+  const state = loadPerceptionState(root);
+  if (now - state.lastPerceivedAt < intervalMs) return;
+  const { sliceText, newWatermark } = sliceTranscript(opts.transcript, state.watermark);
+  if (sliceText.trim() === "") return;
+  if (!acquireLock(root, { now, ttlMs: lockTtlMs })) return;
+  savePerceptionState(root, { lastPerceivedAt: now, watermark: state.watermark });
+  try {
+    await runDrift({ ...opts, soul, root, now, sessionId, priorMp, sliceText, newWatermark });
+  } finally {
+    releaseLock(root);
+  }
+}
+async function runDrift(args) {
+  const { root, now, sessionId, priorMp, sliceText, newWatermark } = args;
+  let soul = args.soul;
   let result;
   let lastErr;
   for (let attempt = 1; attempt <= PERCEPTION_ATTEMPTS; attempt++) {
     try {
-      result = await perceiveDetailed(opts.transcript, opts.llm);
+      result = await perceiveDetailed(sliceText, args.llm);
       break;
     } catch (err) {
       if (err instanceof PerceptionError) {
@@ -16581,7 +16709,8 @@ async function stop(opts) {
     timestamp: now,
     text: judgment.diary
   });
-  const reporterBase = { storageRoot: root, now, ...opts.reporterOpts };
+  savePerceptionState(root, { lastPerceivedAt: now, watermark: newWatermark });
+  const reporterBase = { storageRoot: root, now, ...args.reporterOpts };
   if (priorStage !== stage) {
     void reportEvent(reporterBase, "stage_change", { from: priorStage, to: stage });
   }
@@ -16605,7 +16734,7 @@ function guardIfPerception() {
 
 // src/bin/hook-stop.ts
 guardIfPerception();
-var raw = readFileSync5(0, "utf8");
+var raw = readFileSync6(0, "utf8");
 var payload = JSON.parse(raw);
 var transcriptPath = payload.transcript_path;
 if (!transcriptPath) {
@@ -16615,7 +16744,7 @@ if (!transcriptPath) {
 }
 var transcript;
 try {
-  transcript = readFileSync5(transcriptPath, "utf8");
+  transcript = readFileSync6(transcriptPath, "utf8");
 } catch {
   process.stdout.write(`${JSON.stringify({ continue: true })}
 `);

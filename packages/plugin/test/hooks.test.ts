@@ -8,7 +8,7 @@
  * directory (~/.saulene) is NEVER touched — every call uses the temp root.
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, sep } from "node:path";
 import { type Soul, seedFromEntropy } from "@saulene/core";
@@ -17,6 +17,15 @@ import type { SessionJudgment } from "@saulene/perception";
 import { loadSoul, readDiary, readLedger, saveSoul } from "@saulene/storage";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { hasGitAncestor, isGated, loadConfig, sauleneRoot } from "../src/hooks/config.js";
+import {
+  acquireLock,
+  loadPerceptionState,
+  lockPath,
+  releaseLock,
+  resolveIntervalMs,
+  sliceTranscript,
+  statePath,
+} from "../src/hooks/perception-state.js";
 import { readSessionCache } from "../src/hooks/session-cache.js";
 import { sessionStart } from "../src/hooks/session-start.js";
 import { stop } from "../src/hooks/stop.js";
@@ -60,6 +69,16 @@ class FakeLlmClient implements LlmClient {
 class BadJsonLlmClient implements LlmClient {
   async complete(_prompt: string): Promise<string> {
     return "not valid json {{{";
+  }
+}
+
+/** Records every prompt it's asked to complete — lets tests assert WHAT was perceived (delta). */
+class CapturingLlmClient implements LlmClient {
+  readonly prompts: string[] = [];
+  constructor(private readonly response: SessionJudgment) {}
+  async complete(prompt: string): Promise<string> {
+    this.prompts.push(prompt);
+    return JSON.stringify(this.response);
   }
 }
 
@@ -565,5 +584,232 @@ describe("stop", () => {
     // intellect v should have shifted upward from its initial value (assuming natural > 0.5 seed).
     // The exact delta depends on the soul seed; just verify the pipeline ran and soul is valid.
     expect(updated?.mp).toBeGreaterThan(0);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// perception-state: pure helpers (slice, lock, interval)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("sliceTranscript", () => {
+  const ms = (iso: string): number => Date.parse(iso);
+  const T1 = "2026-06-08T04:00:00.000Z";
+  const T2 = "2026-06-08T04:05:00.000Z";
+  const jsonl =
+    `${JSON.stringify({ type: "user", timestamp: T1, message: "FIRST about cats" })}\n` +
+    `${JSON.stringify({ type: "assistant", timestamp: T2, message: "SECOND about dogs" })}`;
+
+  it("with a null watermark, feeds all timestamped lines and reports the newest ts", () => {
+    const { sliceText, newWatermark } = sliceTranscript(jsonl, null);
+    expect(sliceText).toContain("FIRST");
+    expect(sliceText).toContain("SECOND");
+    expect(newWatermark).toBe(ms(T2));
+  });
+
+  it("slices to only lines strictly after the watermark", () => {
+    const { sliceText, newWatermark } = sliceTranscript(jsonl, ms(T1));
+    expect(sliceText).toContain("SECOND");
+    expect(sliceText).not.toContain("FIRST");
+    expect(newWatermark).toBe(ms(T2));
+  });
+
+  it("returns an empty slice when the watermark is at/after the newest message", () => {
+    const { sliceText } = sliceTranscript(jsonl, ms(T2));
+    expect(sliceText.trim()).toBe("");
+  });
+
+  it("drops untimestamped metadata lines from the delta", () => {
+    const withMeta = `${JSON.stringify({ type: "agent-color", agentColor: "cyan" })}\n${jsonl}`;
+    const { sliceText } = sliceTranscript(withMeta, ms(T1));
+    expect(sliceText).not.toContain("agent-color");
+    expect(sliceText).toContain("SECOND");
+  });
+
+  it("falls back to the whole transcript when no line has a parseable timestamp", () => {
+    const plain = "User: hi\nAssistant: hello there";
+    const { sliceText, newWatermark } = sliceTranscript(plain, 123);
+    expect(sliceText).toBe(plain); // whole thing
+    expect(newWatermark).toBe(123); // watermark unchanged
+  });
+});
+
+describe("resolveIntervalMs", () => {
+  it("defaults to 15 minutes with no env override", () => {
+    expect(resolveIntervalMs({})).toBe(15 * 60 * 1000);
+  });
+  it("honors a positive integer env override", () => {
+    expect(resolveIntervalMs({ SAULENE_PERCEPTION_INTERVAL_MS: "1000" })).toBe(1000);
+  });
+  it("ignores a non-numeric or non-positive env value", () => {
+    expect(resolveIntervalMs({ SAULENE_PERCEPTION_INTERVAL_MS: "nope" })).toBe(15 * 60 * 1000);
+    expect(resolveIntervalMs({ SAULENE_PERCEPTION_INTERVAL_MS: "0" })).toBe(15 * 60 * 1000);
+  });
+});
+
+describe("acquireLock / releaseLock", () => {
+  it("acquires when no lock exists, then a held fresh lock blocks a second acquire", () => {
+    const ttl = 10 * 60 * 1000;
+    expect(acquireLock(root, { now: NOW, ttlMs: ttl, pid: 4242, isAlive: () => true })).toBe(true);
+    // A different live pid trying to acquire the same fresh lock is refused.
+    expect(acquireLock(root, { now: NOW, ttlMs: ttl, pid: 9999, isAlive: () => true })).toBe(false);
+  });
+
+  it("takes over a stale lock (older than the TTL)", () => {
+    const ttl = 10 * 60 * 1000;
+    writeFileSync(lockPath(root), JSON.stringify({ pid: 4242, ts: NOW - ttl - 1 }), "utf8");
+    expect(acquireLock(root, { now: NOW, ttlMs: ttl, pid: 9999, isAlive: () => true })).toBe(true);
+  });
+
+  it("takes over a lock whose owning pid is dead", () => {
+    const ttl = 10 * 60 * 1000;
+    writeFileSync(lockPath(root), JSON.stringify({ pid: 4242, ts: NOW }), "utf8");
+    expect(acquireLock(root, { now: NOW, ttlMs: ttl, pid: 9999, isAlive: () => false })).toBe(true);
+  });
+
+  it("releaseLock removes our lock but leaves another owner's lock intact", () => {
+    writeFileSync(lockPath(root), JSON.stringify({ pid: 4242, ts: NOW }), "utf8");
+    releaseLock(root, 9999); // not ours → left intact
+    expect(existsSync(lockPath(root))).toBe(true);
+    releaseLock(root, 4242); // ours → removed
+    expect(existsSync(lockPath(root))).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// stop: throttle + single-flight + delta
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("stop — throttle / single-flight / delta", () => {
+  const TRANSCRIPT =
+    "User: can you think of creative approaches?\n" +
+    "Assistant: we brainstormed several novel approaches to the problem.";
+
+  const ms = (iso: string): number => Date.parse(iso);
+  const T1 = "2026-06-08T04:00:00.000Z";
+  const T2 = "2026-06-08T04:05:00.000Z";
+  // Distinctive markers (not words that appear in the perception prompt template) so the
+  // assertions test the SLICE, not incidental prompt wording.
+  const JSONL =
+    `${JSON.stringify({ type: "user", timestamp: T1, message: "creative idea about ZEBRAMARK" })}\n` +
+    `${JSON.stringify({ type: "assistant", timestamp: T2, message: "creative idea about WALRUSMARK" })}`;
+
+  /** Seed the throttle/delta state file directly. */
+  function writeState(lastPerceivedAt: number, watermark: number | null): void {
+    writeFileSync(statePath(root), JSON.stringify({ lastPerceivedAt, watermark }), "utf8");
+  }
+
+  it("throttles: perceives once within the interval, again after it elapses", async () => {
+    saveSoul(root, mintSoul());
+    const llm = new CapturingLlmClient(FAKE_JUDGMENT);
+    const interval = 15 * 60 * 1000;
+
+    await stop({ transcript: TRANSCRIPT, llm, storageRoot: root, now: NOW, intervalMs: interval });
+    expect(llm.prompts).toHaveLength(1);
+    const mpAfterFirst = loadSoul(root)?.mp;
+
+    // Second Stop within the interval → cheap no-op, soul untouched.
+    await stop({
+      transcript: TRANSCRIPT,
+      llm,
+      storageRoot: root,
+      now: NOW + 1000,
+      intervalMs: interval,
+    });
+    expect(llm.prompts).toHaveLength(1);
+    expect(loadSoul(root)?.mp).toBe(mpAfterFirst);
+
+    // Third Stop after the interval elapses → perceives again.
+    await stop({
+      transcript: TRANSCRIPT,
+      llm,
+      storageRoot: root,
+      now: NOW + interval + 1,
+      intervalMs: interval,
+    });
+    expect(llm.prompts).toHaveLength(2);
+  });
+
+  it("single-flight: a held fresh lock makes stop a no-op", async () => {
+    saveSoul(root, mintSoul());
+    const llm = new CapturingLlmClient(FAKE_JUDGMENT);
+    // A fresh lock owned by THIS (alive) process → genuinely held.
+    writeFileSync(lockPath(root), JSON.stringify({ pid: process.pid, ts: NOW }), "utf8");
+
+    await stop({
+      transcript: TRANSCRIPT,
+      llm,
+      storageRoot: root,
+      now: NOW,
+      lockTtlMs: 10 * 60 * 1000,
+    });
+    expect(llm.prompts).toHaveLength(0);
+  });
+
+  it("single-flight: a stale lock is taken over and perception proceeds", async () => {
+    saveSoul(root, mintSoul());
+    const llm = new CapturingLlmClient(FAKE_JUDGMENT);
+    const ttl = 10 * 60 * 1000;
+    writeFileSync(lockPath(root), JSON.stringify({ pid: process.pid, ts: NOW - ttl - 1 }), "utf8");
+
+    await stop({ transcript: TRANSCRIPT, llm, storageRoot: root, now: NOW, lockTtlMs: ttl });
+    expect(llm.prompts).toHaveLength(1);
+    // Lock released after a clean run.
+    expect(existsSync(lockPath(root))).toBe(false);
+  });
+
+  it("releases the lock even when perception fails", async () => {
+    saveSoul(root, mintSoul());
+    const failing: LlmClient = {
+      complete: async () => {
+        throw new Error("ECONNREFUSED");
+      },
+    };
+
+    await stop({ transcript: TRANSCRIPT, llm: failing, storageRoot: root, now: NOW });
+    expect(existsSync(lockPath(root))).toBe(false); // released in finally
+
+    // The attempt advanced the throttle clock but NOT the watermark (failed pass re-tries).
+    const state = loadPerceptionState(root);
+    expect(state.lastPerceivedAt).toBe(NOW);
+    expect(state.watermark).toBeNull();
+  });
+
+  it("delta: feeds only turns after the watermark and advances it on success", async () => {
+    saveSoul(root, mintSoul());
+    writeState(0, ms(T1)); // already perceived up to T1; clock cold so throttle passes
+    const llm = new CapturingLlmClient(FAKE_JUDGMENT);
+
+    await stop({ transcript: JSONL, llm, storageRoot: root, now: NOW });
+
+    expect(llm.prompts).toHaveLength(1);
+    const prompt = llm.prompts[0] ?? "";
+    expect(prompt).toContain("WALRUSMARK"); // the new turn is perceived
+    expect(prompt).not.toContain("ZEBRAMARK"); // the already-perceived turn is excluded
+    expect(loadPerceptionState(root).watermark).toBe(ms(T2)); // advanced
+  });
+
+  it("delta: no new messages → no perception", async () => {
+    saveSoul(root, mintSoul());
+    writeState(0, ms(T2)); // watermark already at the newest message
+    const llm = new CapturingLlmClient(FAKE_JUDGMENT);
+
+    await stop({ transcript: JSONL, llm, storageRoot: root, now: NOW });
+    expect(llm.prompts).toHaveLength(0);
+  });
+
+  it("delta: watermark does not advance when perception fails", async () => {
+    saveSoul(root, mintSoul());
+    writeState(0, ms(T1));
+    const failing: LlmClient = {
+      complete: async () => {
+        throw new Error("boom");
+      },
+    };
+
+    await stop({ transcript: JSONL, llm: failing, storageRoot: root, now: NOW });
+
+    const state = loadPerceptionState(root);
+    expect(state.watermark).toBe(ms(T1)); // unchanged → same delta re-tried next window
+    expect(state.lastPerceivedAt).toBe(NOW); // attempt clock did advance
   });
 });
