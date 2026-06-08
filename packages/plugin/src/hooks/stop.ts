@@ -33,6 +33,15 @@ import { PerceptionError, ledgerToSignals, perceiveDetailed } from "@saulene/per
 import type { LlmClient } from "@saulene/perception";
 import { appendDiary, appendLedger, defaultRoot, loadSoul, saveSoul } from "@saulene/storage";
 import { type ReporterOpts, reportEvent } from "../reporter/reporter.js";
+import {
+  DEFAULT_LOCK_TTL_MS,
+  acquireLock,
+  loadPerceptionState,
+  releaseLock,
+  resolveIntervalMs,
+  savePerceptionState,
+  sliceTranscript,
+} from "./perception-state.js";
 
 export interface StopOpts {
   /** The full session transcript — handed to perception for judgment. */
@@ -56,6 +65,13 @@ export interface StopOpts {
    * SAULENE_REGISTRY_URL from the env. Omitting this does not affect hook behavior.
    */
   reporterOpts?: Pick<ReporterOpts, "registryUrl" | "fetch">;
+  /**
+   * Minimum ms between perception attempts. Defaults to env `SAULENE_PERCEPTION_INTERVAL_MS`
+   * (or 15 min). Injected by tests for deterministic throttle behavior.
+   */
+  intervalMs?: number;
+  /** Single-flight lock TTL (ms) — a lock older than this is taken over. Defaults to 10 min. */
+  lockTtlMs?: number;
 }
 
 /** How many times to attempt perception before skipping the session (1 retry on malformed output). */
@@ -73,9 +89,61 @@ export async function stop(opts: StopOpts): Promise<void> {
   const sessionId = opts.sessionId ?? randomUUID();
 
   // ── 1. Soul presence ─────────────────────────────────────────────────────────
-  let soul = loadSoul(root);
+  const soul = loadSoul(root);
   if (!soul) return; // not born yet — nothing to consolidate
   const priorMp = soul.mp; // snapshot before aging (for stage-change detection)
+
+  // ── 1a. Throttle ──────────────────────────────────────────────────────────────
+  // The Stop hook fires once per ASSISTANT TURN. Perceive at most once per `interval` so a long
+  // session isn't 30 Haiku calls + 30 subprocesses. The transcript stays on disk; nothing is lost
+  // by skipping — the next qualifying Stop perceives the accumulated delta.
+  const intervalMs = opts.intervalMs ?? resolveIntervalMs();
+  const lockTtlMs = opts.lockTtlMs ?? DEFAULT_LOCK_TTL_MS;
+  const state = loadPerceptionState(root);
+  if (now - state.lastPerceivedAt < intervalMs) return; // too soon — cheap no-op, no spawn
+
+  // ── 1b. Delta ─────────────────────────────────────────────────────────────────
+  // Feed perception ONLY the turns after the watermark, so already-perceived turns aren't drifted
+  // twice. No new messages → nothing to do (don't burn the throttle clock on an empty pass).
+  const { sliceText, newWatermark } = sliceTranscript(opts.transcript, state.watermark);
+  if (sliceText.trim() === "") return;
+
+  // ── 1c. Single-flight lock ────────────────────────────────────────────────────
+  // Never run two perceptions at once (even across two open Claude Code sessions). A held fresh
+  // lock → another perception is in flight → skip (no second spawn, no queue).
+  if (!acquireLock(root, { now, ttlMs: lockTtlMs })) return;
+
+  // Commit to this attempt: advance the throttle clock NOW (before the spawn) so a failed or
+  // skipped pass still throttles retries to once per interval. The watermark only advances on a
+  // CLEAN perception (below), so a failed pass re-tries the same delta next window.
+  savePerceptionState(root, { lastPerceivedAt: now, watermark: state.watermark });
+
+  try {
+    await runDrift({ ...opts, soul, root, now, sessionId, priorMp, sliceText, newWatermark });
+  } finally {
+    releaseLock(root);
+  }
+}
+
+/**
+ * The perceive → consolidate → persist pipeline, run under the single-flight lock. Split out from
+ * `stop()` so the throttle/lock bookkeeping reads cleanly and the lock is released in one `finally`.
+ */
+interface DriftArgs extends StopOpts {
+  soul: NonNullable<ReturnType<typeof loadSoul>>;
+  root: string;
+  now: number;
+  sessionId: string;
+  priorMp: number;
+  /** The transcript delta to perceive (already sliced to un-perceived turns). */
+  sliceText: string;
+  /** The watermark to persist if this perception succeeds. */
+  newWatermark: number | null;
+}
+
+async function runDrift(args: DriftArgs): Promise<void> {
+  const { root, now, sessionId, priorMp, sliceText, newWatermark } = args;
+  let soul = args.soul;
 
   // ── 2. Perceive ───────────────────────────────────────────────────────────────
   // LLM reads the transcript and emits a bounded, evidence-cited judgment. A cheap model can
@@ -86,7 +154,7 @@ export async function stop(opts: StopOpts): Promise<void> {
   let lastErr: PerceptionError | undefined;
   for (let attempt = 1; attempt <= PERCEPTION_ATTEMPTS; attempt++) {
     try {
-      result = await perceiveDetailed(opts.transcript, opts.llm);
+      result = await perceiveDetailed(sliceText, args.llm);
       break;
     } catch (err) {
       if (err instanceof PerceptionError) {
@@ -177,10 +245,15 @@ export async function stop(opts: StopOpts): Promise<void> {
     text: judgment.diary,
   });
 
+  // Perception succeeded → advance the watermark so these turns aren't perceived again. Only here
+  // (not on failure) so a failed pass re-tries the same delta next window. lastPerceivedAt was
+  // already set when we committed to the attempt; keep it.
+  savePerceptionState(root, { lastPerceivedAt: now, watermark: newWatermark });
+
   // ── 8. Lifecycle events (fire-and-forget) ─────────────────────────────────────
   // Detect stage_change and rupture from the consolidated soul and report them. No-op
   // when not opted in or SAULENE_REGISTRY_URL is unset. Never blocks or throws.
-  const reporterBase: ReporterOpts = { storageRoot: root, now, ...opts.reporterOpts };
+  const reporterBase: ReporterOpts = { storageRoot: root, now, ...args.reporterOpts };
 
   if (priorStage !== stage) {
     void reportEvent(reporterBase, "stage_change", { from: priorStage, to: stage });
