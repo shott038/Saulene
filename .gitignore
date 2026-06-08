@@ -1,5 +1,9 @@
 node_modules/
 dist/
+# The plugin's bundled dist IS shipped — Claude Code runs it as-is with no build
+# step on the user's machine. Track ONLY this dist; every other dist/ stays ignored.
+!packages/plugin/dist/
+!packages/plugin/dist/**
 *.tsbuildinfo
 .DS_Store
 coverage/
