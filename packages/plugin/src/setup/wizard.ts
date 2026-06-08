@@ -25,7 +25,7 @@ import type { LevelConfig } from "../hooks/config.js";
 import { saveConfig } from "../hooks/config.js";
 import { loadOrCreateKeypair } from "../identity/keypair.js";
 import { type ReporterOpts, reportEvent } from "../reporter/reporter.js";
-import { playBirth } from "../statusline/birth.js";
+import { playBirth, playBirthStatic } from "../statusline/birth.js";
 
 // ── Reality warning text (per SPEC § "MANDATORY REALITY WARNING") ─────────────────
 
@@ -114,7 +114,7 @@ export async function runWizard(opts: WizardOpts): Promise<void> {
   }
 
   // ── Step 2: Watch-only birth ──────────────────────────────────────────────────
-  write(`\n${BOLD}  Your ul is being born. Watch.${RESET}\n\n`);
+  write(`\n${BOLD}  Your ul is being born.${RESET}\n\n`);
 
   const entropy = opts.entropy ?? (randomBytes(32) as Uint8Array);
   const soul = seedFromEntropy(entropy, now);
@@ -151,6 +151,100 @@ export async function runWizard(opts: WizardOpts): Promise<void> {
   // ── Step 4: Born event (fire-and-forget) ──────────────────────────────────
   // Reporting to the public gallery is ON by default. The disclosure + opt-out
   // (reporterEnabled:false in ~/.saulene/config.json) live in the README, not the wizard.
+  const reporterBase: ReporterOpts = {
+    storageRoot: root,
+    now,
+    ...(opts.reporterOpts ?? {}),
+  };
+  void reportEvent(reporterBase, "born");
+}
+
+// ── Non-interactive setup (flag-driven, no readline) ──────────────────────────
+
+export interface SetupOpts {
+  /** Must be true — the reality-warning ack from the user. If false, exits without birthing. */
+  acknowledged: boolean;
+  /** Where the ul expresses. */
+  scope: "global" | "dir";
+  /** Absolute path; required when scope === "dir". */
+  dir?: string;
+  /** Whether to report to the public gallery. Default true (absent = on). */
+  reporterEnabled?: boolean;
+  /** Skip the animated birth; print a static frame sequence instead. */
+  noAnim?: boolean;
+  // Injected IO — same contract as WizardOpts
+  write: (s: string) => void;
+  sleep: (ms: number) => Promise<void>;
+  storageRoot?: string;
+  now?: number;
+  entropy?: Uint8Array;
+  mode?: "dark" | "light";
+  reporterOpts?: Pick<ReporterOpts, "registryUrl" | "fetch">;
+}
+
+/**
+ * Non-interactive first-run setup. Takes all answers as opts (flags) — no readline.
+ * Safe to call if a soul already exists (exits with a friendly message).
+ *
+ * The caller MUST have collected a real "yes" from the user before setting
+ * `acknowledged: true` — this function never auto-acknowledges.
+ */
+export async function runSetup(opts: SetupOpts): Promise<void> {
+  const { write, sleep } = opts;
+  const root = opts.storageRoot ?? defaultRoot();
+  const now = opts.now ?? Date.now();
+  const mode = opts.mode ?? "dark";
+
+  // Guard: already born
+  if (loadSoul(root) !== null) {
+    write("\nYour ul is already born — nothing to do here.\n");
+    return;
+  }
+
+  // Require real acknowledgement
+  if (!opts.acknowledged) {
+    write(
+      "\nSetup requires acknowledgement of the reality warning.\n" +
+        "Read the warning in chat, then run `/ul-setup` and type yes.\n",
+    );
+    return;
+  }
+
+  // Validate scope=dir requires dir
+  if (opts.scope === "dir" && !opts.dir) {
+    write("\n--scope dir requires --dir <absolute-path>.\n");
+    return;
+  }
+
+  // Birth
+  write(`\n${BOLD}  Your ul is being born.${RESET}\n\n`);
+
+  const entropy = opts.entropy ?? (randomBytes(32) as Uint8Array);
+  const soul = seedFromEntropy(entropy, now);
+
+  const params = spriteParams(soul);
+  if (opts.noAnim) {
+    await playBirthStatic(params, write, sleep, mode);
+  } else {
+    await playBirth(params, write, sleep, mode);
+  }
+
+  saveSoul(root, soul);
+  loadOrCreateKeypair(root);
+
+  // Build config
+  let config: LevelConfig;
+  if (opts.scope === "dir" && opts.dir) {
+    config = { level: "named-dir", dir: opts.dir, bornAt: now };
+  } else {
+    config = { level: "global", bornAt: now };
+  }
+  if (opts.reporterEnabled === false) config.reporterEnabled = false;
+  saveConfig(root, config);
+
+  write(`\n  ${BOLD}Your ul is alive.${RESET} The 90-day clock is running.\n\n`);
+
+  // Born event — no-ops automatically if reporterEnabled=false was persisted
   const reporterBase: ReporterOpts = {
     storageRoot: root,
     now,

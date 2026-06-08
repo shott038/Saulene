@@ -42,13 +42,19 @@ Inside Claude Code:
 /plugin install saulene@saulene
 ```
 
-Then bring your companion to life. Run the wizard in your terminal (the `!` prefix runs it right in your session):
+Then bring your companion to life. In Claude Code, just ask:
+
+```
+/ul-setup
+```
+
+Claude will walk you through the reality-warning acknowledgement and where your ul lives — entirely in chat, no separate terminal needed. You watch the birth, pick where your ul lives (every session, or one project directory), and the 90-day clock starts ticking. From then on it shows up in every eligible session, drifts off how you work, and saves itself to `~/.saulene/`.
+
+Prefer a fully interactive terminal wizard? Run it directly instead:
 
 ```
 ! node ${CLAUDE_PLUGIN_ROOT}/dist/bin/setup.js
 ```
-
-…or just ask Claude to run `/ul-setup`. You watch the birth, pick where your ul lives (every session, or one project directory), and the 90-day clock starts ticking. From then on it shows up in every eligible session, drifts off how you work, and saves itself to `~/.saulene/`.
 
 Type `/ul` any time to check on it.
 
