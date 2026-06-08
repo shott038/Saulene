@@ -448,6 +448,50 @@ describe("stop", () => {
     expect(readDiary(root)).toHaveLength(0);
   });
 
+  it("does not save soul when perception rejects with not-logged-in error", async () => {
+    const initialSoul = mintSoul();
+    saveSoul(root, initialSoul);
+
+    const notLoggedIn: LlmClient = {
+      complete: async () => {
+        throw new Error(
+          'claude -p exited 1: {"is_error":true,"result":"Not logged in · Please run /login"}',
+        );
+      },
+    };
+
+    await expect(
+      stop({ transcript: "hello", llm: notLoggedIn, storageRoot: root, now: NOW }),
+    ).resolves.toBeUndefined();
+
+    const soul = loadSoul(root);
+    expect(soul?.mp).toBe(initialSoul.mp);
+    expect(soul?.lastUsedAt).toBe(initialSoul.lastUsedAt);
+    expect(readLedger(root)).toHaveLength(0);
+    expect(readDiary(root)).toHaveLength(0);
+  });
+
+  it("does not save soul when perception rejects with generic transport error (ECONNREFUSED)", async () => {
+    const initialSoul = mintSoul();
+    saveSoul(root, initialSoul);
+
+    const connRefused: LlmClient = {
+      complete: async () => {
+        throw new Error("ECONNREFUSED");
+      },
+    };
+
+    await expect(
+      stop({ transcript: "hello", llm: connRefused, storageRoot: root, now: NOW }),
+    ).resolves.toBeUndefined();
+
+    const soul = loadSoul(root);
+    expect(soul?.mp).toBe(initialSoul.mp);
+    expect(soul?.lastUsedAt).toBe(initialSoul.lastUsedAt);
+    expect(readLedger(root)).toHaveLength(0);
+    expect(readDiary(root)).toHaveLength(0);
+  });
+
   it("retries perception once and consolidates when the retry succeeds", async () => {
     const initialSoul = mintSoul();
     saveSoul(root, initialSoul);

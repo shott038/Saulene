@@ -16526,7 +16526,17 @@ async function stop(opts) {
         );
         continue;
       }
-      throw err;
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/not logged in|please run \/login/i.test(msg)) {
+        console.error(
+          "Saulene: personality drift is paused \u2014 run `claude` in a terminal and log in (or set SAULENE_PERCEPTION_API_KEY) to enable it."
+        );
+      } else {
+        console.error(
+          `[saulene/stop] perception transport error \u2014 session not consolidated: ${msg.slice(0, 120)}`
+        );
+      }
+      return;
     }
   }
   if (!result) {
@@ -16612,11 +16622,19 @@ try {
   process.exit(0);
 }
 var llm = process.env.SAULENE_PERCEPTION_API_KEY ? new AnthropicLlmClient({ apiKey: process.env.SAULENE_PERCEPTION_API_KEY }) : new ClaudeCliClient();
-await stop({
-  transcript,
-  llm,
-  now: Date.now(),
-  ...payload.session_id ? { sessionId: payload.session_id } : {}
-});
+try {
+  await stop({
+    transcript,
+    llm,
+    now: Date.now(),
+    ...payload.session_id ? { sessionId: payload.session_id } : {}
+  });
+} catch (err) {
+  const msg = err instanceof Error ? err.message : String(err);
+  process.stderr.write(
+    `[saulene] Stop hook error (session not consolidated): ${msg.slice(0, 200)}
+`
+  );
+}
 process.stdout.write(`${JSON.stringify({ continue: true })}
 `);

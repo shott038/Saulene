@@ -1,7 +1,7 @@
 {
   "name": "saulene",
   "displayName": "Saulene",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Gives your Claude Code agent a unique personality that develops slowly and realistically over time.",
   "author": { "name": "Samuel Schoettker" },
   "repository": "https://github.com/shott038/Saulene",
