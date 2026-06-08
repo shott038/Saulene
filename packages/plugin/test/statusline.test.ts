@@ -496,29 +496,28 @@ describe("birthFrames", () => {
     expect(first?.overlay.noWisps).toBe(1);
   });
 
-  it("ends with breath frames (wispCells populated, dy cycles via breatheDy)", () => {
+  it("ends at full size with wisps present", () => {
     const frames = birthFrames();
     const last = frames[frames.length - 1];
     expect(last?.wispCells.length).toBeGreaterThan(0);
+    expect(last?.visibleRadius).toBeUndefined(); // full body (normal compose)
   });
 
-  it("has visibleRows set during condensing phase", () => {
+  it("reveals the body via a center-out bloom (visibleRadius)", () => {
     const frames = birthFrames();
-    const condensing = frames.filter((f) => f.visibleRows !== undefined);
-    expect(condensing.length).toBeGreaterThan(0);
-    // visibleRows should be a Set<number>
-    for (const f of condensing) {
-      expect(f.visibleRows).toBeInstanceOf(Set);
-    }
+    const bloom = frames.filter((f) => f.visibleRadius !== undefined && f.visibleRadius > 0);
+    expect(bloom.length).toBeGreaterThan(0);
+    for (const f of bloom) expect(typeof f.visibleRadius).toBe("number");
   });
 
-  it("condensing phase grows monotonically (each step >= previous)", () => {
-    const frames = birthFrames();
-    const condensing = frames.filter((f) => f.visibleRows !== undefined);
-    let prevSize = 0;
-    for (const f of condensing) {
-      expect((f.visibleRows as Set<number>).size).toBeGreaterThanOrEqual(prevSize);
-      prevSize = (f.visibleRows as Set<number>).size;
+  it("bloom radius grows monotonically", () => {
+    const radii = birthFrames()
+      .map((f) => f.visibleRadius)
+      .filter((r): r is number => r !== undefined);
+    let prev = -1;
+    for (const r of radii) {
+      expect(r).toBeGreaterThanOrEqual(prev);
+      prev = r;
     }
   });
 });
@@ -540,11 +539,11 @@ describe("renderBirthFrame", () => {
     expect(lines).toHaveLength(CHAR_ROWS);
   });
 
-  it("condensing frame with limited visibleRows produces fewer non-null pixels than full frame", () => {
+  it("a mid-bloom frame produces fewer non-null pixels than the full frame", () => {
     const allFrames = birthFrames();
     // biome-ignore lint/style/noNonNullAssertion: birthFrames() always returns non-empty frames
     const fullFrame = allFrames[allFrames.length - 1]!;
-    const partialFrame = allFrames.find((f) => f.visibleRows?.size === 2);
+    const partialFrame = allFrames.find((f) => f.visibleRadius === 0.9); // the center core
     if (!partialFrame) return; // if not found, skip gracefully
     // Full has more colored pixels than partial
     // biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matches ANSI truecolor ESC sequences

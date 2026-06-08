@@ -2,8 +2,8 @@
  * @saulene/plugin — terminal birth animation
  *
  * The watch-only birth animation that plays on first install, adapted for the terminal.
- * Choreography (per SPEC): gather → condense (center → upper ring → lower ring) →
- * spark (color flush) → wake (eyes open) → first breath → idle loop.
+ * Choreography: wisps drift in (body hidden) → the body's CENTER appears → it slowly expands
+ * outward, revealing the rest of the pixels until it reaches full size → settle → done.
  *
  * `birthFrames()` is pure — it returns the frame sequence; the caller supplies IO
  * (write + sleep). `playBirth()` wires those together for normal use.
@@ -30,17 +30,7 @@ function readPx(px: PixelGrid, rr: number, cc: number): RgbColor | null {
   const row = px[rr];
   return row ? (row[cc] ?? null) : null;
 }
-import {
-  BASE,
-  BODY,
-  BODY_SUCCESS,
-  EYES,
-  H,
-  TICK_MS,
-  W,
-  WISP_ORIGINAL,
-  breatheDy,
-} from "./sprite-data.js";
+import { BASE, BODY, EYES, H, TICK_MS, W, WISP_ORIGINAL } from "./sprite-data.js";
 
 // ── Birth frame type ──────────────────────────────────────────────────────────
 
@@ -53,79 +43,89 @@ export interface BirthFrame {
   overlay: OverlayFlags;
   /** Body vertical offset. */
   dy: number;
-  /** Which body rows are visible (undefined = all; otherwise a Set of row indices). */
-  visibleRows?: ReadonlySet<number>;
+  /**
+   * Center-out reveal radius. `undefined` = whole body (normal compose). `0` = body fully hidden
+   * (wisps only). A growing radius blooms the body from its center outward to full size.
+   */
+  visibleRadius?: number;
 }
 
-// ── Puff row sets (pixel row → body row index) ────────────────────────────────
-// Body art: 6 rows (0–5). Center puff appears first, then upper ring, then lower ring.
-const PUFF_PHASES: ReadonlyArray<readonly number[]> = [
-  [2, 3], // center puff (body art rows 2+3 = the wide middle section)
-  [1, 0], // upper ring (rows 1+0)
-  [4, 5], // lower ring (rows 4+5)
-] as const;
+// ── Center-out reveal geometry ────────────────────────────────────────────────
+// The body art is 6 rows × W cols; its visual center sits between the eye rows. A pixel is
+// revealed once its distance from that center is within the frame's radius. Rows are weighted
+// up slightly (the half-block render makes a row visually denser than a column).
+const CENTER_COL = 9.5;
+const CENTER_ROW = 2.5;
+const ROW_WEIGHT = 1.35;
+
+/** Distance of a body-art pixel from the cloud's center (used for the bloom reveal). */
+function radiusOf(row: number, col: number): number {
+  return Math.hypot((row - CENTER_ROW) * ROW_WEIGHT, col - CENTER_COL);
+}
 
 // ── Pure birth frame sequence ─────────────────────────────────────────────────
 
 /**
- * Returns the full birth animation frame sequence. Pure: no IO, no randomness.
- * All frames reference the same WISP_ORIGINAL / BODY art; the rasterizer applies colors.
+ * Returns the birth animation frame sequence. Pure: no IO, no randomness.
+ *
+ * Choreography: wisps drift in (body hidden) → the body's CENTER appears → it slowly expands
+ * outward, revealing the rest of the pixels until it reaches full size → settle → done.
  */
 export function birthFrames(): BirthFrame[] {
   const frames: BirthFrame[] = [];
-  const noWisps: OverlayFlags = { noWisps: 1 };
 
-  // Phase 1: blank (gathering) — 6 ticks before anything appears
-  for (let i = 0; i < 6; i++) {
-    frames.push({ delayMs: TICK_MS, wispCells: [], overlay: noWisps, dy: 0 });
+  // Phase 1: gather — body hidden (radius 0), no wisps yet. A short beat.
+  for (let i = 0; i < 3; i++) {
+    frames.push({
+      delayMs: TICK_MS,
+      wispCells: [],
+      overlay: { noWisps: 1 },
+      dy: 0,
+      visibleRadius: 0,
+    });
   }
 
-  // Phase 2: wisps drift in from the sides — 8 ticks
-  // Simulate inward slide: start far out, step toward rest position
+  // Phase 2: wisps drift in from the sides, body still hidden (radius 0).
   for (let step = 4; step >= 0; step--) {
     const slide = step; // start with offset = 4, reduce to 0
     const cells: [number, number][] = WISP_ORIGINAL.map(([r, c]): [number, number] => {
       const offset = c < W / 2 ? -slide : slide;
       return [r, c + offset];
     }).filter(([, c]) => c >= 0 && c < W);
-    frames.push({ delayMs: 100, wispCells: cells, overlay: {}, dy: 0 });
+    frames.push({ delayMs: 100, wispCells: cells, overlay: {}, dy: 0, visibleRadius: 0 });
   }
-  for (let i = 0; i < 3; i++) {
-    frames.push({ delayMs: TICK_MS, wispCells: WISP_ORIGINAL, overlay: {}, dy: 0 });
+  for (let i = 0; i < 2; i++) {
+    frames.push({
+      delayMs: TICK_MS,
+      wispCells: WISP_ORIGINAL,
+      overlay: {},
+      dy: 0,
+      visibleRadius: 0,
+    });
   }
 
-  // Phase 3: condense — cloud body grows puff-by-puff, center → upper ring → lower ring
-  const visible = new Set<number>();
-  for (const rowSet of PUFF_PHASES) {
-    for (const r of rowSet) visible.add(r);
-    const snap = new Set(visible);
-    for (let i = 0; i < 4; i++) {
+  // Phase 3: the center appears (a small core), holds a beat...
+  for (let i = 0; i < 3; i++) {
+    frames.push({ delayMs: 110, wispCells: WISP_ORIGINAL, overlay: {}, dy: 0, visibleRadius: 0.9 });
+  }
+  // ...then slowly expands outward, revealing the rest of the pixels to full size.
+  // Max pixel radius is ~3.6; 4.2 guarantees the whole body is shown.
+  const RADII = [1.4, 1.8, 2.2, 2.6, 3.0, 3.4, 3.8, 4.2];
+  for (const radius of RADII) {
+    for (let i = 0; i < 2; i++) {
       frames.push({
-        delayMs: 120,
+        delayMs: 110,
         wispCells: WISP_ORIGINAL,
         overlay: {},
         dy: 0,
-        visibleRows: snap,
+        visibleRadius: radius,
       });
     }
   }
 
-  // Phase 4: spark — body briefly flushes lighter (a warm flash), then settles
-  for (let i = 0; i < 3; i++) {
-    frames.push({ delayMs: 80, wispCells: WISP_ORIGINAL, overlay: { success: 1 }, dy: 0 });
-  }
+  // Phase 4: full size — settle, then done. (No spark, no breathing tail; idle takes over later.)
   for (let i = 0; i < 5; i++) {
     frames.push({ delayMs: TICK_MS, wispCells: WISP_ORIGINAL, overlay: {}, dy: 0 });
-  }
-
-  // Phase 5: wake — eyes appear (they're drawn once body is stable; no special flag needed)
-  for (let i = 0; i < 6; i++) {
-    frames.push({ delayMs: 90, wispCells: WISP_ORIGINAL, overlay: {}, dy: 0 });
-  }
-
-  // Phase 6: first breath — 34 ticks of breathing, then idle continues
-  for (let i = 0; i < 34; i++) {
-    frames.push({ delayMs: TICK_MS, wispCells: WISP_ORIGINAL, overlay: {}, dy: breatheDy(i) });
   }
 
   return frames;
@@ -134,30 +134,31 @@ export function birthFrames(): BirthFrame[] {
 // ── Terminal render helper for birth frames ────────────────────────────────────
 
 /**
- * Build the pixel grid for one birth frame (pure — no ANSI). Handles `visibleRows` for the
- * puff-by-puff condensing effect. Takes resolved colors so it can render any palette (the live
- * wizard passes the soul's colors; the GIF exporter passes the canonical default palette).
+ * Build the pixel grid for one birth frame (pure — no ANSI). Honors `visibleRadius` for the
+ * center-out bloom (body/eye pixels appear once within the radius); `undefined` renders the whole
+ * body. Takes resolved colors so it can render any palette (the live wizard passes the soul's
+ * colors; the GIF exporter passes the canonical default palette).
  */
 export function birthFrameGrid(frame: BirthFrame, colors: RasterizerColors): PixelGrid {
-  if (!frame.visibleRows) {
+  if (frame.visibleRadius === undefined) {
     // Whole body visible — normal compose.
     return compose(colors, frame.wispCells, frame.overlay, frame.dy);
   }
 
-  // Partial-body compose: only paint body rows in the visible set.
+  const radius = frame.visibleRadius;
   const { dx = 0, blink, eye = 0, eyeDy = 0, wdy = 0, win = 0, noWisps } = frame.overlay;
 
   type Pixel = RgbColor | null;
   const px: Pixel[][] = Array.from({ length: H }, () => Array<Pixel>(W).fill(null));
 
-  // Paint visible body rows only
+  // Paint body pixels within the reveal radius (center-out bloom).
   for (let r = 0; r < BODY.length; r++) {
-    if (!frame.visibleRows.has(r)) continue;
     const row = BODY[r];
     if (!row) continue;
     for (let c = 0; c < W; c++) {
       const ch = row[c];
       if (ch === "." || ch === undefined) continue;
+      if (radiusOf(r, c) > radius) continue;
       const rr = r + BASE;
       const cc = c + dx;
       if (rr >= 0 && rr < H && cc >= 0 && cc < W) {
@@ -166,11 +167,12 @@ export function birthFrameGrid(frame: BirthFrame, colors: RasterizerColors): Pix
     }
   }
 
-  // Paint eyes if visible (only once rows 2/3 appear)
-  if (!blink && frame.visibleRows.has(2)) {
+  // Paint eyes once the bloom reaches them.
+  if (!blink) {
     for (const eyePos of EYES) {
       const er = eyePos[0];
       const ec = eyePos[1];
+      if (radiusOf(er, ec) > radius) continue;
       const rr = er + BASE + eyeDy;
       const cc = ec + eye + dx;
       if (rr >= 0 && rr < H && cc >= 0 && cc < W) {
@@ -179,7 +181,7 @@ export function birthFrameGrid(frame: BirthFrame, colors: RasterizerColors): Pix
     }
   }
 
-  // Paint wisps
+  // Paint wisps (they drift/stay independent of the body bloom).
   if (!noWisps) {
     for (const wispPos of frame.wispCells) {
       const wr = wispPos[0];
@@ -197,8 +199,8 @@ export function birthFrameGrid(frame: BirthFrame, colors: RasterizerColors): Pix
 }
 
 /**
- * Render one birth frame to an ANSI terminal string. Handles `visibleRows` for
- * the puff-by-puff condensing effect — invisible rows are rendered as blank lines.
+ * Render one birth frame to an ANSI terminal string (the live wizard path). Honors the
+ * center-out bloom via `visibleRadius` — pixels outside the radius are simply not drawn.
  */
 export function renderBirthFrame(
   frame: BirthFrame,
