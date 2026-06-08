@@ -4478,7 +4478,7 @@ function snapshot(opts = {}) {
 }
 
 // src/skill/index.ts
-var GALLERY_URL = "https://saulene.app";
+var GITHUB_URL = "https://github.com/shott038/Saulene";
 function ulText(opts = {}) {
   const snap = snapshot({ ...opts, driftRows: opts.driftRows ?? 10 });
   if (!snap) return null;
@@ -4515,8 +4515,14 @@ function format(snap) {
     }
     lines.push("");
   }
-  const galleryLink = snap.publicId ? `${GALLERY_URL}/ul/${snap.publicId}` : GALLERY_URL;
-  lines.push(`See your full breakdown \u2192 ${galleryLink}`);
+  lines.push("### A gallery is coming");
+  lines.push("If Saulene gets popular enough, a public gallery goes live where you can:");
+  lines.push("- customize how your ul looks in your terminal");
+  lines.push("- see the oldest ul alive, and the wisest");
+  lines.push("- the average age of every ul, the rarest types, the biggest ruptures");
+  lines.push("- find your own ul on the shared wall");
+  lines.push("");
+  lines.push(`\u2B50 Want it built for real? Star the repo \u2192 ${GITHUB_URL}`);
   return lines.join("\n");
 }
 

@@ -192,11 +192,12 @@ describe("ulText", () => {
     expect(text).toContain("neglect-death");
   });
 
-  it("includes gallery upsell", () => {
+  it("includes gallery coming-soon teaser", () => {
     saveSoul(root, mintSoul());
     const text = ulText({ storageRoot: root, now: NOW });
-    expect(text).toContain("saulene.app");
-    expect(text).toContain("full breakdown");
+    expect(text).toContain("A gallery is coming");
+    expect(text).toContain("Star the repo");
+    expect(text).not.toContain("saulene.app");
   });
 
   it("exposes no raw aspect numbers", () => {
